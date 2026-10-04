@@ -12,6 +12,10 @@ Inventory taken 2026-10-04 from `Mr_Sales_Web/src` (21 page files, 45 routes,
 behaviour can be checked against it. The "Data" column names the function in
 `live.ts` that does the work; the new console must call the same RPC or table.
 
+> **Live run 2026-10-05:** every page opens against Testbed Pharma with no error, key
+> figures match the database, and all 56 write functions match their signatures
+> (`REVIEW.md`, "Live run"). Boxes are ticked after the owner's review of each screen.
+
 ---
 
 ## 0. Across the whole console

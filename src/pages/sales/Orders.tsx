@@ -60,7 +60,9 @@ function View({ data, at, error, reload }: { data: Awaited<ReturnType<typeof loa
     <div className="page-body">
       <Summary aside={<Freshness at={at} error={error} reload={reload} label="Read orders again" />}>
         {live.length === 0 ? 'No orders yet.' : <>
-          <strong>{count(live.length, 'order')}</strong> worth {rupeesShort(value(live.filter(o => o.status !== 'rejected')))}.
+          {/* Orders are shown with GST; Sales counts them before it. Say which, so the two agree. */}
+          <strong>{count(live.length, 'order')}</strong> worth {rupeesShort(value(live.filter(o => o.status !== 'rejected')))} with GST
+          {' '}({rupeesShort(live.filter(o => o.status !== 'rejected').reduce((s, o) => s + o.subtotal, 0))} before it).
           {by('pending').length ? <> {by('pending').length} waiting for a decision ({rupeesShort(value(by('pending')))}).</> : ''}
           {by('approved').length ? <> <span className="warn-text">{count(by('approved').length, 'approved order')}</span> not yet fulfilled.</> : ''}
           {noStockist.length ? <> {count(noStockist.length, 'order names', 'orders name')} no stockist.</> : ''}

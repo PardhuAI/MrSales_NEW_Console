@@ -62,7 +62,7 @@ function View({ m, at, error, reload }: { m: SalesModel; at: Date | null; error:
           {total || y.target ? <><span className="hero-figure"><CountUp value={total} format={rupeesShort} /></span> sold in {monthName(month)}{y.target ? <>, {percent(total, y.target)} of {rupeesShort(y.target)}</> : ''}</> : <>Nothing sold in {monthName(month)} yet</>}
         </p>
         <p className="hero-sub">
-          {total ? `${rupeesShort(y.primary)} in primary sales and ${rupeesShort(y.orders)} from approved field orders. ` : ''}
+          {total ? `${rupeesShort(y.primary)} in primary sales and ${rupeesShort(y.orders)} from approved field orders, before GST. ` : ''}
           {!y.target ? 'No target was set for this month. ' : isCurrent ? `${count(daysIn - day, 'day')} of the month left; at this pace it closes near ${rupeesShort((total / Math.max(day, 1)) * daysIn)}. ` : ''}
           {withTarget.length ? `${behind ? `${count(behind, 'person is', 'people are')} well behind ${isCurrent ? 'the pace' : 'target'}.` : 'Everyone with a target is on pace.'}` : ''}
           {!y.target && allowed('targets') && <> <Link className="link" to="/sales/targets">Assign targets</Link></>}

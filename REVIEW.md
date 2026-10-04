@@ -130,8 +130,30 @@ named after the wrong page.
 
 ---
 
+## Live run, 2026-10-05 (Testbed Pharma, signed in as its Admin)
+
+- **Every page opens on live data.** All 51 pages in `nav.ts` were opened signed in to
+  the live project: no page error, no failed request, about two seconds each. Payroll
+  says it is not open to an Admin, as the role matrix says.
+- **Figures checked against the database** with SQL: the Dashboard (Saturday 24 of 24
+  calls by 1 of 13 people; October 30 calls, 0 of 30 checked at the client; 3 of 13
+  clients visited, 6 new, 7 without a location; ₹3,000 against ₹30 L), Field activity,
+  Expense claims (₹1,980 by 2 people for September; 1 waiting, ₹250; 1 day with no day
+  plan; 1 day above ₹500 with no bill), Clients (6 of 13 listed), Team (14 people, 10
+  without a login), Orders and Sales.
+- **Every write matches the database.** All 56 functions the console calls were
+  compared, parameter by parameter, with their signatures in the live project: no
+  unknown parameter, no missing required one.
+- **Writes exercised live:** a leave decision through Approvals, read back from
+  `leave_requests` and `approval_events`.
+- Found and fixed: Sales counts orders before GST and Orders showed them with it, so the
+  two disagreed by the GST; both now say which. The date and month pickers lost a key
+  pressed straight after opening, and an arrow key on a strip could move two days.
+
 ## Still open
 
-- The live run of every section and of the test suite against Testbed Pharma.
+- Live runs as the other office roles (HR, finance, IT, management). Testbed has an
+  Admin console login only; the others need one each.
+- Writes other than a leave decision, run live end to end (signatures are checked).
 - `seam.spec.ts` (the console and the phone agree), which needs the phone.
 - The owner's review of each screen, and the decisions listed in `FEATURE_CHECKLIST.md`.
