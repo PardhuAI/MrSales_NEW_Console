@@ -8,6 +8,10 @@ import { SettingsHome } from './pages/SettingsHome';
 import { Approvals } from './pages/Approvals';
 import { ApprovalsDecided } from './pages/ApprovalsDecided';
 import { Attention } from './pages/Attention';
+import { FieldActivity } from './pages/field/Activity';
+import { PersonDay } from './pages/field/PersonDay';
+import { DayPlans, TourPlans } from './pages/field/Plans';
+import { Coverage } from './pages/field/Coverage';
 import { ThemeProvider } from './app/theme';
 import { SessionProvider, useSession } from './live/session';
 import { Blocked, ChoosePassword, Loading, SignIn } from './pages/SignIn';
@@ -21,7 +25,16 @@ const BUILT: Record<string, JSX.Element> = {
   '/approvals': <Approvals />,
   '/approvals/decided': <ApprovalsDecided />,
   '/attention': <Attention />,
+  '/field': <FieldActivity />,
+  '/field/day-plans': <DayPlans />,
+  '/field/tour-plans': <TourPlans />,
+  '/field/coverage': <Coverage />,
 };
+
+/** Records and other pages reached from a list rather than the menu. */
+const DETAIL: { path: string; module: string; element: JSX.Element }[] = [
+  { path: '/field/:employeeId/:date', module: 'field', element: <PersonDay /> },
+];
 
 function TitleAndScroll() {
   const { pathname } = useLocation();
@@ -90,7 +103,10 @@ function Console() {
               }
             />
           ))}
-          {NEW_ACTIONS.filter(a => allowed(a.module)).map(a => (
+          {DETAIL.filter(d => allowed(d.module)).map(d => (
+            <Route key={d.path} path={d.path} element={<SectionLayout>{d.element}</SectionLayout>} />
+          ))}
+          {NEW_ACTIONS.filter(a => allowed(a.module) && !DETAIL.some(d => d.path === a.path)).map(a => (
             <Route key={a.path} path={a.path} element={<SectionLayout><Coming /></SectionLayout>} />
           ))}
           <Route path="*" element={<NotFound />} />

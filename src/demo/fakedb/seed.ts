@@ -341,8 +341,9 @@ export function seed(now = new Date()): Tables {
           pob_amount: status === 'completed' && client.type === 'chemist' && chance(0.5) ? between(8, 60) * 100 : null,
           rcpa_score: null, expected_next_visit: status === 'completed' ? shift(k, between(7, 21)) : null,
           geo_verdict: verdict, geo_radius_m: done ? 50 : null, geo_distance_m: dist,
-          geo_lat: done && verdict !== 'unavailable' && client.lat != null ? client.lat + (rnd() - 0.5) * 0.0008 : null,
-          geo_lng: done && verdict !== 'unavailable' && client.lng != null ? client.lng + (rnd() - 0.5) * 0.0008 : null,
+          // The captured position sits as far from the client as the distance says.
+          geo_lat: done && verdict !== 'unavailable' && client.lat != null ? client.lat + (dist ?? 15) / 111_000 * Math.sin(c * 2.1) : null,
+          geo_lng: done && verdict !== 'unavailable' && client.lng != null ? client.lng + (dist ?? 15) / 106_000 * Math.cos(c * 2.1) : null,
           geo_captured_at: done ? start : null, out_of_range_reason: verdict === 'outOfRange' ? pick(['Met the doctor at the hospital', 'Clinic has moved', 'Location shown wrongly']) : null,
           location_name: client.name, area_name: rep.hq, created_at: at(k, 8.95), updated_at: start,
           photo_paths: status === 'completed' && chance(0.15) ? [`demo/${rep.id}/${k}/visit-${c + 1}.jpg`] : [],

@@ -240,17 +240,18 @@ export async function loadLiveDashboard(orgName: string): Promise<DashboardModel
       reason: `Latest ${relative(new Date(last.created_at), now)}${last.clients?.name ? ` at ${last.clients.name}` : ''}. It was blocked.`
         + (last.real_distance_m != null ? ` Their last genuine position was ${distance(last.real_distance_m)} from the client.` : ''),
       action: 'Open their day',
-      to: '/field',
+      to: `/field/${id}/${dayKey(new Date(last.created_at))}`,
     });
   }
   const mockedBy = new Map<string, number>();
   for (const c of calls) if (c.mocked && c.day >= shift(today, -14) && !fakeBy.has(c.employee)) mockedBy.set(c.employee, (mockedBy.get(c.employee) ?? 0) + 1);
   for (const [id, n] of mockedBy) {
+    const latest = calls.filter(c => c.employee === id && c.mocked).map(c => c.day).sort().pop() ?? today;
     attention.push({
       id: `mock-${id}`, severity: 'critical',
       title: `${person(id)?.name ?? 'Someone'}'s phone reported a fake location on ${plural(n, 'visit')}`,
       reason: 'In the last two weeks. Worth a conversation before a conclusion.',
-      action: 'Open their day', to: '/field',
+      action: 'Open the latest day', to: `/field/${id}/${latest}`,
     });
   }
   const travelBy = new Map<string, typeof travelRows>();
@@ -269,7 +270,7 @@ export async function loadLiveDashboard(orgName: string): Promise<DashboardModel
         ? `A journey of ${worst.employee_name || person(id)?.name}'s does not add up`
         : `${list.length} journeys of ${worst.employee_name || person(id)?.name}'s do not add up`,
       reason: `${dateOf(dayKey(new Date(worst.happened_at))).toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'short' })}: ${what}. A flight or a bad GPS fix can explain it; the day shows both visits.`,
-      action: 'See both visits', to: '/field',
+      action: 'See both visits', to: `/field/${id}/${dayKey(new Date(worst.happened_at))}`,
     });
   }
 
@@ -282,7 +283,7 @@ export async function loadLiveDashboard(orgName: string): Promise<DashboardModel
       id: 'unfinished', severity: 'warning',
       title: `${plural(unfinished.length, 'visit was', 'visits were')} started and never finished`,
       reason: `${names(top)}. They count as neither done nor missed until someone closes them.`,
-      action: 'See the visits', to: '/field',
+      action: 'See the visits', to: per.size === 1 ? `/field/${[...per.keys()][0]}/${unfinished[0].day}` : `/field?date=${unfinished[0].day}`,
     });
   }
 
@@ -298,7 +299,7 @@ export async function loadLiveDashboard(orgName: string): Promise<DashboardModel
         reason: quiet.length === 1
           ? `${plural(todayCalls.filter(c => c.employee === quiet[0].id).length, 'call')} planned${quiet[0].hq ? ` in ${quiet[0].hq}` : ''}, none started by ${clock(nowH)}.`
           : `${names(quiet.map(e => e.name))}. Each has calls planned and none started.`,
-        action: 'Open the field', to: '/field',
+        action: quiet.length === 1 ? 'Open their day' : 'Open the field', to: quiet.length === 1 ? `/field/${quiet[0].id}/${today}` : `/field?date=${today}`,
       });
     }
   }
@@ -331,7 +332,7 @@ export async function loadLiveDashboard(orgName: string): Promise<DashboardModel
       id: 'no-gps', severity: 'warning',
       title: noPlace.length === 1 ? `${noPlace[0].name}'s visits this week had no location` : `${noPlace.length} people's visits this week had no location`,
       reason: `${noPlace.length === 1 ? '' : `${names(noPlace.map(e => e.name))}. `}None of them could be checked against the visit radius. Their phone's location may be off.`,
-      action: 'Open the field', to: '/field',
+      action: noPlace.length === 1 ? 'Open their days' : 'Open the field', to: noPlace.length === 1 ? `/field/${noPlace[0].id}/${weekDone.filter(c => c.employee === noPlace[0].id).map(c => c.day).sort().pop()}` : '/field',
     });
   }
 

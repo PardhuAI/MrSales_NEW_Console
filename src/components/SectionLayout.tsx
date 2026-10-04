@@ -12,6 +12,10 @@ export function SectionLayout({ children, hideTitle = false }: { children: React
   const loc = useLocation();
   const base = sectionOf(loc.pathname);
   const section = useVisibleSections().find(s => s.id === base?.id);
+  // The tab for a record is the page it belongs under: the longest page path the address starts with.
+  const current = section?.pages
+    .filter(p => loc.pathname === p.path || (p.path !== '/' && loc.pathname.startsWith(`${p.path}/`)))
+    .sort((a, b) => b.path.length - a.path.length)[0]?.path;
 
   return (
     <div className="page">
@@ -21,7 +25,7 @@ export function SectionLayout({ children, hideTitle = false }: { children: React
           {section.pages.length > 1 && (
             <nav className="tabs" aria-label={`${section.label} pages`}>
               {section.pages.map(p => (
-                <NavLink key={p.path} to={p.path} end className="tab">
+                <NavLink key={p.path} to={p.path} end className={() => `tab${p.path === current ? ' active' : ''}`} aria-current={p.path === current ? 'page' : undefined}>
                   {p.label}
                 </NavLink>
               ))}

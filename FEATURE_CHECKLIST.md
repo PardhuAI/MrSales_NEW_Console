@@ -66,6 +66,17 @@ behaviour can be checked against it. The "Data" column names the function in
 ## 1. Today
 
 ### Dashboard (`/`) · Old: `pages/Dashboard.tsx`
+
+> **2026-10-04: built in the new design** (`src/pages/Dashboard.tsx`, `TodayRoles.tsx`,
+> `src/live/dashboard.ts`, `src/live/home.ts`). Owner, admin and management see the field view;
+> HR, Finance and IT each get their own view, redesigned around one sentence instead of four
+> metric tiles. Setup checklist with "Not now" stored on the organisation
+> (`dismiss_setup_step`). Range switch on the calls chart (last 20 working days, this month, last
+> month). Checked on the demo company at 1440, 1280, 1024 and 390, light and dark, for all four
+> views. Not yet run against the live testbed. Dropped from the old IT view: "MFA enabled" (the
+> database does not record it; the old figure was always zero) and the hard-coded "6 mobile
+> devices" (now read from `employees.last_device_id`). Admin now sees the owner's field view
+> instead of the IT view.
 - [ ] First-run setup checklist, in order, with progress and "Not now" per step · Data: `dismissedSetupSteps`, `dismissSetupStep`
   1. Name the roles in your company
   2. Give your office access
@@ -123,6 +134,13 @@ behaviour can be checked against it. The "Data" column names the function in
 ---
 
 ## 2. Field
+
+> **2026-10-04: the Field section is built in the new design** (`src/pages/field/`,
+> `src/live/field.ts`): Activity, a person's day (timeline, map from captured positions only,
+> call drawer with location evidence, call report, products, prescription audit and signed
+> photo links), Day plans, Tour plans (with approve and send back through `decide_tour`, and a
+> month calendar) and Coverage. Checked on the demo company at 1440, 1280, 1024 and 390. Not yet
+> run against the live testbed, so the boxes stay unticked.
 
 ### Field activity (`/field`) · Old: `pages/Field.tsx` `FieldActivity`
 - [ ] Every field person for a date: planned, completed, missed, verification
