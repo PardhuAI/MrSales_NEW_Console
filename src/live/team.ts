@@ -391,20 +391,25 @@ export const decideLeave = async (id: string, approve: boolean, reason: string) 
 
 // ── tasks ─────────────────────────────────────────────────────────────
 
-export type TaskRow = { id: string; title: string; description: string | null; personId: string; person: string; by: string; due: string | null; status: string; createdAt: string; completedAt: string | null };
+export type TaskRow = { id: string; title: string; description: string | null; personId: string; person: string; by: string; clientId: string | null; client: string | null; due: string | null; status: string; createdAt: string; completedAt: string | null };
+export type TaskClient = { id: string; name: string; place: string; ownerId: string | null };
 
-export async function loadTasks(): Promise<{ tasks: TaskRow[]; people: { id: string; name: string; hq: string }[] }> {
+export async function loadTasks(): Promise<{ tasks: TaskRow[]; people: { id: string; name: string; hq: string }[]; clients: TaskClient[] }> {
   const sb = db();
-  const [employees, rows] = await Promise.all([
+  const [employees, rows, clients] = await Promise.all([
     loadEmployees(),
-    readAll<{ id: string; assignee_id: string; assigner_id: string | null; title: string; description: string | null; due_date: string | null; status: string; completed_at: string | null; created_at: string }>((a, b) =>
-      sb.from('tasks').select('id, assignee_id, assigner_id, title, description, due_date, status, completed_at, created_at').order('created_at', { ascending: false }).range(a, b)),
+    readAll<{ id: string; assignee_id: string; assigner_id: string | null; client_id: string | null; title: string; description: string | null; due_date: string | null; status: string; completed_at: string | null; created_at: string }>((a, b) =>
+      sb.from('tasks').select('id, assignee_id, assigner_id, client_id, title, description, due_date, status, completed_at, created_at').order('created_at', { ascending: false }).range(a, b)),
+    readAll<{ id: string; name: string; city: string | null; owner_employee_id: string | null; is_active: boolean }>((a, b) =>
+      sb.from('clients').select('id, name, city, owner_employee_id, is_active').order('name').range(a, b)),
   ]);
+  const clientName = new Map(clients.map(c => [c.id, c.name]));
   return {
-    tasks: rows.map(t => ({ id: t.id, title: t.title, description: t.description, personId: t.assignee_id, person: employees.get(t.assignee_id)?.name ?? 'Someone no longer here', by: t.assigner_id ? employees.get(t.assigner_id)?.name ?? 'Someone' : 'The office', due: t.due_date, status: t.status, createdAt: t.created_at, completedAt: t.completed_at })),
+    tasks: rows.map(t => ({ id: t.id, title: t.title, description: t.description, personId: t.assignee_id, person: employees.get(t.assignee_id)?.name ?? 'Someone no longer here', by: t.assigner_id ? employees.get(t.assigner_id)?.name ?? 'Someone' : 'Head office', clientId: t.client_id, client: t.client_id ? clientName.get(t.client_id) ?? 'A client no longer listed' : null, due: t.due_date, status: t.status, createdAt: t.created_at, completedAt: t.completed_at })),
     people: [...employees.values()].filter(e => e.status === 'active' && e.role).map(e => ({ id: e.id, name: e.name, hq: e.hq })).sort((a, b) => a.name.localeCompare(b.name)),
+    clients: clients.filter(c => c.is_active).map(c => ({ id: c.id, name: c.name, place: c.city ?? '', ownerId: c.owner_employee_id })),
   };
 }
 
-export const assignTask = async (personId: string, title: string, description: string, due: string | null) =>
-  (await call('assign_task', { p_id: crypto.randomUUID(), p_assignee_id: personId, p_title: title, p_description: description || null, p_due_date: due })) as string;
+export const assignTask = async (personId: string, title: string, description: string, due: string | null, clientId: string | null) =>
+  (await call('assign_task', { p_id: crypto.randomUUID(), p_assignee_id: personId, p_title: title, p_description: description || null, p_due_date: due, p_client_id: clientId })) as string;

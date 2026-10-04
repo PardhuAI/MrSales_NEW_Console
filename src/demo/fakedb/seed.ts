@@ -577,7 +577,7 @@ export function seed(now = new Date()): Tables {
   ];
   for (const [title, who, due, status] of taskSpecs) {
     const e = everyone.find(x => x.name === who)!;
-    add('tasks', { id: uid('tsk'), assignee_id: e.id, assigner_id: e.manager_id ?? rsm.id, title, description: null, due_date: shift(today, due), status, completed_at: status === 'done' ? at(shift(today, due - 1), 16) : null, created_at: at(shift(today, Math.min(due - 9, -1)), 10) });
+    add('tasks', { id: uid('tsk'), assignee_id: e.id, assigner_id: e.manager_id ?? rsm.id, client_id: null, title, description: null, due_date: shift(today, due), status, completed_at: status === 'done' ? at(shift(today, due - 1), 16) : null, created_at: at(shift(today, Math.min(due - 9, -1)), 10) });
   }
   const complaintSpecs: [string, string, string, string, boolean][] = [
     ['Short supply in the last order', 'Received 40 strips of Cleopan 40 against 60 ordered. The stockist says the rest is on the way.', 'Harika Naidu', 'open', false],

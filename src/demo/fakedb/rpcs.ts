@@ -305,8 +305,9 @@ export function teamRpcs(audit: (db: FakeDb, action: string, entity: string, lab
       const p = person(db, a.p_assignee_id);
       if (!String(a.p_title ?? '').trim()) fail('a task needs a title');
       const id = a.p_id ?? crypto.randomUUID();
-      db.mutable('tasks').push({ id, org_id: ORG, assignee_id: p.id, assigner_id: null, title: String(a.p_title).trim(), description: trimOrNull(a.p_description), due_date: a.p_due_date ?? null, status: 'open', completed_at: null, created_at: now() });
-      db.mutable('notifications').push({ id: crypto.randomUUID(), org_id: ORG, employee_id: p.id, title: 'New task assigned', body: String(a.p_title), kind: 'task', is_read: false, created_at: now(), entity: 'task', entity_id: id, deep_link: '/tasks', group_count: 1 });
+      const client = a.p_client_id ? find(db, 'clients', a.p_client_id) ?? fail('that client is not in this organisation') : null;
+      db.mutable('tasks').push({ id, org_id: ORG, assignee_id: p.id, assigner_id: null, client_id: client?.id ?? null, title: String(a.p_title).trim(), description: trimOrNull(a.p_description), due_date: a.p_due_date ?? null, status: 'open', completed_at: null, created_at: now() });
+      db.mutable('notifications').push({ id: crypto.randomUUID(), org_id: ORG, employee_id: p.id, title: 'New task assigned', body: `Head office: ${String(a.p_title).trim()}${client ? ` (at ${client.name})` : ''}`, kind: 'task', is_read: false, created_at: now(), entity: 'task', entity_id: id, deep_link: '/tasks', group_count: 1 });
       return id;
     },
   };

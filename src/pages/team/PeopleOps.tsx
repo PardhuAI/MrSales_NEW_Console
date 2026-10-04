@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Plus } from '@phosphor-icons/react';
 import { invalidate, useResource } from '../../data/resource';
-import { assignTask, decideLeave, leaveLabel, loadAttendance, loadLeave, loadTasks, type AttendanceModel, type LeaveRow } from '../../live/team';
+import { assignTask, decideLeave, leaveLabel, loadAttendance, loadLeave, loadTasks, type AttendanceModel, type LeaveRow, type TaskClient } from '../../live/team';
 import { approvalsStore } from '../../data/approvals';
 import { IST_TODAY, ago, dayMonth, dayRange, dayOf, daysBetween, longDay, shiftDay, timeOf, weekdayOf } from '../../lib/days';
 import { count } from '../../lib/format';
@@ -260,7 +260,7 @@ function TasksView({ data, at, error, reload }: { data: Awaited<ReturnType<typeo
   const done = data.tasks.filter(t => t.status === 'done');
   const rows = data.tasks
     .filter(t => status === 'all' || (status === 'open' ? t.status === 'open' : status === 'late' ? t.status === 'open' && t.due && t.due < today : t.status === 'done'))
-    .filter(t => !q.trim() || `${t.title} ${t.person}`.toLowerCase().includes(q.trim().toLowerCase()))
+    .filter(t => !q.trim() || `${t.title} ${t.person} ${t.client ?? ''}`.toLowerCase().includes(q.trim().toLowerCase()))
     .sort((a, b) => (a.due ?? '9999').localeCompare(b.due ?? '9999'));
   const close = () => { setAdding(false); if (loc.pathname.endsWith('/new')) nav('/team/tasks', { replace: true }); };
   return (
@@ -270,7 +270,7 @@ function TasksView({ data, at, error, reload }: { data: Awaited<ReturnType<typeo
       </Summary>
       <Toolbar>
         <button type="button" className="btn btn-primary btn-small" onClick={() => setAdding(true)}><Plus size={14} weight="bold" aria-hidden="true" /> Assign a task</button>
-        <SearchBox value={q} onChange={setQ} placeholder="Task or person" label="Find a task" />
+        <SearchBox value={q} onChange={setQ} placeholder="Task, person or client" label="Find a task" />
         <Segmented label="Show" value={status} onChange={setStatus} options={[{ value: 'open', label: 'Open', count: open.length }, { value: 'late', label: 'Past their date', count: late.length }, { value: 'done', label: 'Done', count: done.length }, { value: 'all', label: 'All' }]} />
       </Toolbar>
       {data.tasks.length === 0 ? <Empty title="No tasks yet">Hand someone a piece of work with a date; it reaches their phone and they tick it off there.</Empty> : rows.length === 0 ? <div className="list-empty"><Empty title="Nothing here">No task matches.</Empty></div> : (
@@ -282,7 +282,7 @@ function TasksView({ data, at, error, reload }: { data: Awaited<ReturnType<typeo
                 <li key={t.id} className="row">
                   <div className="row-main">
                     <p className="row-title">{t.title}</p>
-                    <p className="row-sub"><Link className="cell-link" to={`/team/${t.personId}`}>{t.person}</Link> · from {t.by}{t.description ? ` · ${t.description}` : ''}</p>
+                    <p className="row-sub"><Link className="cell-link" to={`/team/${t.personId}`}>{t.person}</Link>{t.clientId && t.client ? <> at <Link className="cell-link" to={`/clients/${t.clientId}`}>{t.client}</Link></> : ''} · from {t.by}{t.description ? ` · ${t.description}` : ''}</p>
                   </div>
                   <span className="row-meta">
                     {t.status === 'done' ? <Pill tone="good">Done {t.completedAt ? dayMonth(dayOf(t.completedAt)) : ''}</Pill>
@@ -295,22 +295,25 @@ function TasksView({ data, at, error, reload }: { data: Awaited<ReturnType<typeo
           </ul>
         </Arrive>
       )}
-      <TaskDrawer open={adding} people={data.people} onClose={close} onDone={m => { close(); setNotice(m); invalidate('team:tasks'); }} />
+      <TaskDrawer open={adding} people={data.people} clients={data.clients} onClose={close} onDone={m => { close(); setNotice(m); invalidate('team:tasks'); }} />
       {notice && <Notice onDone={() => setNotice('')}>{notice}</Notice>}
     </div>
   );
 }
 
-function TaskDrawer({ open, people, onClose, onDone }: { open: boolean; people: { id: string; name: string; hq: string }[]; onClose: () => void; onDone: (m: string) => void }) {
+function TaskDrawer({ open, people, clients, onClose, onDone }: { open: boolean; people: { id: string; name: string; hq: string }[]; clients: TaskClient[]; onClose: () => void; onDone: (m: string) => void }) {
   const today = IST_TODAY();
   const [who, setWho] = useState('');
   const [title, setTitle] = useState('');
   const [details, setDetails] = useState('');
   const [due, setDue] = useState(shiftDay(today, 3));
+  const [client, setClient] = useState('');
   const [busy, setBusy] = useState(false);
   const [problem, setProblem] = useState('');
   const [attempt, setAttempt] = useState(0);
-  useEffect(() => { if (open) { setWho(''); setTitle(''); setDetails(''); setDue(shiftDay(today, 3)); setProblem(''); setAttempt(0); } }, [open, today]);
+  useEffect(() => { if (open) { setWho(''); setTitle(''); setDetails(''); setDue(shiftDay(today, 3)); setClient(''); setProblem(''); setAttempt(0); } }, [open, today]);
+  // The clients this person calls on: the work a task sends them to.
+  const theirs = clients.filter(c => c.ownerId === who);
   const errors = { who: !who ? 'Choose who does it.' : undefined, title: title.trim().length < 3 ? 'Say what has to be done.' : undefined, due: due && due < today ? 'The date cannot be in the past.' : undefined };
   const formRef = useFocusFirstError(errors, attempt);
   const save = async () => {
@@ -319,7 +322,7 @@ function TaskDrawer({ open, people, onClose, onDone }: { open: boolean; people: 
     setBusy(true);
     setProblem('');
     try {
-      await assignTask(who, title.trim(), details.trim(), due || null);
+      await assignTask(who, title.trim(), details.trim(), due || null, client || null);
       onDone(`The task is on ${people.find(p => p.id === who)?.name ?? 'their'}'s phone.`);
     } catch (e) {
       setProblem(e instanceof Error ? e.message : String(e));
@@ -331,8 +334,14 @@ function TaskDrawer({ open, people, onClose, onDone }: { open: boolean; people: 
     <Drawer open={open} onClose={onClose} title="Assign a task" sub="One piece of work, one person, a date. It reaches their phone at once."
       footer={<><button type="button" className="btn btn-secondary" onClick={onClose}>Cancel</button><button type="button" className="btn btn-primary" disabled={busy} onClick={() => void save()}>{busy ? 'Assigning…' : 'Assign the task'}</button></>}>
       <form ref={formRef} className="form" noValidate onSubmit={e => { e.preventDefault(); void save(); }}>
-        <Field label="Who" error={attempt ? errors.who : undefined}>{x => <select {...x} className="input" value={who} onChange={e => setWho(e.target.value)}><option value="">Choose a person</option>{people.map(p => <option key={p.id} value={p.id}>{p.name}{p.hq ? ` · ${p.hq}` : ''}</option>)}</select>}</Field>
+        <Field label="Who" error={attempt ? errors.who : undefined}>{x => <select {...x} className="input" value={who} onChange={e => { setWho(e.target.value); setClient(''); }}><option value="">Choose a person</option>{people.map(p => <option key={p.id} value={p.id}>{p.name}{p.hq ? ` · ${p.hq}` : ''}</option>)}</select>}</Field>
         <Field label="What" error={attempt ? errors.title : undefined}>{x => <input {...x} className="input" value={title} placeholder="Collect the CME attendance list from Care Hospital" onChange={e => setTitle(e.target.value)} />}</Field>
+        <Field label="At a client" optional help={!who ? 'Choose who does it first; their clients appear here.' : theirs.length ? 'They see the client on the task and open its record from it.' : 'Nobody is on their client list yet.'}>{x => (
+          <select {...x} className="input" value={client} disabled={!who || !theirs.length} onChange={e => setClient(e.target.value)}>
+            <option value="">No client</option>
+            {theirs.map(c => <option key={c.id} value={c.id}>{c.name}{c.place ? ` · ${c.place}` : ''}</option>)}
+          </select>
+        )}</Field>
         <Field label="Details" optional>{x => <textarea {...x} className="input textarea" rows={3} value={details} onChange={e => setDetails(e.target.value)} />}</Field>
         <Field label="Wanted by" optional error={attempt ? errors.due : undefined}>{x => <input {...x} type="date" className="input" min={today} value={due} onChange={e => setDue(e.target.value)} />}</Field>
         {problem && <p className="form-error" role="alert">That was not assigned. {problem}</p>}
