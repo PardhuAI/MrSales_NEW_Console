@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { useNavigate } from 'react-router-dom';
-import { ArrowElbowDownLeft, MagnifyingGlass, Plus, User, FileText, Stethoscope } from '@phosphor-icons/react';
+import { ArrowElbowDownLeft, MagnifyingGlass, Plus, Receipt, User, FileText, Stethoscope } from '@phosphor-icons/react';
 import { NEW_ACTIONS, SECTIONS, ACCOUNT_PAGES } from '../app/nav';
 import { useCan } from '../app/access';
-import { reps } from '../demo/world';
+import { useResource } from '../data/resource';
+import { loadSearchIndex } from '../live/search';
 
 /**
  * One box that finds anything: a page, an action, a person or a client, in the
@@ -14,7 +15,7 @@ import { reps } from '../demo/world';
 
 type Hit = {
   id: string;
-  group: 'Pages' | 'Create' | 'People' | 'Clients';
+  group: 'Pages' | 'Create' | 'People' | 'Clients' | 'Orders';
   label: string;
   sub?: string;
   to: string;
@@ -38,8 +39,6 @@ function score(q: string, label: string, extra: string[] = []): number {
   return 20;
 }
 
-const demoClients = [...new Set(reps.flatMap(r => r.calls.map(c => c.client)))];
-
 const SUGGESTED = ['/approvals', '/field', '/team', '/reports/downloads', '/settings/rules'];
 
 export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) {
@@ -48,6 +47,8 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
   const nav = useNavigate();
   const allowed = useCan();
   const list = useRef<HTMLDivElement>(null);
+  // People, clients and orders are read the first time search opens, then kept.
+  const index = useResource(open ? 'search:index' : null, loadSearchIndex, 5 * 60_000);
 
   // Every search starts empty, however the last one was closed.
   const change = (o: boolean) => {
@@ -83,20 +84,31 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
       const s = score(query, a.label, a.keywords);
       if (s) out.push({ id: a.path, group: 'Create', label: a.label, to: a.path, score: s });
     }
-    for (const r of reps) {
-      const s = score(query, r.name, [r.hq]);
-      if (s) out.push({ id: r.id, group: 'People', label: r.name, sub: r.hq, to: '/team', score: s });
+    const ix = index.data;
+    if (ix && allowed('people')) {
+      for (const p of ix.people) {
+        const s = score(query, p.name, [p.code, p.hq]);
+        if (s) out.push({ id: p.id, group: 'People', label: p.name, sub: [p.code, p.hq, p.active ? '' : 'has left'].filter(Boolean).join(' · '), to: `/team/${p.id}`, score: s });
+      }
     }
-    for (const c of demoClients) {
-      const s = score(query, c);
-      if (s) out.push({ id: c, group: 'Clients', label: c, to: '/clients', score: s });
+    if (ix && allowed('clients')) {
+      for (const c of ix.clients) {
+        const s = score(query, c.name, [c.city]);
+        if (s) out.push({ id: c.id, group: 'Clients', label: c.name, sub: [c.type[0]?.toUpperCase() + c.type.slice(1), c.city].filter(Boolean).join(' · '), to: `/clients/${c.id}`, score: s });
+      }
     }
-    const order = { Pages: 0, Create: 1, People: 2, Clients: 3 };
+    if (ix && allowed('orders')) {
+      for (const o of ix.orders) {
+        const s = score(query, `Order ${o.number}`, [o.number, o.client]);
+        if (s && (query.length >= 3)) out.push({ id: o.id, group: 'Orders', label: `Order ${o.number}`, sub: o.client, to: `/sales/orders?open=${o.id}`, score: s - 10 });
+      }
+    }
+    const order = { Pages: 0, Create: 1, People: 2, Clients: 3, Orders: 4 };
     return out
       .sort((a, b) => b.score - a.score || order[a.group] - order[b.group])
       .slice(0, 12)
       .sort((a, b) => order[a.group] - order[b.group] || b.score - a.score);
-  }, [q, pages]);
+  }, [q, pages, index.data]);
 
   useEffect(() => setActive(0), [q]);
 
@@ -124,7 +136,7 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
   };
 
   const icon = (g: Hit['group']) =>
-    g === 'Create' ? <Plus size={16} /> : g === 'People' ? <User size={16} /> : g === 'Clients' ? <Stethoscope size={16} /> : <FileText size={16} />;
+    g === 'Create' ? <Plus size={16} /> : g === 'People' ? <User size={16} /> : g === 'Clients' ? <Stethoscope size={16} /> : g === 'Orders' ? <Receipt size={16} /> : <FileText size={16} />;
 
   let lastGroup = '';
 
@@ -152,7 +164,9 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
           </div>
           <div className="palette-results" id="palette-results" role="listbox" ref={list}>
             {!q && <p className="palette-hint">Try “DA”, “fake GPS”, “reset password” or a person’s name.</p>}
-            {q && hits.length === 0 && (
+            {q && index.status === 'loading' && <p className="palette-hint">Still reading people, clients and orders…</p>}
+            {q && index.status === 'error' && <p className="palette-hint">People and clients could not be read just now; pages and actions still work.</p>}
+            {q && hits.length === 0 && index.status !== 'loading' && (
               <p className="palette-empty">Nothing matches “{q}”. Try another word, such as “claims” or “visits”.</p>
             )}
             {hits.map((h, i) => {

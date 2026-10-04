@@ -295,3 +295,347 @@
     min-width: 9.5rem;
   }
 }
+
+/* ── the line under the tabs, and the filter row ─────────────────────── */
+.summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s-3) var(--s-6);
+  margin-bottom: var(--s-5);
+}
+
+.summary-text {
+  max-width: 80ch;
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: var(--lh-body);
+}
+
+.summary-text strong {
+  color: var(--ink);
+  font-weight: var(--w-semibold);
+}
+
+.summary-aside {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2) var(--s-3);
+  margin-bottom: var(--s-5);
+}
+
+.search-clear {
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  color: var(--muted);
+}
+
+.search-clear:hover {
+  background: var(--track);
+  color: var(--ink);
+}
+
+.field-search input::-webkit-search-cancel-button {
+  display: none;
+}
+
+.filter {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 var(--s-1) 0 var(--s-3);
+  border-radius: var(--r-control);
+  border: var(--hairline-w) solid var(--hairline);
+  background: var(--raised);
+  font-size: var(--t-sm);
+}
+
+.filter:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.filter-label {
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.filter-select {
+  max-width: 14rem;
+  height: 32px;
+  padding: 0 var(--s-1);
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-weight: var(--w-medium);
+  cursor: pointer;
+}
+
+.filter.on .filter-select {
+  color: var(--accent);
+}
+
+/* ── tables ──────────────────────────────────────────────────────────── */
+.table tbody tr.clickable {
+  cursor: pointer;
+  transition: background-color var(--d-micro) var(--ease);
+}
+
+.table tbody tr.clickable:hover {
+  background: color-mix(in srgb, var(--accent) 5%, transparent);
+}
+
+.table .row-action {
+  white-space: nowrap;
+  text-align: right;
+}
+
+.show-more {
+  margin-top: var(--s-4);
+}
+
+.list-empty {
+  padding: var(--s-10) 0;
+  text-align: center;
+}
+
+.list-empty .state-empty-text {
+  margin: 0 auto;
+}
+
+/* ── drawer: slides in from the edge over a fading scrim ─────────────── */
+.drawer-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  background: rgb(0 0 0 / 0.22);
+  animation: fade-in var(--d-state) var(--ease);
+}
+
+[data-theme='dark'] .drawer-scrim {
+  background: rgb(0 0 0 / 0.55);
+}
+
+.drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 81;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  width: min(520px, 100vw);
+  background: var(--raised);
+  color: var(--ink);
+  border-left: var(--hairline-w) solid var(--hairline);
+  box-shadow: var(--shadow-float);
+  font-family: var(--font);
+  animation: drawer-in var(--d-state) var(--ease);
+}
+
+.drawer.wide {
+  width: min(720px, 100vw);
+}
+
+@keyframes drawer-in {
+  from {
+    opacity: 0.6;
+    transform: translateX(24px);
+  }
+}
+
+.drawer-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--s-4);
+  padding: var(--s-6) var(--s-6) var(--s-4);
+  border-bottom: var(--hairline-w) solid var(--hairline);
+}
+
+.drawer-title {
+  font-size: var(--t-section);
+  font-weight: var(--w-semibold);
+  letter-spacing: var(--track-title);
+  line-height: var(--lh-snug);
+}
+
+.drawer-sub {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: var(--t-sm);
+}
+
+.drawer-body {
+  overflow-y: auto;
+  padding: var(--s-5) var(--s-6) var(--s-8);
+  overscroll-behavior: contain;
+}
+
+.drawer-foot {
+  display: flex;
+  flex-wrap: wrap-reverse;
+  justify-content: flex-end;
+  gap: var(--s-2);
+  padding: var(--s-4) var(--s-6);
+  border-top: var(--hairline-w) solid var(--hairline);
+  background: var(--raised);
+}
+
+/* Label/value pairs in a record. */
+.facts {
+  display: grid;
+  grid-template-columns: minmax(8rem, auto) minmax(0, 1fr);
+  gap: var(--s-2) var(--s-5);
+  font-size: var(--t-sm);
+}
+
+.facts dt {
+  color: var(--muted);
+}
+
+.facts dd {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.drawer-section {
+  margin-top: var(--s-6);
+}
+
+.drawer-section > h3 {
+  margin-bottom: var(--s-2);
+  padding-bottom: var(--s-2);
+  border-bottom: var(--hairline-w) solid var(--hairline);
+  font-size: var(--t-sm);
+  font-weight: var(--w-semibold);
+}
+
+/* ── forms: one column, label above, help and error under ────────────── */
+.form {
+  display: grid;
+  gap: var(--s-5);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: var(--s-4);
+}
+
+.form-field {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.form-label {
+  font-size: var(--t-sm);
+  font-weight: var(--w-medium);
+}
+
+.form-optional {
+  color: var(--faint);
+  font-weight: var(--w-regular);
+}
+
+.form-help {
+  color: var(--muted);
+  font-size: var(--t-xs);
+  line-height: var(--lh-body);
+}
+
+.input[aria-invalid='true'] {
+  border-color: var(--bad);
+}
+
+.textarea {
+  height: auto;
+  min-height: 84px;
+  padding: var(--s-2) var(--s-3);
+  line-height: var(--lh-body);
+  resize: vertical;
+}
+
+select.input {
+  padding-right: var(--s-2);
+}
+
+.dialog-body {
+  color: var(--muted);
+  font-size: var(--t-sm);
+  line-height: var(--lh-body);
+}
+
+.dialog-body strong {
+  color: var(--ink);
+}
+
+/* ── a notice for work finished off screen ───────────────────────────── */
+.notice {
+  position: fixed;
+  left: 50%;
+  bottom: calc(var(--s-6) + env(safe-area-inset-bottom, 0px));
+  z-index: 90;
+  max-width: min(560px, calc(100vw - 32px));
+  padding: var(--s-3) var(--s-5);
+  transform: translateX(-50%);
+  border-radius: var(--r-control);
+  background: var(--ink);
+  color: var(--ground);
+  font-size: var(--t-sm);
+  box-shadow: var(--shadow-float);
+  animation: fade-in var(--d-state) var(--ease);
+}
+
+.notice.critical {
+  background: var(--bad);
+  color: #fff;
+}
+
+.pill.accent {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+@media (max-width: 600px) {
+  .toolbar .field-search {
+    width: 100%;
+  }
+
+  .drawer-head,
+  .drawer-body,
+  .drawer-foot {
+    padding-left: var(--s-4);
+    padding-right: var(--s-4);
+  }
+
+  .drawer-foot .btn {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .facts {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2px;
+  }
+
+  .facts dd {
+    margin-bottom: var(--s-2);
+  }
+}
