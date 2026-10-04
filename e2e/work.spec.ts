@@ -157,3 +157,29 @@ test('the day strip picks a day by tap or arrow keys, and offers no future day',
   await expect(page).toHaveURL(/date=2026-10-01/);
   await expect(page.locator('.summary').first()).toContainText('Thursday, 1 October');
 });
+
+test('Pick a date opens our own month, moves by keyboard, picks, and closes with Escape', async ({ page }) => {
+  await as(page, 'owner', '/field?date=2026-10-01');
+  const open = page.getByRole('button', { name: 'Pick a date' });
+  await open.click();
+  const month = page.getByRole('dialog', { name: /Pick a date, October 2026/ });
+  await expect(month).toBeVisible();
+  await expect(month.getByRole('button', { name: /Friday, 2 October.*Gandhi Jayanti/ })).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(month).toHaveCount(0);
+  await expect(open).toBeFocused();
+  await open.click();
+  await page.keyboard.press('PageUp');
+  await expect(page.getByRole('dialog', { name: /September 2026/ })).toBeVisible();
+  await page.keyboard.press('Enter');
+  await expect(page).toHaveURL(/date=2026-09-01/);
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+});
+
+test('Leave shows who is away on a day, with the count on each day of the week', async ({ page }) => {
+  await as(page, 'owner', '/team/leave');
+  const strip = page.getByRole('radiogroup', { name: 'Who is away on' });
+  await expect(strip.getByRole('radio', { name: /30 September.*1 away/ })).toBeVisible();
+  await strip.getByRole('radio', { name: /30 September/ }).click();
+  await expect(page.locator('.away-list')).toContainText('Rahul Yadav');
+});

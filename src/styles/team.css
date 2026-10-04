@@ -407,3 +407,12 @@ button.org-toggle:hover {
   margin-bottom: var(--s-8);
 }
 
+
+.away-list,
+.away-empty {
+  margin-top: var(--s-4);
+}
+
+.away-list {
+  border-top: var(--hairline-w) solid var(--hairline);
+}

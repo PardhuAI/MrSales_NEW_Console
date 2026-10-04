@@ -8,6 +8,7 @@ import { IST_TODAY, ago, dayMonth, dayRange, dayOf, daysBetween, longDay, shiftD
 import { count } from '../../lib/format';
 import { Confirm, Drawer, Field, Filter, Notice, Pill, SearchBox, Summary, Toolbar, useFocusFirstError, useShowMore } from '../../components/kit';
 import { Segmented } from '../../components/Segmented';
+import { DayStrip, StripBlock } from '../../components/DayStrip';
 import { Empty, Freshness, LoadError, Loading } from '../../components/States';
 import { Arrive } from '../../components/motion';
 import { useCan } from '../../app/access';
@@ -159,6 +160,7 @@ function LeaveView({ list, at, error, reload }: { list: LeaveRow[]; at: Date | n
           {away.length ? `${count(away.length, 'person is', 'people are')} away in the next seven days.` : 'Nobody is away in the next seven days.'}
         </>}
       </Summary>
+      <WhoIsAway list={list} />
       <Toolbar>
         <SearchBox value={q} onChange={setQ} placeholder="Find a person" label="Find a person" />
         <Segmented label="Status" value={status} onChange={setStatus} options={[{ value: 'all', label: 'All', count: list.length }, { value: 'pending', label: 'Waiting', count: by('pending') }, { value: 'approved', label: 'Approved', count: by('approved') }, { value: 'rejected', label: 'Not approved', count: by('rejected') }]} />
@@ -197,6 +199,42 @@ function LeaveView({ list, at, error, reload }: { list: LeaveRow[]; at: Date | n
       </Confirm>
       {notice && <Notice onDone={() => setNotice('')}>{notice}</Notice>}
     </div>
+  );
+}
+
+/**
+ * Who is away on a day: the week as a strip, with how many are on leave each
+ * day, and the people for the day chosen. Approved leave counts as away;
+ * leave still waiting is named as waiting.
+ */
+function WhoIsAway({ list }: { list: LeaveRow[] }) {
+  const today = IST_TODAY();
+  const [day, setDay] = useState(today);
+  const live = list.filter(l => l.status === 'approved' || l.status === 'pending');
+  const on = (k: string) => live.filter(l => l.from <= k && l.to >= k);
+  const note = (k: string) => {
+    const a = on(k).filter(l => l.status === 'approved').length;
+    const w = on(k).length - a;
+    return a ? `${a} away` : w ? `${w} asked` : null;
+  };
+  const here = on(day).sort((a, b) => a.status.localeCompare(b.status) || a.person.localeCompare(b.person));
+  return (
+    <StripBlock title="Who is away" meta="approved leave, and requests still waiting">
+      <DayStrip value={day} onChange={setDay} max={shiftDay(today, 120)} min={shiftDay(today, -365)} note={note} label="Who is away on" />
+      {here.length === 0 ? <p className="block-empty away-empty">Nobody is on leave or has asked for {day === today ? 'today' : longDay(day)}.</p> : (
+        <ul className="rows away-list">
+          {here.map(l => (
+            <li key={l.id} className="row">
+              <div className="row-main">
+                <p className="row-title"><Link className="cell-link" to={`/team/${l.personId}`}>{l.person}</Link></p>
+                <p className="row-sub">{leaveLabel(l.type)}, {dayRange(l.from, l.to)}</p>
+              </div>
+              <span className="row-meta">{l.status === 'approved' ? 'Away' : <Pill tone="accent">Waiting for a decision</Pill>}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </StripBlock>
   );
 }
 

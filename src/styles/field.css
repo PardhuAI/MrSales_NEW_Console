@@ -84,8 +84,10 @@
 
 .pday-line {
   max-width: 70ch;
+  margin-top: var(--s-3);
+  color: var(--muted);
   font-size: 1.375rem;
-  font-weight: var(--w-semibold);
+  font-weight: var(--w-regular);
   letter-spacing: var(--track-title);
   line-height: var(--lh-snug);
   text-wrap: balance;
@@ -573,16 +575,6 @@
   display: inline-flex;
 }
 
-/* The browser's own calendar, opened from "Pick a date"; never shown as a box. */
-.daystrip-input {
-  position: absolute;
-  inset: auto 0 0 auto;
-  width: 1px;
-  height: 1px;
-  opacity: 0;
-  pointer-events: none;
-}
-
 .daystrip-days {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
@@ -651,4 +643,132 @@
 
 .daystrip-day:disabled .daystrip-n {
   font-weight: var(--w-regular);
+}
+
+.daystrip-note {
+  min-height: 1.1em;
+  color: var(--muted);
+  font-size: var(--t-xs);
+  line-height: 1.1;
+}
+
+.daystrip-day.on .daystrip-note {
+  color: var(--on-accent);
+}
+
+/* ── the month, under "Pick a date": the strip's rules on a grid ───────── */
+.monthpick {
+  position: absolute;
+  top: calc(100% + var(--s-2));
+  right: 0;
+  z-index: 30;
+  display: grid;
+  gap: var(--s-2);
+  width: min(19rem, calc(100vw - 2 * var(--s-4)));
+  padding: var(--s-3);
+  border-radius: var(--r-panel);
+  border: var(--hairline-w) solid var(--hairline);
+  background: var(--panel-bg);
+  box-shadow: var(--shadow-float);
+  animation: monthpick-in var(--d-state) var(--ease);
+}
+
+@keyframes monthpick-in {
+  from { opacity: 0; transform: translateY(-4px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .monthpick { animation: none; }
+}
+
+.monthpick-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.monthpick-grid {
+  display: grid;
+  gap: 2px;
+}
+
+.monthpick-row {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 2px;
+}
+
+.monthpick-wd {
+  padding-block: var(--s-1);
+  color: var(--muted);
+  font-size: var(--t-xs);
+  font-weight: var(--w-medium);
+  text-align: center;
+}
+
+.monthpick-row > [role='gridcell'] {
+  display: grid;
+}
+
+.monthpick-day {
+  height: 36px;
+  border-radius: var(--r-control);
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--w-medium);
+  transition: background-color var(--d-micro) var(--ease), color var(--d-micro) var(--ease);
+}
+
+.monthpick-day:hover:not(:disabled):not(.on) {
+  background: var(--track);
+}
+
+.monthpick-day.outside {
+  color: var(--muted);
+  font-weight: var(--w-regular);
+}
+
+.monthpick-day.off:not(.on) {
+  color: var(--muted);
+  font-weight: var(--w-regular);
+}
+
+.monthpick-day.today:not(.on) {
+  box-shadow: inset 0 0 0 var(--hairline-w) var(--accent);
+  color: var(--accent);
+  font-weight: var(--w-semibold);
+}
+
+.monthpick-day.noted:not(.on) {
+  background: var(--track);
+}
+
+.monthpick-day.on {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+.monthpick-day:disabled {
+  color: var(--muted);
+  opacity: 0.5;
+  cursor: default;
+}
+
+.monthpick-foot {
+  display: flex;
+  justify-content: flex-start;
+  min-height: 1px;
+}
+
+.stripblock .daystrip {
+  margin-top: var(--s-2);
+}
+
+.pday-line strong {
+  color: var(--ink);
+  font-weight: var(--w-semibold);
+}
+
+.pday-head .daystrip {
+  margin-top: var(--s-4);
 }

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, ArrowsOut, CaretLeft, CaretRight } from '@phosphor-icons/react';
+import { ArrowLeft, ArrowsOut } from '@phosphor-icons/react';
+import { DayStrip } from '../../components/DayStrip';
 import { useResource } from '../../data/resource';
 import { loadDayRecord, photoUrls, VERDICT, workTypeLabel, type DayRecord, type Visit } from '../../live/field';
 import { IST_TODAY, dayMonth, longDay, timeOf } from '../../lib/days';
@@ -72,13 +73,9 @@ function DayView({ d, at, error, reload }: { d: DayRecord; at: Date | null; erro
             <h2 className="page-title-lg">{p.name}</h2>
             <p className="pday-who">{[p.code, p.designation, p.hq, p.managerId && `reports to ${p.manager}`].filter(Boolean).join(' · ')}</p>
           </div>
-          <div className="pday-nav" role="group" aria-label="Day">
-            <button type="button" className="icon-btn" aria-label="The previous day with a record" disabled={!d.prev} onClick={() => d.prev && nav(`/field/${p.id}/${d.prev}`)}><CaretLeft size={16} /></button>
-            <span className="pday-date">{longDay(d.date)}{d.date === today ? ', today' : ''}</span>
-            <button type="button" className="icon-btn" aria-label="The next day with a record" disabled={!d.next} onClick={() => d.next && nav(`/field/${p.id}/${d.next}`)}><CaretRight size={16} /></button>
-          </div>
         </div>
-        <p className="pday-line">{line}</p>
+        <DayStrip value={d.date} max={today} onChange={k => nav(`/field/${p.id}/${k}`)} label={`${p.name}'s day`} />
+        <p className="pday-line"><strong>{longDay(d.date)}{d.date === today ? ', today' : ''}.</strong> {line}</p>
         <p className="eyebrow">
           {allowed('people') && <Link className="link" to={`/team/${p.id}`}>Open their record</Link>}
           <Freshness at={at} error={error} reload={reload} label="Read this day again" />
