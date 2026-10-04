@@ -191,7 +191,7 @@ export const SECTIONS: Section[] = [
       },
       {
         path: '/team/managers', label: 'Managers', module: 'people',
-        about: 'Each manager\'s team at a glance: calls, sales against target, who leads and who trails.',
+        about: 'Each manager\'s team side by side: calls, sales against target, who leads and who trails.',
         keywords: ['manager-wise', 'teams', 'asm view'],
       },
       {

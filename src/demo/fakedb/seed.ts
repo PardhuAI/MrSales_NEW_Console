@@ -286,6 +286,8 @@ export function seed(now = new Date()): Tables {
   const traveller = by('Anil Kumar Goud'); // a journey that does not add up
   const noGps = by('Venkatesh Babu'); // location off all week
   const leaveDays = new Set([shift(today, -6), shift(today, -5), shift(today, -4)].filter(working));
+  const sick = by('Divya Sree'); // approved sick leave a month ago
+  const sickDays = new Set([shift(today, -30), shift(today, -29)]);
   const ownClients = new Map(reps.map(r => [r.id, clients.filter(c => c.owner_employee_id === r.id || (c.owner_employee_id == null && c.area_id === areaId.get(r.hq as string)))]));
   // The last day the field worked: today once it has started, else the working day before.
   let lastWork = today;
@@ -296,7 +298,7 @@ export function seed(now = new Date()): Tables {
     const isToday = k === today;
     const daysAgo = Math.round((Date.parse(today) - Date.parse(k)) / 86_400_000);
     for (const rep of reps) {
-      if (rep === onLeave && leaveDays.has(k)) continue;
+      if ((rep === onLeave && leaveDays.has(k)) || (rep === sick && sickDays.has(k))) continue;
       const mine = ownClients.get(rep.id)!;
       const aid = areaId.get(rep.hq as string)!;
       const meeting = !isToday && chance(0.03);
@@ -413,7 +415,7 @@ export function seed(now = new Date()): Tables {
   };
   const ld = [...leaveDays].sort();
   if (ld.length) leave(onLeave, 'casual', ld[0], ld[ld.length - 1], 'approved', 'Sister\'s wedding in Karimnagar.', shift(ld[0], -10));
-  leave(by('Divya Sree'), 'sick', shift(today, -30), shift(today, -29), 'approved', 'Fever.', shift(today, -31));
+  leave(sick, 'sick', shift(today, -30), shift(today, -29), 'approved', 'Fever.', shift(today, -31));
   leave(by('Kiran Teja'), 'casual', shift(today, 9), shift(today, 10), 'pending', 'Family function in Guntur.', shift(today, -2));
   leave(by('Harika Naidu'), 'earned', shift(today, 16), shift(today, 20), 'pending', 'Annual leave, travelling home to Nellore.', shift(today, -4));
   leave(by('Meghana Rao'), 'casual', shift(today, -60), shift(today, -60), 'rejected', 'Personal work.', shift(today, -61));

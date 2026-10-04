@@ -1,0 +1,408 @@
+/* Team: people, a person's record, adding a person, managers, the org chart,
+   attendance, leave and tasks. */
+
+/* ── rows with a main column and actions on the right ────────────────── */
+.row-main {
+  min-width: 0;
+}
+
+.row-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-3);
+  white-space: nowrap;
+}
+
+.strong-link {
+  font-weight: var(--w-semibold);
+}
+
+.danger-link {
+  color: var(--bad);
+}
+
+.danger-link:hover {
+  color: var(--bad);
+  text-decoration: underline;
+}
+
+/* ── a person's record ───────────────────────────────────────────────── */
+.ident {
+  max-width: 44rem;
+  margin-top: var(--s-5);
+}
+
+.record-moves {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2) var(--s-5);
+  margin-top: var(--s-4);
+}
+
+.rec-tabs {
+  display: flex;
+  gap: var(--s-6);
+  margin-top: var(--s-2);
+  border-bottom: var(--hairline-w) solid var(--hairline);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.rec-tab {
+  flex: none;
+  padding: var(--s-3) 0;
+  margin-bottom: calc(var(--hairline-w) * -1);
+  border-bottom: 2px solid transparent;
+  color: var(--muted);
+  font-size: var(--t-sm);
+  font-weight: var(--w-medium);
+  white-space: nowrap;
+  transition: color var(--d-micro) var(--ease);
+}
+
+.rec-tab:hover {
+  color: var(--ink);
+}
+
+.rec-tab.on {
+  border-bottom-color: var(--accent);
+  color: var(--ink);
+}
+
+.rec-body {
+  display: grid;
+  gap: var(--s-6);
+  padding-top: var(--s-6);
+}
+
+.rec-body.record-grid {
+  display: grid;
+}
+
+.rec-line {
+  max-width: 68ch;
+  font-size: var(--t-section);
+  line-height: var(--lh-snug);
+  letter-spacing: var(--track-title);
+}
+
+/* Figures that belong together sit on one line of type, grouped by meaning. */
+.fig-groups {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--s-8) var(--s-10);
+}
+
+.fig-group {
+  display: grid;
+  gap: var(--s-3);
+  align-content: start;
+  padding-top: var(--s-3);
+  border-top: var(--hairline-w) solid var(--hairline);
+}
+
+.fig-title {
+  color: var(--muted);
+  font-size: var(--t-sm);
+  font-weight: var(--w-semibold);
+}
+
+.figs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-3) var(--s-8);
+}
+
+.figs > div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.figs dt {
+  color: var(--muted);
+  font-size: var(--t-xs);
+}
+
+.figs dd {
+  font-size: var(--t-section);
+  font-weight: var(--w-semibold);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--track-figure);
+}
+
+.fig-note {
+  color: var(--muted);
+  font-size: var(--t-sm);
+  line-height: var(--lh-body);
+}
+
+.wide-figs {
+  gap: var(--s-4) var(--s-12);
+  margin-top: var(--s-6);
+  padding-block: var(--s-4);
+  border-block: var(--hairline-w) solid var(--hairline);
+}
+
+.wide-figs dd {
+  font-size: var(--t-figure);
+}
+
+.sub-block {
+  margin-top: var(--s-6);
+}
+
+.consequences {
+  display: grid;
+  gap: var(--s-2);
+  padding-left: var(--s-5);
+  list-style: disc;
+  font-size: var(--t-sm);
+  line-height: var(--lh-body);
+}
+
+/* ── adding a person ─────────────────────────────────────────────────── */
+.add-person,
+.joined {
+  display: grid;
+  gap: var(--s-4);
+  max-width: 46rem;
+}
+
+.add-lede,
+.joined-text {
+  max-width: 62ch;
+  color: var(--muted);
+  line-height: var(--lh-body);
+}
+
+.add-form {
+  gap: var(--s-8);
+  margin-top: var(--s-4);
+}
+
+.add-group {
+  display: grid;
+  gap: var(--s-4);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.add-group legend {
+  margin-bottom: var(--s-4);
+  padding: 0 0 var(--s-2);
+  width: 100%;
+  border-bottom: var(--hairline-w) solid var(--hairline);
+}
+
+.add-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--s-2);
+}
+
+/* ── the org chart ───────────────────────────────────────────────────── */
+.org-list {
+  display: grid;
+}
+
+.org-list .org-list {
+  margin-left: 11px;
+  padding-left: var(--s-5);
+  border-left: var(--hairline-w) solid var(--hairline);
+}
+
+.org-row {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--s-2);
+  padding: var(--s-2) 0;
+}
+
+.org-toggle {
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--r-control);
+  color: var(--muted);
+  transition: background-color var(--d-micro) var(--ease), color var(--d-micro) var(--ease);
+}
+
+button.org-toggle:hover {
+  background: var(--track);
+  color: var(--ink);
+}
+
+.org-who {
+  display: grid;
+  min-width: 0;
+}
+
+.org-move {
+  opacity: 0.85;
+}
+
+.org-alone .block-head {
+  align-items: center;
+}
+
+/* ── attendance ──────────────────────────────────────────────────────── */
+.att-key {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2) var(--s-5);
+  margin-block: var(--s-2) var(--s-3);
+  color: var(--muted);
+  font-size: var(--t-xs);
+}
+
+.att-key span {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+}
+
+.att-wrap {
+  max-height: 72vh;
+}
+
+.att-grid {
+  width: max-content;
+  font-variant-numeric: tabular-nums;
+}
+
+.att-grid .att-day,
+.att-grid .att-td {
+  width: 28px;
+}
+
+.att-grid td.num {
+  padding-left: var(--s-5);
+}
+
+.att-grid th:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  min-width: 13rem;
+  padding-right: var(--s-4);
+  background: var(--ground);
+}
+
+.att-grid thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--ground);
+}
+
+.att-grid thead th:first-child {
+  z-index: 3;
+}
+
+.att-day {
+  padding-inline: 0 !important;
+  text-align: center;
+  font-size: var(--t-xs);
+  line-height: 1.2;
+}
+
+.att-day span {
+  display: block;
+}
+
+.att-wd {
+  color: var(--faint);
+  font-weight: var(--w-regular);
+}
+
+.att-day.sun {
+  color: var(--faint);
+}
+
+.att-td {
+  padding: var(--s-1) 1px !important;
+  text-align: center;
+}
+
+.att-cell {
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  color: var(--muted);
+  font-size: var(--t-xs);
+  font-weight: var(--w-semibold);
+}
+
+/* Present is the expected state and stays quiet; leave and absence stand out
+   only through their letter and a soft ground beside the key. */
+.att-cell.s-P { color: var(--good); }
+.att-cell.s-L { background: var(--accent-soft); color: var(--accent); }
+.att-cell.s-A { background: var(--warn-soft); color: var(--warn); }
+.att-cell.s-W,
+.att-cell.s-H { background: var(--track); color: var(--faint); }
+
+/* ── leave and tasks ─────────────────────────────────────────────────── */
+.leave-rules {
+  margin-top: var(--s-10);
+}
+
+.leave-rules .tag-list li {
+  padding-inline: var(--s-3);
+}
+
+.leave-rules .block-note {
+  max-width: 68ch;
+}
+
+.task-list {
+  border-top: var(--hairline-w) solid var(--hairline);
+}
+
+@media (max-width: 900px) {
+  .fig-groups {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .org-list .org-list {
+    margin-left: 6px;
+    padding-left: var(--s-3);
+  }
+
+  .add-actions {
+    flex-direction: column-reverse;
+  }
+
+  .add-actions .btn {
+    width: 100%;
+  }
+
+  .row:has(.row-actions) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .att-grid th:first-child {
+    min-width: 8.5rem;
+  }
+}
+
+.att-grid tbody th,
+.att-grid tbody td {
+  padding-block: var(--s-2);
+}
+
+.leave-type {
+  white-space: nowrap;
+}
+
+.org-alone {
+  margin-bottom: var(--s-8);
+}

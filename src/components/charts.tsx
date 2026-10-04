@@ -59,13 +59,13 @@ export function MonthBars({
       </ol>
       <p className="mbars-key" aria-hidden="true">
         <span><i className="ka" />{partA}</span>
-        <span><i className="kb" />{partB}</span>
+        {partB && <span><i className="kb" />{partB}</span>}
         <span><i className="kt" />Target</span>
       </p>
       <table className="visually-hidden">
         <caption>{caption}</caption>
-        <thead><tr><th scope="col">Month</th><th scope="col">{partA}</th><th scope="col">{partB}</th><th scope="col">Target</th></tr></thead>
-        <tbody>{data.map(d => <tr key={d.key}><th scope="row">{d.label}</th><td>{format(d.a)}</td><td>{format(d.b)}</td><td>{d.target ? format(d.target) : 'none'}</td></tr>)}</tbody>
+        <thead><tr><th scope="col">Month</th><th scope="col">{partA}</th>{partB && <th scope="col">{partB}</th>}<th scope="col">Target</th></tr></thead>
+        <tbody>{data.map(d => <tr key={d.key}><th scope="row">{d.label}</th><td>{format(d.a)}</td>{partB && <td>{format(d.b)}</td>}<td>{d.target ? format(d.target) : 'none'}</td></tr>)}</tbody>
       </table>
     </figure>
   );

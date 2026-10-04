@@ -54,6 +54,10 @@ export const shortDay = (k: string) => dateOfDay(k).toLocaleDateString('en-IN', 
 /** "3 October" */
 export const dayMonth = (k: string) => dateOfDay(k).toLocaleDateString('en-IN', { day: 'numeric', month: 'long' });
 /** "October 2026" */
+/** A run of days in words: "4 September", "28 to 30 September", "30 September to 2 October". */
+export const dayRange = (a: string, b: string) =>
+  a === b ? dayMonth(a) : a.slice(0, 7) === b.slice(0, 7) ? `${Number(a.slice(8))} to ${dayMonth(b)}` : `${dayMonth(a)} to ${dayMonth(b)}`;
+
 export const monthYear = (k: string) => dateOfDay(`${k.slice(0, 7)}-01`).toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
 
 /** "today", "yesterday", "3 days ago", "2 hours ago" for an instant. */

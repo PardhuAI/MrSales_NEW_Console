@@ -209,3 +209,105 @@ export function salesRpcs(audit: (db: FakeDb, action: string, entity: string, la
     },
   };
 }
+
+export function teamRpcs(audit: (db: FakeDb, action: string, entity: string, label: string, before?: unknown, after?: unknown, reason?: unknown) => void): Record<string, Rpc> {
+  const today = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata' }).format(new Date());
+  const person = (db: FakeDb, id: unknown) => find(db, 'employees', id) ?? fail('no such employee in this organisation');
+  const reason5 = (r: unknown) => (String(r ?? '').trim().length >= 5 ? String(r).trim() : fail('a reason is required; it is what the next person reads'));
+  const create: Rpc = (a, db) => {
+    const email = String(a.p_email ?? '').trim().toLowerCase();
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) fail('an employee needs a real email address; password resets are sent there');
+    const d = find(db, 'designations', a.p_designation_id) ?? fail('pick one of your own roles for this person; set them up under Roles first');
+    if (!d.is_active) fail(`${d.name} is retired, so nobody new is given it`);
+    if (!find(db, 'territories', a.p_territory_id)) fail('territory not in this organisation');
+    const code = String(a.p_code ?? '').trim().toUpperCase() || fail('an employee needs a code');
+    if (db.rows('employees').some(e => e.code === code)) fail(`${code} is already someone's employee code`);
+    if (a.p_manager_id) {
+      const m = find(db, 'employees', a.p_manager_id);
+      if (!m || m.status !== 'active') fail('the manager must be an active employee of this organisation');
+    }
+    const id = crypto.randomUUID();
+    db.mutable('employees').push({
+      id, org_id: ORG, code, name: String(a.p_name).trim(), mobile_role: d.app_view === 'manager' ? 'ASM' : 'MR', designation: d.name, designation_id: d.id, designation_short: d.short_name,
+      department: String(a.p_department || 'Sales and marketing'), manager_id: a.p_manager_id ?? null, territory_id: a.p_territory_id, hq: String(a.p_hq).trim(), joined_at: a.p_joined_at,
+      mobile: trimOrNull(a.p_mobile), email, blood_group: null, status: 'active', last_seen_at: null, lat: null, lng: null, created_at: now(), updated_at: now(), last_device_id: null,
+    });
+    if (a.p_manager_id) db.mutable('manager_assignments').push({ id: crypto.randomUUID(), org_id: ORG, employee_id: id, manager_id: a.p_manager_id, period: `[${a.p_joined_at},)`, changed_by: null, created_at: now() });
+    audit(db, 'added a person', 'Employee', `${code} · ${a.p_name}`);
+    return id;
+  };
+  return {
+    create_employee: create,
+    invite_field_employee: create,
+    update_employee: (a, db) => {
+      const e = person(db, a.p_id);
+      const d = find(db, 'designations', a.p_designation_id) ?? fail('pick one of your own roles');
+      Object.assign(e, { name: String(a.p_name).trim(), designation_id: d.id, designation: d.name, designation_short: d.short_name, mobile_role: d.app_view === 'manager' ? 'ASM' : 'MR', department: a.p_department, territory_id: a.p_territory_id, hq: String(a.p_hq).trim(), mobile: trimOrNull(a.p_mobile), email: trimOrNull(a.p_email) ?? e.email, updated_at: now() });
+      audit(db, 'corrected a person', 'Employee', `${e.code} · ${e.name}`);
+      return null;
+    },
+    reassign_manager: (a, db) => {
+      if (!String(a.p_reason ?? '').trim()) fail('a reason is required; this changes who approves somebody\'s money');
+      if (String(a.p_effective_from) < today()) fail('the effective date cannot be in the past');
+      const e = person(db, a.p_employee_id);
+      if (!['MR', 'ASM'].includes(String(e.mobile_role))) fail(`${e.name} is not on the phone, so they are not on this reporting line`);
+      let m: Row | undefined;
+      if (a.p_new_manager_id) {
+        if (a.p_new_manager_id === e.id) fail('nobody reports to themselves');
+        m = person(db, a.p_new_manager_id);
+        if (m.mobile_role !== 'ASM') fail(`${m.name} is a ${m.designation}, and that role does not get the manager app; they cannot approve anybody's work`);
+        if (m.status !== 'active') fail(`${m.name} is ${m.status}, and work cannot be assigned to somebody who cannot sign in`);
+        for (let walk: unknown = m.manager_id, i = 0; walk && i < 12; i++) {
+          if (walk === e.id) fail(`${m.name} already answers to ${e.name} further up the line, so ${m.name} cannot be their manager`);
+          walk = find(db, 'employees', walk)?.manager_id;
+        }
+      }
+      const before = e.manager_id ? find(db, 'employees', e.manager_id)?.name : 'nobody';
+      if (String(a.p_effective_from) <= today()) e.manager_id = a.p_new_manager_id ?? null;
+      db.mutable('manager_assignments').push({ id: crypto.randomUUID(), org_id: ORG, employee_id: e.id, manager_id: a.p_new_manager_id, period: `[${a.p_effective_from},${a.p_until ?? ''})`, changed_by: null, created_at: now() });
+      audit(db, 'changed manager', 'Employee', String(e.name), before, m?.name ?? 'nobody', a.p_reason);
+      return null;
+    },
+    hand_over_clients: (a, db) => {
+      const r = reason5(a.p_reason);
+      const f = person(db, a.p_from);
+      const t = find(db, 'employees', a.p_to) ?? fail('the person taking over is not in this organisation');
+      if (f.id === t.id) fail('pick somebody else to take the clients');
+      if (t.status !== 'active') fail(`${t.name} is not active, so they cannot take clients`);
+      const moved = db.rows('clients').filter(c => c.owner_employee_id === f.id);
+      for (const c of moved) c.owner_employee_id = t.id;
+      audit(db, 'handed clients over', 'Employee', `${f.code} · ${f.name}`, f.code, `${t.code} (${moved.length} clients)`, r);
+      return moved.length === 0 ? `${f.name} held no clients, so nothing moved.` : `${moved.length === 1 ? '1 client' : `${moved.length} clients`} moved from ${f.name} to ${t.name}.`;
+    },
+    set_employee_status: (a, db) => {
+      const r = reason5(a.p_reason);
+      const e = person(db, a.p_id);
+      if (e.status === a.p_status) fail(`${e.name} is already ${a.p_status}`);
+      if (a.p_status !== 'active' && db.rows('employees').some(x => x.status === 'active' && x.manager_id === e.id)) fail(`${e.name} still has people reporting to them; reassign the team first`);
+      audit(db, a.p_status === 'active' ? 'reopened an employee record' : 'closed an employee record', 'Employee', `${e.code} · ${e.name}`, e.status, a.p_status, r);
+      e.status = a.p_status;
+      for (const u of db.rows('app_users').filter(x => x.employee_id === e.id)) u.status = a.p_status === 'active' ? 'active' : 'suspended';
+      return a.p_status === 'active' ? `${e.name} is active again, and their login works.` : `${e.name} is ${a.p_status}. Their login is suspended and their seat is free.`;
+    },
+    add_employee_document: (a, db) => {
+      person(db, a.p_employee_id);
+      if (!String(a.p_title ?? '').trim()) fail('a document needs a title');
+      const id = crypto.randomUUID();
+      db.mutable('documents').push({ id, org_id: ORG, employee_id: a.p_employee_id, title: String(a.p_title).trim(), category: a.p_category || 'general', storage_path: a.p_storage_path, released_at: now(), released_by: null, expires_at: a.p_expires_at ?? null });
+      return id;
+    },
+    remove_employee_document: (a, db) => {
+      const d = find(db, 'documents', a.p_id) ?? fail('no document you may remove has that id');
+      db.replace('documents', db.rows('documents').filter(x => x !== d));
+      return d.storage_path;
+    },
+    assign_task: (a, db) => {
+      const p = person(db, a.p_assignee_id);
+      if (!String(a.p_title ?? '').trim()) fail('a task needs a title');
+      const id = a.p_id ?? crypto.randomUUID();
+      db.mutable('tasks').push({ id, org_id: ORG, assignee_id: p.id, assigner_id: null, title: String(a.p_title).trim(), description: trimOrNull(a.p_description), due_date: a.p_due_date ?? null, status: 'open', completed_at: null, created_at: now() });
+      db.mutable('notifications').push({ id: crypto.randomUUID(), org_id: ORG, employee_id: p.id, title: 'New task assigned', body: String(a.p_title), kind: 'task', is_read: false, created_at: now(), entity: 'task', entity_id: id, deep_link: '/tasks', group_count: 1 });
+      return id;
+    },
+  };
+}

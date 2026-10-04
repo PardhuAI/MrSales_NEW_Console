@@ -261,6 +261,23 @@ behaviour can be checked against it. The "Data" column names the function in
 
 ## 4. People
 
+> **2026-10-04: the Team section is built in the new design** (`src/pages/team/`,
+> `src/live/team.ts`): People (search, role, manager, territory and joined filters, who has no
+> login), a person's record in five tabs (the month, field work, sales and orders, HR and pay,
+> changes) with edit, change manager, hand over clients, mark as left and reopen, documents
+> (upload with category and expiry, open, remove), Add a person (who they are, where they work,
+> who they report to; a draft is kept in the browser), Managers and a manager's page, the Org
+> chart (tree, move one person, move a whole team after a read-back), Attendance (month grid,
+> each day's reason on hover and to screen readers), Leave (decide, with a reason required to
+> decline) and Tasks (assign, open, past their date, done).
+> **Not carried over, for the owner to decide:** the old onboarding's Leave, Salary and Expenses
+> steps and its leave policies have no table in the shared database (checked: only
+> `leave_requests` exists), so nothing was being saved; the new form says so instead of
+> pretending. Dotted-line reporting, alternate mobile, address, areas and home cluster are not
+> in `create_employee` either. Checked on the demo company at 1440, 1280 (dark), 1024 and 390,
+> and the flows (decide leave, assign a task, add a person, change manager, mark as left, move
+> a team) were run in the browser. Not yet run against the live testbed.
+
 ### Employees (`/people`) · Old: `pages/People.tsx` `People`
 - [ ] Employee list with search by name or ID
 - [ ] Filters: role, manager, joined, territory, band, level

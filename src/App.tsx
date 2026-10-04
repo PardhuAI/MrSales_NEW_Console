@@ -23,6 +23,12 @@ import { Rcpa } from './pages/sales/Rcpa';
 import { Products } from './pages/sales/Products';
 import { Stockists } from './pages/sales/Stockists';
 import { Stock } from './pages/sales/Stock';
+import { People } from './pages/team/People';
+import { AddPerson } from './pages/team/AddPerson';
+import { PersonRecordPage } from './pages/team/PersonRecord';
+import { ManagerPage, Managers } from './pages/team/Managers';
+import { OrgChart } from './pages/team/OrgChart';
+import { Attendance, Leave, Tasks } from './pages/team/PeopleOps';
 import { ThemeProvider } from './app/theme';
 import { SessionProvider, useSession } from './live/session';
 import { Blocked, ChoosePassword, Loading, SignIn } from './pages/SignIn';
@@ -50,6 +56,12 @@ const BUILT: Record<string, JSX.Element> = {
   '/sales/products': <Products />,
   '/sales/stockists': <Stockists />,
   '/sales/stock': <Stock />,
+  '/team': <People />,
+  '/team/managers': <Managers />,
+  '/team/org-chart': <OrgChart />,
+  '/team/attendance': <Attendance />,
+  '/team/leave': <Leave />,
+  '/team/tasks': <Tasks />,
 };
 
 /** Records and other pages reached from a list rather than the menu. */
@@ -60,6 +72,10 @@ const DETAIL: { path: string; module: string; element: JSX.Element }[] = [
   { path: '/sales/targets/new', module: 'targets', element: <Targets /> },
   { path: '/sales/products/new', module: 'products', element: <Products /> },
   { path: '/sales/stockists/new', module: 'stockists', element: <Stockists /> },
+  { path: '/team/new', module: 'onboarding', element: <AddPerson /> },
+  { path: '/team/tasks/new', module: 'tasks', element: <Tasks /> },
+  { path: '/team/managers/:id', module: 'people', element: <ManagerPage /> },
+  { path: '/team/:id', module: 'people', element: <PersonRecordPage /> },
 ];
 
 function TitleAndScroll() {

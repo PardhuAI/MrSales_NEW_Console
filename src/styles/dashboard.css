@@ -496,6 +496,7 @@
 
 /* Table */
 .table-wrap {
+  position: relative; /* keeps visually hidden labels inside the scroll box */
   overflow-x: auto;
 }
 
