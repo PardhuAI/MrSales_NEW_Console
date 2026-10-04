@@ -1,11 +1,12 @@
 import { useMemo, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { CaretLeft, CaretRight, Faders } from '@phosphor-icons/react';
+import { Faders } from '@phosphor-icons/react';
+import { DayStrip } from '../../components/DayStrip';
 import { useResource } from '../../data/resource';
 import { loadFieldDay, workTypeLabel, type FieldDayModel, type PersonDay } from '../../live/field';
-import { IST_TODAY, ago, longDay, shiftDay, timeOf } from '../../lib/days';
+import { IST_TODAY, ago, longDay, timeOf } from '../../lib/days';
 import { count } from '../../lib/format';
-import { DateInput, Filter, Pill, SearchBox, Summary, Toolbar, useShowMore } from '../../components/kit';
+import { Filter, Pill, SearchBox, Summary, Toolbar, useShowMore } from '../../components/kit';
 import { Empty, Freshness, LoadError, Loading } from '../../components/States';
 import { Arrive } from '../../components/motion';
 
@@ -47,12 +48,7 @@ export function FieldActivity() {
   return (
     <div className="page-body">
       <Toolbar>
-        <div className="day-step" role="group" aria-label="Day">
-          <button type="button" className="icon-btn" aria-label="The day before" onClick={() => setDate(shiftDay(date, -1))}><CaretLeft size={16} /></button>
-          <DateInput label="Day" value={date} max={today} onChange={setDate} />
-          <button type="button" className="icon-btn" aria-label="The day after" disabled={date >= today} onClick={() => setDate(shiftDay(date, 1))}><CaretRight size={16} /></button>
-        </div>
-        {date !== today && <button type="button" className="link" onClick={() => setDate(today)}>Back to today</button>}
+        <DayStrip value={date} max={today} onChange={setDate} />
         <span className="toolbar-end"><Freshness at={r.at} error={r.error} reload={() => void r.reload()} label="Read this day again" /></span>
       </Toolbar>
       {r.status === 'error' && !r.data ? <LoadError what="This day" error={r.error} retry={() => void r.reload()} />

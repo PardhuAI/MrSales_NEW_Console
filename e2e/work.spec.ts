@@ -145,3 +145,15 @@ test('approving one request takes it off the queue, and a rejection waits for a 
   await page.locator('.ap-row').first().getByRole('button', { name: 'Approve' }).click();
   await expect(waiting).not.toContainText(String(before));
 });
+
+test('the day strip picks a day by tap or arrow keys, and offers no future day', async ({ page }) => {
+  await as(page, 'owner', '/field?date=2026-10-01');
+  const days = page.getByRole('radiogroup', { name: 'Day' });
+  await expect(days.getByRole('radio', { checked: true })).toHaveAccessibleName(/Thursday, 1 October/);
+  await expect(days.getByRole('radio', { name: /2 October.*Gandhi Jayanti/ })).toBeVisible();
+  await days.getByRole('radio', { name: /Wednesday, 30 September/ }).click();
+  await expect(page).toHaveURL(/date=2026-09-30/);
+  await days.getByRole('radio', { checked: true }).press('ArrowRight');
+  await expect(page).toHaveURL(/date=2026-10-01/);
+  await expect(page.locator('.summary').first()).toContainText('Thursday, 1 October');
+});

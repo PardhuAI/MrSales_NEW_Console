@@ -1,12 +1,12 @@
 import { useMemo, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { CaretLeft, CaretRight } from '@phosphor-icons/react';
+import { DayStrip } from '../../components/DayStrip';
 import { invalidate, useResource } from '../../data/resource';
 import { decideTour, loadDayPlans, loadTourPlans, workTypeLabel, type DayPlansModel, type TourModel, type TourRow } from '../../live/field';
 import { approvalsStore } from '../../data/approvals';
-import { IST_TODAY, dayMonth, longDay, shiftDay, shortDay, timeOf, weekdayOf } from '../../lib/days';
+import { IST_TODAY, dayMonth, longDay, shortDay, timeOf, weekdayOf } from '../../lib/days';
 import { count } from '../../lib/format';
-import { Confirm, DateInput, Drawer, Filter, Pill, SearchBox, Summary, Toolbar, useShowMore } from '../../components/kit';
+import { Confirm, Drawer, Filter, Pill, SearchBox, Summary, Toolbar, useShowMore } from '../../components/kit';
 import { Segmented } from '../../components/Segmented';
 import { Empty, Freshness, LoadError, Loading } from '../../components/States';
 import { Arrive } from '../../components/motion';
@@ -28,12 +28,7 @@ export function DayPlans() {
   return (
     <div className="page-body">
       <Toolbar>
-        <div className="day-step" role="group" aria-label="Day">
-          <button type="button" className="icon-btn" aria-label="The day before" onClick={() => setDate(shiftDay(date, -1))}><CaretLeft size={16} /></button>
-          <DateInput label="Day" value={date} max={today} onChange={setDate} />
-          <button type="button" className="icon-btn" aria-label="The day after" disabled={date >= today} onClick={() => setDate(shiftDay(date, 1))}><CaretRight size={16} /></button>
-        </div>
-        {date !== today && <button type="button" className="link" onClick={() => setDate(today)}>Back to today</button>}
+        <DayStrip value={date} max={today} onChange={setDate} />
         <span className="toolbar-end"><Freshness at={r.at} error={r.error} reload={() => void r.reload()} label="Read the day plans again" /></span>
       </Toolbar>
       {r.status === 'error' && !r.data ? <LoadError what="The day plans" error={r.error} retry={() => void r.reload()} />

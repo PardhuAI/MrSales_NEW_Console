@@ -540,3 +540,115 @@
 .coverage-occasions {
   margin-top: var(--s-12);
 }
+
+/* ── the day strip: a week of days to tap ─────────────────────────────── */
+.daystrip {
+  display: grid;
+  gap: var(--s-2);
+  width: min(100%, 34rem);
+}
+
+.daystrip-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+}
+
+.daystrip-month {
+  font-weight: var(--w-semibold);
+  letter-spacing: var(--track-title);
+}
+
+.daystrip-moves {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1) var(--s-3);
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.daystrip-pick {
+  position: relative;
+  display: inline-flex;
+}
+
+/* The browser's own calendar, opened from "Pick a date"; never shown as a box. */
+.daystrip-input {
+  position: absolute;
+  inset: auto 0 0 auto;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.daystrip-days {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: var(--s-1);
+}
+
+.daystrip-day {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  padding: var(--s-2) 0;
+  border-radius: var(--r-control);
+  border: var(--hairline-w) solid var(--hairline);
+  background: var(--panel-bg);
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  transition: background-color var(--d-micro) var(--ease), color var(--d-micro) var(--ease), border-color var(--d-micro) var(--ease);
+}
+
+.daystrip-day:hover:not(:disabled):not(.on) {
+  border-color: var(--muted);
+}
+
+.daystrip-wd {
+  color: var(--muted);
+  font-size: var(--t-xs);
+  font-weight: var(--w-medium);
+}
+
+.daystrip-n {
+  font-size: var(--t-section);
+  font-weight: var(--w-semibold);
+  line-height: var(--lh-tight);
+}
+
+.daystrip-day.today:not(.on) .daystrip-wd {
+  color: var(--accent);
+  font-weight: var(--w-semibold);
+}
+
+.daystrip-day.off:not(.on) {
+  background: transparent;
+}
+
+.daystrip-day.off:not(.on) .daystrip-n {
+  color: var(--muted);
+  font-weight: var(--w-regular);
+}
+
+.daystrip-day.on {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+}
+
+.daystrip-day.on .daystrip-wd {
+  color: var(--on-accent);
+}
+
+.daystrip-day:disabled {
+  background: transparent;
+  border-style: dashed;
+  color: var(--muted);
+  cursor: default;
+}
+
+.daystrip-day:disabled .daystrip-n {
+  font-weight: var(--w-regular);
+}
