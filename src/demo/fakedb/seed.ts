@@ -212,7 +212,8 @@ export function seed(now = new Date()): Tables {
     const count = between(13, 16);
     for (let i = 0; i < count; i++) {
       const type = i < count - 5 ? 'doctor' : i < count - 2 ? 'chemist' : i < count - 1 ? 'hospital' : pick(['doctor', 'stockist', 'diagnostics']);
-      const name = type === 'doctor' ? docName() : type === 'chemist' ? `${pick(chemists)}, ${rep.hq}` : type === 'hospital' ? `${pick(hospitals)}, ${rep.hq}` : type === 'stockist' ? `${pick(['Sri Durga', 'Annapurna', 'Sai Ganesh'])} Pharma Distributors` : `${pick(['Vijaya', 'Lucid', 'Tenet'])} Diagnostics, ${rep.hq}`;
+      // Shops and hospitals are named once per area, so the only duplicate is the one placed on purpose.
+      const name = type === 'doctor' ? docName() : type === 'chemist' ? `${chemists[(i + reps.indexOf(rep) * 3) % chemists.length]}, ${rep.hq}` : type === 'hospital' ? `${hospitals[reps.indexOf(rep) % hospitals.length]}, ${rep.hq}` : type === 'stockist' ? `${pick(['Sri Durga', 'Annapurna', 'Sai Ganesh'])} Pharma Distributors, ${rep.hq}` : `${pick(['Vijaya', 'Lucid', 'Tenet'])} Diagnostics, ${rep.hq}`;
       const listed = chance(0.72);
       const cl = clusterOf.get(aid)!;
       const birthday = chance(0.12) ? shift(today, between(1, 32)) : null;
@@ -233,7 +234,9 @@ export function seed(now = new Date()): Tables {
   // Gaps the data quality page exists for.
   for (const c of clients.filter((_, i) => i % 29 === 7)) { c.lat = null; c.lng = null; }
   for (const c of clients.filter((_, i) => i % 41 === 11)) c.owner_employee_id = null;
-  clients.filter(c => c.type === 'doctor').slice(3, 5).forEach(c => { (c as Row).listing = 'unlisted'; (c as Row).is_active = false; (c as Row).category = 'inactive'; });
+  // Two retired doctors (on the list, no longer called on), and one old import that is both unlisted and inactive.
+  clients.filter(c => c.type === 'doctor').slice(3, 5).forEach(c => { (c as Row).listing = 'listed'; (c as Row).is_active = false; (c as Row).category = 'inactive'; });
+  Object.assign(clients.filter(c => c.type === 'doctor')[6], { listing: 'unlisted', is_active: false });
   const dup = clients.find(c => c.type === 'doctor')!;
   clients.push(add('clients', { ...(dup as Row), id: uid('cli'), name: (dup.name as string).replace('Dr. ', 'Dr '), created_at: at(shift(today, -9), 12), listing: 'unlisted', category: 'potential' }) as never);
   // New this month.

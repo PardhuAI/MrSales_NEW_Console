@@ -173,6 +173,16 @@ behaviour can be checked against it. The "Data" column names the function in
 - [ ] Area by week grid
 - [ ] Occasions worth a call (client birthdays and anniversaries in the next month)
 
+> **2026-10-04: the Clients section is built in the new design** (`src/pages/clients/`,
+> `src/live/clients.ts`): all clients with search and filters, add and edit (one form), listing
+> and retiring, specialties, sheet download and import (dry run first, the old console's rules
+> and file readers carried over unchanged), a client's record, data quality and complaints
+> (assign, resolve with a written resolution, close, reopen). Checked on the demo company at
+> 1440, 1280 and 390, light and dark; add, edit and retire run end to end on the demo.
+> **Fixed against the old console:** editing a client there sends an empty position to
+> `update_client`, which erases the registered location for office roles; the new console
+> sends the position on record back unchanged. Not yet run against the live testbed.
+
 ### Clients (`/clients`) · Old: `pages/Clients.tsx`
 - [ ] Client list with search by name, filter by type and listing
 - [ ] Add a client (doctor, hospital, chemist, stockist), with specialty, area, owner · Data: `createClient`

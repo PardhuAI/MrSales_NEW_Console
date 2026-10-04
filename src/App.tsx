@@ -12,6 +12,10 @@ import { FieldActivity } from './pages/field/Activity';
 import { PersonDay } from './pages/field/PersonDay';
 import { DayPlans, TourPlans } from './pages/field/Plans';
 import { Coverage } from './pages/field/Coverage';
+import { ClientList } from './pages/clients/ClientList';
+import { ClientRecordPage } from './pages/clients/ClientRecord';
+import { ClientQuality } from './pages/clients/Quality';
+import { Complaints } from './pages/clients/Complaints';
 import { ThemeProvider } from './app/theme';
 import { SessionProvider, useSession } from './live/session';
 import { Blocked, ChoosePassword, Loading, SignIn } from './pages/SignIn';
@@ -29,11 +33,16 @@ const BUILT: Record<string, JSX.Element> = {
   '/field/day-plans': <DayPlans />,
   '/field/tour-plans': <TourPlans />,
   '/field/coverage': <Coverage />,
+  '/clients': <ClientList />,
+  '/clients/quality': <ClientQuality />,
+  '/clients/complaints': <Complaints />,
 };
 
 /** Records and other pages reached from a list rather than the menu. */
 const DETAIL: { path: string; module: string; element: JSX.Element }[] = [
   { path: '/field/:employeeId/:date', module: 'field', element: <PersonDay /> },
+  { path: '/clients/new', module: 'clients', element: <ClientList /> },
+  { path: '/clients/:id', module: 'clients', element: <ClientRecordPage /> },
 ];
 
 function TitleAndScroll() {
