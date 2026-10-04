@@ -250,6 +250,169 @@ button.org-toggle:hover {
   align-items: center;
 }
 
+/* ── the org chart as a board: drag a card onto another manager ────── */
+.board-hint {
+  margin-block: 0 var(--s-3);
+}
+
+.board-stage {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+  margin-bottom: var(--s-3);
+  padding: var(--s-3) var(--s-4);
+  border-radius: var(--r-control);
+  background: var(--accent-soft);
+  font-size: var(--t-sm);
+}
+
+.board-stage.is-bad {
+  background: var(--bad-soft);
+}
+
+.board-stage p {
+  margin: 0;
+}
+
+.board-stage-actions {
+  display: flex;
+  gap: var(--s-2);
+}
+
+.board-scroll {
+  overflow-x: auto;
+  margin-inline: calc(var(--s-1) * -1);
+  padding: var(--s-1) var(--s-1) var(--s-4);
+}
+
+.board {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s-3);
+  width: max-content;
+}
+
+.board-col {
+  display: grid;
+  gap: var(--s-2);
+  width: 272px;
+  padding: var(--s-3);
+  border-radius: var(--r-panel);
+  background: var(--panel-bg);
+  border: var(--hairline-w) solid var(--hairline);
+  transition: border-color var(--d-micro) var(--ease), background-color var(--d-micro) var(--ease);
+}
+
+.board-col.is-nobody {
+  background: transparent;
+  border-style: dashed;
+}
+
+.board-col.is-over {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.board-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--s-2);
+  padding: var(--s-1) var(--s-1) var(--s-2);
+}
+
+.board-who {
+  display: grid;
+  min-width: 0;
+}
+
+.board-meta {
+  flex: none;
+}
+
+.board-count {
+  color: var(--muted);
+  font-size: var(--t-xs);
+}
+
+.board-body {
+  display: grid;
+  gap: var(--s-2);
+  min-height: 56px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.board-empty {
+  display: grid;
+  place-items: center;
+  min-height: 56px;
+  border: var(--hairline-w) dashed var(--hairline);
+  border-radius: var(--r-control);
+  color: var(--faint);
+  font-size: var(--t-xs);
+}
+
+.board-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: var(--s-2);
+  padding: var(--s-2) var(--s-3) var(--s-2) var(--s-2);
+  border-radius: var(--r-control);
+  background: var(--raised);
+  border: var(--hairline-w) solid var(--hairline);
+  font-size: var(--t-sm);
+  transition: opacity var(--d-micro) var(--ease), border-color var(--d-micro) var(--ease);
+}
+
+.board-card[draggable='true'] {
+  cursor: grab;
+}
+
+.board-card[draggable='true']:active {
+  cursor: grabbing;
+}
+
+.board-card.is-dragging {
+  opacity: 0.4;
+}
+
+.board-card.is-moved {
+  border-color: var(--accent);
+}
+
+.board-grip {
+  margin-top: 2px;
+  color: var(--faint);
+}
+
+.board-card-main {
+  display: grid;
+  min-width: 0;
+}
+
+.board-name {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-2);
+  font-weight: var(--w-medium);
+}
+
+.board-tag {
+  color: var(--muted);
+  font-size: var(--t-xs);
+  font-weight: var(--w-regular);
+}
+
+.board-was {
+  color: var(--accent);
+  font-size: var(--t-xs);
+}
+
 /* ── attendance ──────────────────────────────────────────────────────── */
 .att-key {
   display: flex;

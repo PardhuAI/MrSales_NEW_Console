@@ -210,3 +210,31 @@ test('the month strip picks a month by tap, arrow key or the year panel, and off
   await page.getByRole('button', { name: 'This month' }).click();
   await expect(now).toBeChecked();
 });
+
+test('a person dragged onto another manager is staged, reviewed and saved with a reason', async ({ page }) => {
+  const errors = watchErrors(page);
+  await as(page, 'owner', '/team/org-chart');
+  await page.getByRole('radio', { name: 'Board' }).click();
+  const cols = page.locator('.board-col:not(.is-nobody)');
+  const from = cols.nth(0);
+  const to = cols.nth(1);
+  const card = from.locator('.board-card').first();
+  const who = (await card.locator('.board-name').innerText()).replace('Manager', '').trim();
+  const a = (await card.boundingBox())!;
+  const b = (await to.locator('.board-head').boundingBox())!;
+  await page.mouse.move(a.x + 40, a.y + 20);
+  await page.mouse.down();
+  await page.mouse.move(a.x + 80, a.y + 40, { steps: 5 });
+  await page.mouse.move(b.x + 60, b.y + 20, { steps: 10 });
+  await page.mouse.up();
+  await expect(page.locator('.board-stage')).toContainText('1 change staged');
+  await expect(to.locator('.board-card.is-moved')).toContainText(who);
+  await page.getByRole('button', { name: 'Review 1 change' }).click();
+  await page.getByRole('button', { name: 'Save 1 change' }).click();
+  await expect(page.locator('.form-error').first()).toBeVisible();
+  await page.getByLabel('Why').fill('Moved for the test');
+  await page.getByRole('button', { name: 'Save 1 change' }).click();
+  await expect(page.getByText(`${who} now reports to`)).toBeVisible();
+  await expect(page.locator('.board-stage')).toHaveCount(0);
+  expect(errors).toEqual([]);
+});

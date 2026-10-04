@@ -11,6 +11,17 @@ import { Arrive } from '../../components/motion';
 import { useMe } from '../../live/session';
 import { ManagerDrawer } from './PersonRecord';
 import { mayManagePeople } from './People';
+import { OrgBoard } from './OrgBoard';
+import { Segmented } from '../../components/Segmented';
+
+const VIEW_KEY = 'mrsales.orgchart.view';
+const savedView = (): 'board' | 'tree' => {
+  try {
+    return localStorage.getItem(VIEW_KEY) === 'tree' ? 'tree' : 'board';
+  } catch {
+    return 'board';
+  }
+};
 
 /**
  * The org chart: who reports to whom, as a tree, and moving people between
@@ -32,6 +43,15 @@ function View({ m, at, error, reload }: { m: RosterModel; at: Date | null; error
   const [bulk, setBulk] = useState(false);
   const [notice, setNotice] = useState('');
   const [closed, setClosed] = useState<Set<string>>(new Set());
+  const [view, setViewState] = useState(savedView);
+  const setView = (v: 'board' | 'tree') => {
+    setViewState(v);
+    try {
+      localStorage.setItem(VIEW_KEY, v);
+    } catch {
+      // Remembering the view is a convenience; the switch works without it.
+    }
+  };
   const active = m.people.filter(p => p.status === 'active');
   const byManager = useMemo(() => {
     const map = new Map<string, Person[]>();
@@ -79,10 +99,13 @@ function View({ m, at, error, reload }: { m: RosterModel; at: Date | null; error
         </>}
       </Summary>
       <Toolbar>
+        <Segmented label="Show the chart as" value={view} onChange={setView} options={[{ value: 'board', label: 'Board' }, { value: 'tree', label: 'Tree' }]} />
         <SearchBox value={q} onChange={setQ} placeholder="Find a person in the chart" label="Find a person" />
         {may && <button type="button" className="btn btn-secondary btn-small" onClick={() => setBulk(true)}>Move a whole team</button>}
       </Toolbar>
-      {active.length === 0 ? <Empty title="Nobody to chart yet">Add your managers first, then the people who report to them.</Empty> : (
+      {active.length === 0 ? <Empty title="Nobody to chart yet">Add your managers first, then the people who report to them.</Empty> : view === 'board' ? (
+        <OrgBoard m={m} may={may} needle={needle} onSaved={msg => done(msg)} />
+      ) : (
         <Arrive>
           {alone.length > 0 && (
             <section className="block org-alone">
