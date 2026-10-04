@@ -32,6 +32,7 @@ import { Attendance, Leave, Tasks } from './pages/team/PeopleOps';
 import { Claims } from './pages/money/Claims';
 import { Payroll } from './pages/money/Payroll';
 import { Resources, SentNotifications, Surveys } from './pages/share/Share';
+import { Downloads, Reports } from './pages/reports/Reports';
 import { ThemeProvider } from './app/theme';
 import { SessionProvider, useSession } from './live/session';
 import { Blocked, ChoosePassword, Loading, SignIn } from './pages/SignIn';
@@ -70,6 +71,8 @@ const BUILT: Record<string, JSX.Element> = {
   '/share': <Resources />,
   '/share/surveys': <Surveys />,
   '/share/sent': <SentNotifications />,
+  '/reports': <Reports />,
+  '/reports/downloads': <Downloads />,
 };
 
 /** Records and other pages reached from a list rather than the menu. */

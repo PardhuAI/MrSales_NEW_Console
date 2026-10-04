@@ -321,6 +321,19 @@ behaviour can be checked against it. The "Data" column names the function in
 - [ ] Requests from the phone, with status
 - [ ] Leave policies
 
+> **2026-10-04: Expenses and pay is built in the new design** (`src/pages/money/`,
+> `src/live/money.ts`). Expense claims: each person's month day by day against their day plans,
+> holidays and the week off, flags for days claimed with no day plan and days above the bill
+> threshold with no bill, bills opened from the receipts bucket, and a claim decided through
+> `decide_expenses` (reject needs a reason). Payroll: the month's payslips with the change from
+> last month, release one through `release_payslip` with an optional PDF in the documents
+> bucket's payslips folder (the folder the phone may read), and the month as a sheet.
+> **Corrected against the old console:** its payslip gross, basic and deductions were made up from
+> the net figure (62% and 12%); the database stores only the net pay and the PDF, so only those
+> are shown. Its "release all open" released drafts that exist only in its demo data; live there
+> are no drafts to release. Checked on the demo company at 1440, 1280 (dark), 1024 and 390, flows
+> run in the browser. Not yet run against the live testbed.
+
 ### Expenses (`/expenses`) · Old: `pages/PeopleOps.tsx` `Expenses` · Data: `pullExpenses`, `decideExpense`
 - [ ] Month claims: claims, total claimed, awaiting decision, daily allowance
 - [ ] Claim detail: every day, worked, no intimation, receipts, status
@@ -349,6 +362,14 @@ behaviour can be checked against it. The "Data" column names the function in
 
 ## 5. Broadcasts
 
+> **2026-10-04: Share with field is built** (`src/pages/share/`, `src/live/share.ts`): resources
+> by where they sit on the phone (send, replace as a new version, take off, delete for good),
+> surveys (the open question, the rating spread, answers in the client's words; start, close,
+> reopen) and sent notifications (one message to many phones is one line, with who read it).
+> Survey answers are read from the keys the phone writes (`rating`, `feedback`, `remarks`,
+> `client_name`); the old console's pull read the same. Checked on demo data at all widths, flows
+> run. Not yet run against the live testbed.
+
 ### Resources (`/resources`) · Old: `pages/Support.tsx` `Resources`
 - [ ] On the phones, superseded, archived, last published
 - [ ] Upload a resource (title, description, category, file type and size checks) · Data: `uploadResource`, `resourceFileProblem`
@@ -366,6 +387,17 @@ behaviour can be checked against it. The "Data" column names the function in
 ---
 
 ## 6. Reports
+
+> **2026-10-04: Reports and Downloads are built** (`src/pages/reports/`, `src/live/reports.ts`):
+> eleven reports and seven sheets from one engine (a month, whose data: everyone, a manager's
+> whole line or one person), the table on screen and the sheet being the same rows, with totals.
+> Every download is recorded through `request_export` and `complete_export`, with a copy in
+> `documents/{org}/exports/{user}/`, as the old console did.
+> **Corrected against the old console:** its report catalogue showed the same management table
+> under every report name, and its Downloads wrote a staff list for any sheet it had no builder
+> for (DCR, expenses, tour plan, overview). Each report and sheet here reads its own records.
+> Checked on demo data at all widths, downloads run in the browser. Not yet run against the live
+> testbed.
 
 ### Reports (`/reports`) · Old: `pages/Evidence.tsx` `ReportCenter`
 - [ ] One filter (employee, period), one table, one export path

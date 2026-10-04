@@ -117,3 +117,71 @@
 .survey-spread .inline-meter span {
   background: var(--muted);
 }
+
+/* ── reports and downloads ───────────────────────────────────────────── */
+.rpt-groups {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--s-8) var(--s-10);
+}
+
+.rpt-group .rows,
+.dl-sheets {
+  margin-top: var(--s-2);
+  border-top: var(--hairline-w) solid var(--hairline);
+}
+
+.rpt-head {
+  display: grid;
+  gap: var(--s-2);
+  justify-items: start;
+  margin-bottom: var(--s-4);
+}
+
+.rpt-wrap {
+  max-height: 70vh;
+}
+
+.rpt-table {
+  font-variant-numeric: tabular-nums;
+}
+
+.rpt-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--ground);
+  white-space: nowrap;
+}
+
+.rpt-table tfoot th,
+.rpt-table tfoot td {
+  position: sticky;
+  bottom: 0;
+  background: var(--ground);
+  border-top: var(--hairline-w) solid var(--ink);
+  font-weight: var(--w-semibold);
+}
+
+.rpt-table td,
+.rpt-table tbody th {
+  white-space: nowrap;
+}
+
+.dl-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  gap: var(--s-10);
+  align-items: start;
+}
+
+.dl-sheets .row {
+  align-items: center;
+}
+
+@media (max-width: 900px) {
+  .rpt-groups,
+  .dl-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
