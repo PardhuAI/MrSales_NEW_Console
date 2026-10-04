@@ -210,6 +210,18 @@ behaviour can be checked against it. The "Data" column names the function in
 
 ## 3. Sales
 
+> **2026-10-04: the Sales section is built in the new design** (`src/pages/sales/`,
+> `src/live/sales.ts`): Sales (month picker, twelve months against target, by person with a
+> drawer per person), Orders (status, stockist and search; lines, totals and the approval trail;
+> approve and reject through `decide_orders`), Targets (six months and next, assign to one
+> person or everyone through `assign_target`), Prescription audit, Products (add, edit, on sale,
+> draft, retired, sheet), Stockists (add, edit, on and off the list) and Stock (record, write off).
+> **Corrected against the old console:** its "secondary sales" was 80% of primary, a figure
+> nobody recorded; here secondary sales are the approved field orders the database records with
+> source `order`. Fulfilment is the order's own status (approved or fulfilled); the old
+> console's accepted and dispatched stages exist only in its demo data. Checked on the demo
+> company at 1440 and 390. Not yet run against the live testbed.
+
 ### Sales (`/sales`) · Old: `pages/Commerce.tsx` `Sales` · Data: `pullSales`, `pullTargets`
 - [ ] Primary sales, secondary sales, target, achievement
 - [ ] Twelve months against target (chart)

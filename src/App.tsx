@@ -16,6 +16,13 @@ import { ClientList } from './pages/clients/ClientList';
 import { ClientRecordPage } from './pages/clients/ClientRecord';
 import { ClientQuality } from './pages/clients/Quality';
 import { Complaints } from './pages/clients/Complaints';
+import { Sales } from './pages/sales/Sales';
+import { Orders } from './pages/sales/Orders';
+import { Targets } from './pages/sales/Targets';
+import { Rcpa } from './pages/sales/Rcpa';
+import { Products } from './pages/sales/Products';
+import { Stockists } from './pages/sales/Stockists';
+import { Stock } from './pages/sales/Stock';
 import { ThemeProvider } from './app/theme';
 import { SessionProvider, useSession } from './live/session';
 import { Blocked, ChoosePassword, Loading, SignIn } from './pages/SignIn';
@@ -36,6 +43,13 @@ const BUILT: Record<string, JSX.Element> = {
   '/clients': <ClientList />,
   '/clients/quality': <ClientQuality />,
   '/clients/complaints': <Complaints />,
+  '/sales': <Sales />,
+  '/sales/orders': <Orders />,
+  '/sales/targets': <Targets />,
+  '/sales/prescriptions': <Rcpa />,
+  '/sales/products': <Products />,
+  '/sales/stockists': <Stockists />,
+  '/sales/stock': <Stock />,
 };
 
 /** Records and other pages reached from a list rather than the menu. */
@@ -43,6 +57,9 @@ const DETAIL: { path: string; module: string; element: JSX.Element }[] = [
   { path: '/field/:employeeId/:date', module: 'field', element: <PersonDay /> },
   { path: '/clients/new', module: 'clients', element: <ClientList /> },
   { path: '/clients/:id', module: 'clients', element: <ClientRecordPage /> },
+  { path: '/sales/targets/new', module: 'targets', element: <Targets /> },
+  { path: '/sales/products/new', module: 'products', element: <Products /> },
+  { path: '/sales/stockists/new', module: 'stockists', element: <Stockists /> },
 ];
 
 function TitleAndScroll() {

@@ -1,0 +1,201 @@
+/* Sales: charts, shares, the target grid. Tokens only. */
+
+.sales-hero {
+  font-size: clamp(2rem, 1.3rem + 2vw, 3rem);
+}
+
+.sales-chart {
+  margin-top: var(--s-10);
+}
+
+.page-body > .hero + .block,
+.page-body > .block + .block,
+.page-body > .pair {
+  margin-top: var(--s-10);
+}
+
+.page-body > .hero {
+  margin-top: var(--s-2);
+}
+
+/* month bars */
+.mbars {
+  display: grid;
+  gap: var(--s-3);
+}
+
+.mbars-plot {
+  height: 170px;
+}
+
+.mbars-plot svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.mbar-hit {
+  fill: transparent;
+}
+
+.mbar.pick {
+  cursor: pointer;
+}
+
+.mbar.pick:hover .mbar-hit {
+  fill: color-mix(in srgb, var(--accent) 6%, transparent);
+}
+
+.mbar-a {
+  fill: color-mix(in srgb, var(--muted) 45%, var(--ground));
+}
+
+.mbar-b {
+  fill: var(--muted);
+}
+
+.mbar.on .mbar-a {
+  fill: color-mix(in srgb, var(--accent) 55%, var(--ground));
+}
+
+.mbar.on .mbar-b {
+  fill: var(--accent);
+}
+
+.mbars-labels {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  color: var(--faint);
+  font-size: var(--t-xs);
+  text-align: center;
+}
+
+.mbars-labels li.on {
+  color: var(--accent);
+  font-weight: var(--w-semibold);
+}
+
+.mbars-key {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-4);
+  color: var(--muted);
+  font-size: var(--t-xs);
+}
+
+.mbars-key span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mbars-key i {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+}
+
+.mbars-key .ka { background: color-mix(in srgb, var(--muted) 45%, var(--ground)); }
+.mbars-key .kb { background: var(--muted); }
+.mbars-key .kt { height: 2px; background: var(--ink); opacity: 0.55; }
+
+/* a share with its words */
+.share {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0;
+  white-space: nowrap;
+}
+
+.share-list > li {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) 6.5rem;
+  align-items: center;
+  gap: var(--s-4);
+  padding: var(--s-3) 0;
+  border-bottom: var(--hairline-w) solid var(--hairline);
+}
+
+.share-name {
+  display: grid;
+  font-weight: var(--w-medium);
+  min-width: 0;
+}
+
+.share-bar {
+  display: flex;
+  gap: 2px;
+  height: 8px;
+  border-radius: var(--r-pill);
+  overflow: hidden;
+  background: var(--track);
+}
+
+.share-ours {
+  background: var(--accent);
+}
+
+.share-theirs {
+  background: color-mix(in srgb, var(--muted) 35%, var(--ground));
+}
+
+.share-theirs.solid {
+  background: var(--muted);
+}
+
+.share-pct {
+  text-align: right;
+  font-size: var(--t-sm);
+  font-weight: var(--w-semibold);
+  font-variant-numeric: tabular-nums;
+}
+
+/* targets */
+.target-grid td,
+.target-grid th[scope='col'] {
+  white-space: nowrap;
+}
+
+.target-grid .tg-now {
+  background: color-mix(in srgb, var(--accent) 4%, transparent);
+}
+
+.tg-target {
+  display: block;
+  font-variant-numeric: tabular-nums;
+}
+
+.tg-share {
+  display: block;
+  color: var(--muted);
+  font-size: var(--t-xs);
+}
+
+.tg-share.met {
+  color: var(--good);
+}
+
+.status-move {
+  display: grid;
+  gap: var(--s-2);
+  margin-bottom: var(--s-6);
+  padding-bottom: var(--s-5);
+  border-bottom: var(--hairline-w) solid var(--hairline);
+}
+
+.facts.totals dd {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 700px) {
+  .share-list > li {
+    grid-template-columns: minmax(0, 1fr) 5.5rem;
+  }
+
+  .share-bar {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+}

@@ -488,7 +488,7 @@ export function seed(now = new Date()): Tables {
       const p = active[(i * 3 + l) % active.length];
       const quantity = between(2, 20) * 5;
       const unit = p.pts as number;
-      const foc = l === lines - 1 && chance(0.2);
+      const foc = lines > 1 && l === lines - 1 && chance(0.2);
       const line_total = foc ? 0 : Math.round(quantity * unit * 100) / 100;
       subtotal += line_total;
       add('order_items', { id: uid('ori'), order_id: id, product_id: p.id, quantity, unit_price: unit, is_foc: foc, line_total });
@@ -497,6 +497,13 @@ export function seed(now = new Date()): Tables {
     const afterDiscount = subtotal * (1 - discount / 100);
     const gst = Math.round(afterDiscount * 0.12 * 100) / 100;
     add('orders', { id, employee_id: rep.id, client_id: client.id, status, discount_percent: discount, gst_amount: gst, subtotal: Math.round(subtotal * 100) / 100, total: Math.round((afterDiscount + gst) * 100) / 100, remarks: null, submitted_at: at(day, 15), decided_at: pending ? null : at(shift(day, 1), 11), decided_by: pending ? null : rep.manager_id, created_at: at(day, 15), updated_at: at(day, 15), stockist_id: stockist?.id ?? null });
+  }
+
+  // Approved and fulfilled orders became sales the day they were decided, as decide_orders does.
+  for (const o of (T.orders ?? []).filter(x => x.status === 'approved' || x.status === 'fulfilled')) {
+    for (const i of (T.order_items ?? []).filter(x => x.order_id === o.id)) {
+      add('sales_records', { id: uid('sal'), employee_id: o.employee_id, client_id: o.client_id, product_id: i.product_id, sale_date: dayKey(new Date(o.decided_at as string)), quantity: i.quantity, amount: i.is_foc ? 0 : i.line_total, source: 'order', created_at: o.decided_at });
+    }
   }
 
   // ── sales and targets, a year of them ──

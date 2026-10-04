@@ -1,6 +1,6 @@
 import { FakeDb, fakeClient, type Row, type Rpc, type View } from './engine';
 import { DEMO_ORG, DEMO_USER, dayKey, seed, shift, travelFor } from './seed';
-import { clientRpcs } from './rpcs';
+import { clientRpcs, salesRpcs } from './rpcs';
 
 /**
  * The demo database: the seeded company, the views the console reads, and the
@@ -62,6 +62,12 @@ const decide = (table: string, entity: string, ids: string[], approve: boolean, 
   for (const r of db.rows(table).filter(x => ids.includes(x.id as string))) {
     if (r.status !== 'pending') throw new Error('This was already decided.');
     Object.assign(r, { status: approve ? 'approved' : 'rejected', decided_at: now(), decided_by: null });
+    // An approved order becomes sales, one row per line, as decide_orders does.
+    if (entity === 'order' && approve) {
+      for (const i of db.rows('order_items').filter(x => x.order_id === r.id)) {
+        db.mutable('sales_records').push({ id: crypto.randomUUID(), org_id: DEMO_ORG, employee_id: r.employee_id, client_id: r.client_id, product_id: i.product_id, sale_date: dayKey(new Date()), quantity: i.quantity, amount: i.is_foc ? 0 : i.line_total, source: 'order', created_at: now() });
+      }
+    }
     db.mutable('approval_events').push({
       id: crypto.randomUUID(), org_id: DEMO_ORG, entity, entity_id: r.id, action: approve ? 'approved' : 'rejected',
       actor_id: null, actor_name: ME, reason: reason ?? null, at: now(),
@@ -98,7 +104,7 @@ const rpcs: Record<string, Rpc> = {
   },
 };
 
-Object.assign(rpcs, clientRpcs(audit));
+Object.assign(rpcs, clientRpcs(audit), salesRpcs(audit));
 
 /** More functions register here as screens are rebuilt (see each live/*.ts). */
 export const registerRpc = (name: string, f: Rpc) => {
