@@ -153,6 +153,8 @@ test('the day strip picks a day by tap or arrow keys, and offers no future day',
   await expect(days.getByRole('radio', { name: /2 October.*Gandhi Jayanti/ })).toBeVisible();
   await days.getByRole('radio', { name: /Wednesday, 30 September/ }).click();
   await expect(page).toHaveURL(/date=2026-09-30/);
+  // The address changes before the strip redraws; press from the day on screen.
+  await expect(days.getByRole('radio', { checked: true })).toHaveAccessibleName(/Wednesday, 30 September/);
   await days.getByRole('radio', { checked: true }).press('ArrowRight');
   await expect(page).toHaveURL(/date=2026-10-01/);
   await expect(page.locator('.summary').first()).toContainText('Thursday, 1 October');

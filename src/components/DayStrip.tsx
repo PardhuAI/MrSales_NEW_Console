@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode, useLayoutEffect } from 'react';
 import { CalendarBlank, CaretLeft, CaretRight } from '@phosphor-icons/react';
 import { useResource } from '../data/resource';
 import { loadOffDays, type OffDays } from '../live/calendar';
@@ -40,10 +40,14 @@ export function DayStrip({ value, onChange, max = IST_TODAY(), min, note, label 
   const days = Array.from({ length: 7 }, (_, i) => shiftDay(monday, i));
   const clamp = (k: string) => (max && k > max ? max : min && k < min ? min : k);
   const onKey = (e: KeyboardEvent) => {
-    const step = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : e.key === 'Home' ? -sinceMonday(value) : e.key === 'End' ? 6 - sinceMonday(value) : 0;
+    // From the day that has focus, the one the person is on, not from `value`:
+    // a navigation updates the address before the strip redraws, and a key
+    // pressed in between moved two days from a value that was already old.
+    const from = (e.target as HTMLElement).closest<HTMLElement>('[data-day]')?.dataset.day ?? value;
+    const step = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : e.key === 'Home' ? -sinceMonday(from) : e.key === 'End' ? 6 - sinceMonday(from) : 0;
     if (!step) return;
     e.preventDefault();
-    const next = shiftDay(value, step);
+    const next = shiftDay(from, step);
     if (!allowed(next)) return;
     onChange(next);
     requestAnimationFrame(() => group.current?.querySelector<HTMLButtonElement>('[aria-checked="true"]')?.focus());
@@ -67,7 +71,7 @@ export function DayStrip({ value, onChange, max = IST_TODAY(), min, note, label 
           const reason = why(k);
           const n = note?.(k);
           return (
-            <button key={k} type="button" role="radio" aria-checked={on} tabIndex={on ? 0 : -1} disabled={!allowed(k)}
+            <button key={k} type="button" role="radio" data-day={k} aria-checked={on} tabIndex={on ? 0 : -1} disabled={!allowed(k)}
               aria-label={`${longDay(k)}${k === today ? ', today' : ''}${reason ? `, ${reason}` : ''}${n ? `, ${n}` : ''}`}
               title={reason ?? undefined}
               className={`daystrip-day${on ? ' on' : ''}${reason ? ' off' : ''}${k === today ? ' today' : ''}`}
@@ -106,8 +110,10 @@ function MonthPicker({ value, onChange, allowed, why, note }: {
     document.addEventListener('mousedown', away);
     return () => document.removeEventListener('mousedown', away);
   }, [open]);
-  useEffect(() => {
-    if (open) requestAnimationFrame(() => panel.current?.querySelector<HTMLButtonElement>(`[data-day="${focus}"]`)?.focus());
+  // In the same commit as the panel, not a frame later: a key pressed straight
+  // after opening must reach the panel, not the button behind it.
+  useLayoutEffect(() => {
+    if (open) panel.current?.querySelector<HTMLButtonElement>(`[data-day="${focus}"]`)?.focus();
   }, [open, focus]);
   const close = () => { setOpen(false); requestAnimationFrame(() => button.current?.focus()); };
   const pick = (k: string) => { if (!allowed(k)) return; onChange(k); close(); };

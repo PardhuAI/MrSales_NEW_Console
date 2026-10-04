@@ -33,9 +33,11 @@ export default defineConfig({
     launchOptions: existsSync(CHROMIUM) ? { executablePath: CHROMIUM } : {},
   },
   webServer: {
-    command: `npx vite --host 127.0.0.1 --port ${PORT} --strictPort`,
+    // Always the demo company: a developer's .env.local must not point the
+    // suite at a live organisation. Empty values switch the backend off.
+    command: `VITE_SUPABASE_URL= VITE_SUPABASE_PUBLISHABLE_KEY= npx vite --host 127.0.0.1 --port ${PORT} --strictPort`,
     url: `http://127.0.0.1:${PORT}`,
-    reuseExistingServer: true,
+    reuseExistingServer: false,
     timeout: 60_000,
   },
 });

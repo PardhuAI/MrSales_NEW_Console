@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
+import { useEffect, useRef, useState, type KeyboardEvent, useLayoutEffect } from 'react';
 import { CalendarBlank, CaretLeft, CaretRight } from '@phosphor-icons/react';
 import { IST_TODAY } from '../lib/days';
 
@@ -38,7 +38,9 @@ export function MonthStrip({ value, onChange, max = IST_TODAY().slice(0, 7), not
     const step = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
     if (!step) return;
     e.preventDefault();
-    const next = shiftMonth(value, step);
+    // From the month that has focus, not `value`, which can lag a navigation (as in DayStrip).
+    const from = (e.target as HTMLElement).closest<HTMLElement>('[data-strip-month]')?.dataset.stripMonth ?? value;
+    const next = shiftMonth(from, step);
     if (next > max) return;
     onChange(next);
     requestAnimationFrame(() => group.current?.querySelector<HTMLButtonElement>('[aria-checked="true"]')?.focus());
@@ -60,7 +62,7 @@ export function MonthStrip({ value, onChange, max = IST_TODAY().slice(0, 7), not
           const on = k === value;
           const n = note?.(k);
           return (
-            <button key={k} type="button" role="radio" aria-checked={on} tabIndex={on ? 0 : -1} disabled={k > max}
+            <button key={k} type="button" role="radio" data-strip-month={k} aria-checked={on} tabIndex={on ? 0 : -1} disabled={k > max}
               aria-label={`${nameOf(k)}${k === now ? ', this month' : ''}${n ? `, ${n}` : ''}`}
               className={`daystrip-day${on ? ' on' : ''}${k === now ? ' today' : ''}`} onClick={() => onChange(k)}>
               {/* The year only where it changes; the heading carries it otherwise. */}
@@ -89,7 +91,8 @@ function YearPicker({ value, max, onChange }: { value: string; max: string; onCh
     document.addEventListener('mousedown', away);
     return () => document.removeEventListener('mousedown', away);
   }, [open]);
-  useEffect(() => { if (open) requestAnimationFrame(() => panel.current?.querySelector<HTMLButtonElement>(`[data-month="${focus}"]`)?.focus()); }, [open, focus]);
+  // In the same commit as the panel: a key pressed straight after opening must reach it.
+  useLayoutEffect(() => { if (open) panel.current?.querySelector<HTMLButtonElement>(`[data-month="${focus}"]`)?.focus(); }, [open, focus]);
   const close = () => { setOpen(false); requestAnimationFrame(() => button.current?.focus()); };
   const year = focus.slice(0, 4);
   const onKey = (e: KeyboardEvent) => {

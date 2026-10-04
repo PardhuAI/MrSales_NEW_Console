@@ -18,7 +18,9 @@ export function Segmented<T extends string>({
     const step = e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 1 : e.key === 'ArrowLeft' || e.key === 'ArrowUp' ? -1 : 0;
     if (!step) return;
     e.preventDefault();
-    const i = enabled.findIndex(o => o.value === value);
+    // From the option that has focus, not `value`, which can lag a navigation (as in DayStrip).
+    const focused = (e.target as HTMLElement).closest<HTMLElement>('[data-option]')?.dataset.option;
+    const i = enabled.findIndex(o => String(o.value) === (focused ?? String(value)));
     const next = enabled[(i + step + enabled.length) % enabled.length];
     onChange(next.value);
     requestAnimationFrame(() => ref.current?.querySelector<HTMLButtonElement>('[aria-checked="true"]')?.focus());
@@ -30,6 +32,7 @@ export function Segmented<T extends string>({
           key={o.value}
           type="button"
           role="radio"
+          data-option={String(o.value)}
           aria-checked={value === o.value}
           tabIndex={value === o.value ? 0 : -1}
           disabled={o.disabled}
