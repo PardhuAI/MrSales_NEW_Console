@@ -1,0 +1,283 @@
+/* ── a section's head: its name and all its pages as tabs ────────────── */
+.page {
+  max-width: var(--content-max);
+  margin: 0 auto;
+}
+
+.section-head {
+  margin-bottom: var(--s-8);
+}
+
+.section-head.quiet {
+  margin-bottom: var(--s-6);
+}
+
+.section-name {
+  margin-bottom: var(--s-4);
+  font-size: var(--t-title);
+  font-weight: var(--w-semibold);
+  letter-spacing: var(--track-title);
+  line-height: var(--lh-tight);
+}
+
+.tabs {
+  display: flex;
+  gap: var(--s-1);
+  overflow-x: auto;
+  scrollbar-width: none;
+  border-bottom: var(--hairline-w) solid var(--hairline);
+}
+
+.tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.tab {
+  position: relative;
+  flex: none;
+  padding: var(--s-2) var(--s-3) var(--s-3);
+  color: var(--muted);
+  font-size: var(--t-sm);
+  font-weight: var(--w-medium);
+  white-space: nowrap;
+  transition: color var(--d-micro) var(--ease);
+}
+
+.tab:first-child {
+  padding-left: 0;
+}
+
+.tab:hover {
+  color: var(--ink);
+}
+
+.tab.active {
+  color: var(--ink);
+  font-weight: var(--w-semibold);
+}
+
+.tab.active::after {
+  content: '';
+  position: absolute;
+  left: var(--s-3);
+  right: var(--s-3);
+  bottom: -1px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--accent);
+}
+
+.tab.active:first-child::after {
+  left: 0;
+}
+
+/* ── a page being rebuilt ────────────────────────────────────────────── */
+.coming {
+  display: grid;
+  justify-items: start;
+  gap: var(--s-5);
+  max-width: 640px;
+  padding-top: var(--s-4);
+}
+
+.page-title-lg {
+  font-size: clamp(1.75rem, 1.3rem + 1.2vw, 2.25rem);
+  font-weight: var(--w-semibold);
+  letter-spacing: var(--track-title);
+  line-height: var(--lh-tight);
+}
+
+.coming-about {
+  color: var(--muted);
+  font-size: 1.0625rem;
+  text-wrap: pretty;
+}
+
+.coming-note {
+  display: grid;
+  gap: var(--s-3);
+  width: 100%;
+  padding: var(--s-5) var(--s-6);
+  border-radius: var(--r-panel);
+  background: var(--panel-bg);
+}
+
+.coming-state {
+  font-weight: var(--w-semibold);
+}
+
+.coming-list {
+  display: grid;
+  gap: var(--s-2);
+  padding-left: var(--s-5);
+  list-style: disc;
+  color: var(--ink);
+}
+
+.coming-list li::marker {
+  color: var(--faint);
+}
+
+.coming-text {
+  color: var(--muted);
+  font-size: var(--t-sm);
+}
+
+/* ── settings, on one page ───────────────────────────────────────────── */
+.settings-home {
+  display: grid;
+  gap: var(--s-8);
+  max-width: 760px;
+}
+
+.settings-group-title {
+  margin-bottom: var(--s-2);
+  padding-left: var(--s-1);
+  color: var(--muted);
+  font-size: var(--t-sm);
+  font-weight: var(--w-semibold);
+}
+
+.settings-list {
+  border-radius: var(--r-panel);
+  background: var(--panel-bg);
+  overflow: hidden;
+}
+
+.settings-list li + li .settings-row {
+  border-top: var(--hairline-w) solid var(--hairline);
+}
+
+.settings-row {
+  display: flex;
+  align-items: center;
+  gap: var(--s-4);
+  padding: var(--s-4) var(--s-5);
+  color: var(--faint);
+  transition: background-color var(--d-micro) var(--ease);
+}
+
+.settings-row:hover {
+  background: color-mix(in srgb, var(--track) 50%, transparent);
+}
+
+.settings-text {
+  display: grid;
+  flex: 1;
+  gap: 2px;
+}
+
+.settings-label {
+  color: var(--ink);
+  font-weight: var(--w-medium);
+}
+
+.settings-about {
+  color: var(--muted);
+  font-size: var(--t-sm);
+}
+
+/* ── signing in ──────────────────────────────────────────────────────── */
+.auth {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: var(--s-6);
+  min-height: 100vh;
+  padding: var(--s-6) var(--s-4);
+}
+
+.auth-card {
+  display: grid;
+  gap: var(--s-4);
+  width: min(400px, 100%);
+  padding: var(--s-8);
+  border-radius: 20px;
+  background: var(--raised);
+  box-shadow: var(--shadow-float);
+}
+
+.auth-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  margin-bottom: var(--s-4);
+  font-size: 1.125rem;
+  font-weight: var(--w-semibold);
+  letter-spacing: var(--track-title);
+}
+
+.auth-title {
+  font-size: 1.5rem;
+  font-weight: var(--w-semibold);
+  letter-spacing: var(--track-title);
+  line-height: var(--lh-tight);
+}
+
+.auth-text {
+  color: var(--muted);
+  font-size: var(--t-sm);
+}
+
+.auth-form {
+  display: grid;
+  gap: var(--s-4);
+  margin-top: var(--s-2);
+}
+
+.input {
+  width: 100%;
+  height: 42px;
+  padding: 0 var(--s-3);
+  border-radius: var(--r-control);
+  border: var(--hairline-w) solid color-mix(in srgb, var(--hairline) 50%, var(--faint));
+  background: var(--raised);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--t-body);
+  transition: border-color var(--d-micro) var(--ease), box-shadow var(--d-micro) var(--ease);
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.input::placeholder {
+  color: var(--faint);
+}
+
+.auth-error {
+  padding: var(--s-3);
+  border-radius: var(--r-control);
+  background: var(--bad-soft);
+  color: var(--bad);
+  font-size: var(--t-sm);
+}
+
+.auth-submit {
+  justify-content: center;
+  height: 42px;
+  font-size: var(--t-body);
+}
+
+.auth-switch {
+  justify-self: center;
+}
+
+.auth-foot,
+.auth-wait {
+  color: var(--faint);
+  font-size: var(--t-xs);
+}
+
+.auth-wait {
+  font-size: var(--t-sm);
+}
+
+@media (max-width: 480px) {
+  .auth-card {
+    padding: var(--s-6) var(--s-5);
+  }
+}
