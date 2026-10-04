@@ -125,6 +125,9 @@ async function whoAmI(): Promise<SessionState> {
   };
 }
 
+const onWelcome = () => window.location.pathname === '/welcome';
+const DEAD_LINK = 'That email link has expired or was already used. Sign in, or choose "Forgotten your password?" for a new link.';
+
 const signOutHooks: (() => void)[] = [];
 /** Runs on every sign-out, so data read for one login never shows to the next. */
 export const onSignOut = (f: () => void) => signOutHooks.push(f);
@@ -148,7 +151,12 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   const refresh = async () => {
     try {
-      setState(await whoAmI());
+      const next = await whoAmI();
+      // An invitation or a reset email lands on /welcome, already signed in from
+      // the link but with no password of their own yet: they choose one first.
+      if (onWelcome() && next.status === 'signedIn') setState({ status: 'recovery' });
+      else if (onWelcome() && next.status === 'signedOut') setState({ status: 'signedOut', message: DEAD_LINK });
+      else setState(next);
     } catch (e) {
       setState({ status: 'blocked', message: e instanceof Error ? e.message : 'Could not reach Mr Sales.' });
     }
@@ -182,7 +190,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       setState(isLive ? { status: 'signedOut' } : { status: 'signedIn', me: demoIdentity('owner') });
     },
     async sendReset(email) {
-      const { error } = await db().auth.resetPasswordForEmail(email.trim(), { redirectTo: window.location.origin });
+      const { error } = await db().auth.resetPasswordForEmail(email.trim(), { redirectTo: `${window.location.origin}/welcome` });
       return error ? error.message : null;
     },
     viewAs: isLive ? null : role => {
@@ -196,6 +204,9 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     async setPassword(password) {
       const { error } = await db().auth.updateUser({ password });
       if (error) return error.message;
+      // Clears the prompt a manager-set password leaves; an older database has no such call.
+      await db().rpc('password_changed', {}).then(() => undefined, () => undefined);
+      window.history.replaceState(null, '', '/');
       await refresh();
       return null;
     },

@@ -248,6 +248,40 @@
   color: var(--faint);
 }
 
+/* Password rules fill in as they are met: a hollow mark becomes a full one. */
+.auth-rules {
+  display: grid;
+  gap: var(--s-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--muted);
+  font-size: var(--t-sm);
+}
+
+.auth-rules li {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+}
+
+.auth-rules li::before {
+  content: '';
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border: 1.5px solid currentColor;
+  border-radius: 50%;
+}
+
+.auth-rules li.met {
+  color: var(--good);
+}
+
+.auth-rules li.met::before {
+  background: currentColor;
+}
+
 .auth-error {
   padding: var(--s-3);
   border-radius: var(--r-control);

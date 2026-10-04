@@ -128,16 +128,26 @@ export function SignIn({ message }: { message?: string }) {
   );
 }
 
+/** The rules "Invite an office user" holds an office password to, as in the old console. */
+const RULES: { label: string; met: (p: string) => boolean }[] = [
+  { label: 'At least 12 characters', met: p => p.length >= 12 },
+  { label: 'Upper and lower case letters', met: p => /[a-z]/.test(p) && /[A-Z]/.test(p) },
+  { label: 'At least one digit', met: p => /\d/.test(p) },
+  { label: 'Does not start with password, welcome or mrsales', met: p => p.length > 0 && !/^(password|welcome|mrsales)/i.test(p) },
+];
+
 export function ChoosePassword() {
-  const { setPassword } = useSession();
+  const { setPassword, signOut } = useSession();
   const [a, setA] = useState('');
   const [b, setB] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const invited = new URLSearchParams(window.location.search).has('org');
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
-    if (a.length < 8) return setError('Use at least 8 characters.');
+    const missing = RULES.filter(r => !r.met(a));
+    if (missing.length) return setError(`The password needs: ${missing.map(r => r.label.toLowerCase()).join('; ')}.`);
     if (a !== b) return setError('The two passwords do not match.');
     setBusy(true);
     const err = await setPassword(a);
@@ -147,8 +157,10 @@ export function ChoosePassword() {
 
   return (
     <Frame>
-      <h1 className="auth-title">Choose a new password</h1>
-      <p className="auth-text">At least 8 characters. You will use it to sign in from now on.</p>
+      <h1 className="auth-title">{invited ? 'Choose your password' : 'Choose a new password'}</h1>
+      <p className="auth-text">
+        You are signed in from your email link. Choose the password you will sign in to the console with from now on.
+      </p>
       <form className="auth-form" onSubmit={submit} noValidate>
         <label className="field">
           <span className="field-label">New password</span>
@@ -158,11 +170,22 @@ export function ChoosePassword() {
           <span className="field-label">Type it again</span>
           <input className="input" type="password" autoComplete="new-password" value={b} onChange={e => setB(e.target.value)} />
         </label>
+        <ul className="auth-rules" aria-label="Password rules">
+          {RULES.map(r => (
+            <li key={r.label} className={r.met(a) ? 'met' : ''}>
+              {r.label}
+              <span className="visually-hidden">{r.met(a) ? ', done' : ', not yet'}</span>
+            </li>
+          ))}
+        </ul>
         {error && <p className="auth-error" role="alert">{error}</p>}
         <button className="btn btn-primary auth-submit" type="submit" disabled={busy}>
-          {busy ? 'Saving…' : 'Save and sign in'}
+          {busy ? 'Saving…' : 'Save and continue'}
         </button>
       </form>
+      <button type="button" className="link auth-switch" onClick={() => void signOut()}>
+        Sign out
+      </button>
     </Frame>
   );
 }
