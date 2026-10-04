@@ -10,13 +10,19 @@
 --   it@testbed.mrsales.local          it          company
 --   management@testbed.mrsales.local  management  team, as Rajesh Verma (TBM9001)
 --
--- Same password as every Testbed login (the seed's TESTPW). Testbed only:
--- every row carries the testbed org, and testbed_down.sql removes the users
--- of its app_users with the rest. Safe to re-run.
+-- The password is never written here: this repository is public. It is the
+-- Testbed password kept in the gitignored .env.testbed (TESTBED_PASSWORD), and
+-- is given to the script as a setting in the same session:
+--
+--   set mrsales.testbed_password = '<the value from .env.testbed>';
+--   \i scripts/testbed-role-logins.sql
+--
+-- Testbed only: every row carries the testbed org, and testbed_down.sql
+-- removes the users of its app_users with the rest. Safe to re-run.
 -- ═══════════════════════════════════════════════════════════════════════
 do $roles$
 declare
-  TESTPW constant text := 'Testbed#2026';
+  TESTPW constant text := nullif(current_setting('mrsales.testbed_password', true), '');
   v_org  uuid;
   v_mgr  uuid;
   v_user uuid;
@@ -25,6 +31,9 @@ begin
   select id into v_org from public.organisations where slug = 'testbed';
   if v_org is null then
     raise exception 'Testbed Pharma does not exist; run seeds/testbed.sql first';
+  end if;
+  if TESTPW is null then
+    raise exception 'Set mrsales.testbed_password first (see the header)';
   end if;
   select id into v_mgr from public.employees where org_id = v_org and code = 'TBM9001';
 
