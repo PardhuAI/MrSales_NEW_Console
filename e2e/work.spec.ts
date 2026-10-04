@@ -179,7 +179,10 @@ test('Pick a date opens our own month, moves by keyboard, picks, and closes with
 test('Leave shows who is away on a day, with the count on each day of the week', async ({ page }) => {
   await as(page, 'owner', '/team/leave');
   const strip = page.getByRole('radiogroup', { name: 'Who is away on' });
-  await expect(strip.getByRole('radio', { name: /30 September.*1 away/ })).toBeVisible();
-  await strip.getByRole('radio', { name: /30 September/ }).click();
-  await expect(page.locator('.away-list')).toContainText('Rahul Yadav');
+  // The demo's approved leave sits in the last fortnight; step back a week until it is in view.
+  const away = strip.getByRole('radio', { name: /\d+ away/ }).first();
+  for (let i = 0; i < 3 && !(await away.count()); i++) await page.getByRole('button', { name: /^The week of/ }).first().click();
+  await expect(away).toBeVisible();
+  await away.click();
+  await expect(page.locator('.away-list .row').first()).toContainText(/leave/i);
 });

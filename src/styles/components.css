@@ -423,13 +423,10 @@
   position: fixed;
   inset: 0;
   z-index: 80;
-  background: rgb(0 0 0 / 0.22);
+  background: var(--scrim);
   animation: fade-in var(--d-state) var(--ease);
 }
 
-[data-theme='dark'] .drawer-scrim {
-  background: rgb(0 0 0 / 0.55);
-}
 
 .drawer {
   position: fixed;
@@ -606,7 +603,7 @@ select.input {
 
 .notice.critical {
   background: var(--bad);
-  color: #fff;
+  color: var(--on-bad);
 }
 
 .pill.accent {

@@ -254,7 +254,7 @@
 }
 
 .vmap-pt text {
-  fill: #fff;
+  fill: var(--on-accent);
   font-size: 2.6px;
   font-weight: 700;
   text-anchor: middle;

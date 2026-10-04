@@ -2,7 +2,7 @@
   display: grid;
   grid-template-columns: var(--nav-w) minmax(0, 1fr);
   min-height: 100vh;
-  /* The menu's colour runs the full height of the page, however long. */
+  /* hard stop: the menu's flat colour runs the full height of the page, not a gradient */
   background: linear-gradient(to right, var(--nav-bg) var(--nav-w), transparent 0);
 }
 
@@ -416,13 +416,10 @@
   position: fixed;
   inset: 0;
   z-index: 70;
-  background: rgb(0 0 0 / 0.24);
+  background: var(--scrim);
   animation: fade-in var(--d-state) var(--ease);
 }
 
-[data-theme='dark'] .palette-scrim {
-  background: rgb(0 0 0 / 0.55);
-}
 
 @keyframes fade-in {
   from {
@@ -602,7 +599,7 @@
     inset: 0;
     z-index: 30;
     display: block;
-    background: rgb(0 0 0 / 0.28);
+    background: var(--scrim);
     opacity: 0;
     pointer-events: none;
     transition: opacity var(--d-state) var(--ease);

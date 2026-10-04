@@ -97,10 +97,46 @@ Mixes added at the owner's request (2026-10-04), shown beside the three:
 
 ## 5. Style lock
 
-*Empty until the owner chooses a direction.* Once chosen, this section lists every
-token: colours with roles and contrast pairs, the type family and named scale, spacing
-scale, radius by object, the one shadow, motion durations and the one ease. Components
-use token names only, never raw values.
+Locked 2026-10-04 with direction **D** (Studio's colours, Schibsted Grotesk). The values
+live in `src/styles/tokens.css`; components use the token names only, and
+`npm run check:rules` fails on any raw colour outside that file.
+
+**Type.** One family, Schibsted Grotesk (Google Fonts), falling back to the system
+sans. Named scale: hero `clamp(2.25rem, 1.3rem + 2.6vw, 3.5rem)`, title 1.75rem,
+figure 1.75rem, section 1.1875rem, body 0.9375rem, small 0.8125rem, label 0.75rem.
+Weights 400, 500, 600 (700 for the brand only). Large type tightened (hero -0.035em,
+title -0.025em, figure -0.02em); labels +0.01em. Line heights 1.08, 1.3, 1.5. Figures
+in columns use tabular numerals.
+
+**Space.** A 4 pt scale: 4, 8, 12, 16, 20, 24, 32, 40, 48, 64. Page gutter
+`clamp(16px, 2.4vw, 40px)`; content up to 1240px; menu 248px.
+
+**Shape.** Radius by object: panels 18px, controls 8px, pills (statuses only) 999px.
+Hairlines 1px. One shadow, `--shadow-float`, on floating surfaces only (menus,
+popovers, the month picker, drawers, dialogs); focus rings are a 3px soft accent.
+
+**Colour, with measured contrast** (all text pairs clear 4.5:1):
+
+| Role | Light | Dark | Pair, light / dark |
+|---|---|---|---|
+| Ground | #f5f5f7 | #0e0e10 | |
+| Raised (panels) | #ffffff | #1c1c1e | |
+| Ink | #1d1d1f | #f5f5f7 | on ground 15.5 / 17.7 |
+| Muted | #636368 | #a1a1a6 | on ground 5.5, on control grey 4.9 / on raised 6.6 |
+| Faint | #6e6e73 | #98989d | on white 5.1 / on control grey 5.0 |
+| Hairline | #e3e3e8 | #2c2c2e | |
+| Control grey (track) | #e8e8ed | #2a2a2d | |
+| Accent (actions, links, the selection, focus) | #0066cc | #3d9bff | on ground 5.1 / 6.7; text on accent 5.6 / 6.6 |
+| Good, on its soft ground | #1d7a3a on #e6f4ea | #4cc76a on #15291b | 4.7 / 7.1 |
+| Warning, on its soft ground | #9a5b00 on #fbf0dc | #f2b14a on #33270f | 4.8 / 7.8 |
+| Danger, on its soft ground | #c4262e on #fde8e8 | #ff6b63 on #3a1817 | 4.9 / 5.7 |
+| Scrim behind overlays | black 26% | black 56% | |
+
+Status colours appear only beside the word they mean. The menu has its own set for the
+"Light with a dark menu" appearance.
+
+**Motion.** One ease, `cubic-bezier(0.2, 0.7, 0.2, 1)`. Durations: micro 150ms, state
+240ms, reveal 480ms, count 600ms. Movement 4, 8, 12px. Reduced motion: nothing moves.
 
 ## 6. Stack (proposed, confirmed at scaffold)
 
@@ -138,3 +174,7 @@ Dated. These amend everything above; where they differ, this section wins.
   company without targets each get an honest state, never "0 of 0".
 - **2026-10-04.** Full creative freedom on structure and experience; every old feature
   stays, and new ones are welcome where they help.
+- **2026-10-04.** Days are picked as on the phone: a strip of the week to tap, and one
+  month calendar of our own behind "Pick a date", the same on every page that picks a
+  day (Field activity, Day plans, a person's day, Leave). The browser's own date box is
+  used only inside forms.
