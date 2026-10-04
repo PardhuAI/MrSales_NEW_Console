@@ -10,6 +10,7 @@ import './styles/components.css';
 import './styles/field.css';
 import './styles/sales.css';
 import './styles/team.css';
+import './styles/office.css';
 import { App } from './App';
 import { approvalsStore } from './data/approvals';
 import { liveApprovals } from './live/approvals';

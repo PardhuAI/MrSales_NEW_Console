@@ -458,11 +458,12 @@ export function seed(now = new Date()): Tables {
         const travel = chance(0.08);
         const big = inFlight && pendingClaims.has(rep.name) && chance(0.22);
         const amount = 350 + (travel ? between(2, 9) * 50 : 0) + (big ? between(6, 16) * 100 : 0);
+        const extra = big ? pick([['lodging', 'Stayed overnight for the CME at Warangal.'], ['courier', 'Couriered samples to the Kazipet chemists.'], ['food', 'Team dinner with the doctors after the launch.']]) : null;
         const status = inFlight ? (pendingClaims.has(rep.name) ? 'pending' : current ? 'draft' : 'approved')
           : !current ? (chance(0.02) ? 'rejected' : 'approved') : 'draft';
         add('expenses', {
-          id: uid('exp'), employee_id: rep.id, work_date: k, amount, categories: ['dailyAllowance', ...(travel ? ['travel'] : []), ...(big ? [pick(['lodging', 'courier', 'food'])] : [])],
-          description: big ? pick(['Stayed overnight for the CME at Warangal.', 'Couriered samples to the Kazipet chemists.', 'Team dinner with the doctors after the launch.']) : null,
+          id: uid('exp'), employee_id: rep.id, work_date: k, amount, categories: ['dailyAllowance', ...(travel ? ['travel'] : []), ...(extra ? [extra[0]] : [])],
+          description: extra ? extra[1] : null,
           remarks: null, travel_mode: travel ? 'bike' : null, destination: travel ? pick(['Shamshabad', 'Nalgonda', 'Jangaon', 'Guntur', 'Machilipatnam']) : rep.hq,
           status, receipt_paths: amount > 500 ? [`demo/${rep.id}/${k}/bill.jpg`] : [],
           submitted_at: status === 'draft' ? null : status === 'pending' ? at(shift(today, -between(1, 3)), 19) : at(`${monthKey(ty, tm)}-02`, 19),
@@ -472,6 +473,16 @@ export function seed(now = new Date()): Tables {
         });
       }
     }
+  }
+
+  // Two things for the office to look at: a Sunday claimed with no day plan, and a big day with no bill.
+  {
+    const [cy, cm] = claimMonth.split('-').map(Number);
+    const sunday = Array.from({ length: 28 }, (_, i) => `${claimMonth}-${String(i + 1).padStart(2, '0')}`).find(k => !working(k) && k < today && new Date(cy, cm - 1, Number(k.slice(8))).getDay() === 0);
+    const harika = by('Harika Naidu');
+    if (sunday) add('expenses', { id: uid('exp'), employee_id: harika.id, work_date: sunday, amount: 600, categories: ['travel'], description: 'Drove to Nalgonda for Monday\'s CME.', remarks: null, travel_mode: 'car', destination: 'Nalgonda', status: 'pending', receipt_paths: [], submitted_at: at(shift(today, -2), 19), decided_at: null, decided_by: null, created_at: at(sunday, 20), updated_at: at(sunday, 20) });
+    const swathi = (T.expenses ?? []).find(e => e.employee_id === by('Swathi Reddy').id && (e.work_date as string).startsWith(claimMonth) && e.status === 'pending' && Number(e.amount) > 500);
+    if (swathi) swathi.receipt_paths = [];
   }
 
   // ── orders ──
@@ -541,7 +552,11 @@ export function seed(now = new Date()): Tables {
   }
   for (const e of [...managers, ...reps]) {
     const gross = managers.includes(e) ? 68000 : 34000 + (reps.indexOf(e) % 5) * 2500;
-    add('payslips', { id: uid('pay'), employee_id: e.id, period_year: py, period_month: pm, net_pay: Math.round(gross * 0.86), storage_path: null, released_at: at(`${monthKey(ty, tm)}-01`, 10) });
+    // Two months released; a few people had a raise or a day without pay in between.
+    const before = new Date(py, pm - 2, 1);
+    const [by2, bm2] = [before.getFullYear(), before.getMonth() + 1];
+    if (e.joined_at as string < `${monthKey(by2, bm2)}-01`) add('payslips', { id: uid('pay'), employee_id: e.id, period_year: by2, period_month: bm2, net_pay: Math.round(gross * 0.86) - (chance(0.2) ? 1500 : 0), storage_path: null, released_at: at(`${monthKey(py, pm)}-01`, 10) });
+    add('payslips', { id: uid('pay'), employee_id: e.id, period_year: py, period_month: pm, net_pay: Math.round(gross * 0.86) - (chance(0.1) ? 1170 : 0), storage_path: null, released_at: at(`${monthKey(ty, tm)}-01`, 10) });
   }
   const taskSpecs: [string, string, number, string][] = [
     ['Collect the CME attendance list from Care Hospital', 'Sai Kiran Reddy', 3, 'open'],
@@ -595,8 +610,8 @@ export function seed(now = new Date()): Tables {
   for (const t of T.tasks ?? []) add('notifications', { id: uid('not'), employee_id: t.assignee_id, title: 'New task', body: t.title, kind: 'task', is_read: t.status === 'done', created_at: t.created_at, entity: 'task', entity_id: t.id, deep_link: null, group_count: 1 });
   add('notifications', { id: uid('not'), employee_id: fake.id, title: 'Fake location blocked', body: 'A fake location app was detected. Turn it off to log visits.', kind: 'location', is_read: false, created_at: fake.last_mock_at, entity: null, entity_id: null, deep_link: null, group_count: 1 });
   for (const r of reps) add('notifications', { id: uid('not'), employee_id: r.id, title: 'New resource', body: 'Price list, October is on your phone.', kind: 'document', is_read: chance(0.6), created_at: at(shift(today, -6), 11), entity: 'resource', entity_id: null, deep_link: null, group_count: 1 });
-  const exportsSpec: [string, string, number][] = [['dcr', 'done', 1], ['expenses', 'done', 3], ['clients', 'done', 8], ['tourPlan', 'failed', 12]];
-  for (const [kind, status, ago] of exportsSpec) add('export_jobs', { id: uid('exj'), requested_by: null, kind, params: { month: monthKey(py, pm), employee_id: null }, status, storage_path: status === 'done' ? `demo/exports/${kind}-${monthKey(py, pm)}.csv` : null, error: status === 'failed' ? 'The month had no submitted tour plans.' : null, created_at: at(shift(today, -ago), 16), finished_at: at(shift(today, -ago), 16.02) });
+  const exportsSpec: [string, string, number][] = [['dcr', 'ready', 1], ['expenses', 'ready', 3], ['clients', 'ready', 8], ['tourPlan', 'failed', 12]];
+  for (const [kind, status, ago] of exportsSpec) add('export_jobs', { id: uid('exj'), requested_by: null, kind, params: { month: monthKey(py, pm), employee_id: null }, status, storage_path: status === 'ready' ? `demo/exports/${kind}-${monthKey(py, pm)}.csv` : null, error: status === 'failed' ? 'The month had no submitted tour plans.' : null, created_at: at(shift(today, -ago), 16), finished_at: at(shift(today, -ago), 16.02) });
   const audit: [string, string, string, string | null, string | null, number][] = [
     ['changed manager', 'Employee', 'Divya Sree', 'Lakshmi Prasanna', 'Ravi Teja Varma', 40],
     ['gave a phone login', 'Login', 'Farhan Siddiqui', null, null, 5],

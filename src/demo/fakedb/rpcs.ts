@@ -311,3 +311,80 @@ export function teamRpcs(audit: (db: FakeDb, action: string, entity: string, lab
     },
   };
 }
+
+/** Pay, things shared with the field, and downloads. */
+export function officeRpcs(audit: (db: FakeDb, action: string, entity: string, label: string, before?: unknown, after?: unknown, reason?: unknown) => void): Record<string, Rpc> {
+  const RESOURCE_CATEGORIES = ['E-Detailing', 'Product Information', 'Price List', 'Training', 'Document'];
+  return {
+    release_payslip: (a, db) => {
+      const e = find(db, 'employees', a.p_employee_id) ?? fail('employee is not in this organisation');
+      const old = db.rows('payslips').find(p => p.employee_id === e.id && p.period_year === a.p_year && p.period_month === a.p_month);
+      if (old) {
+        Object.assign(old, { net_pay: a.p_net_pay, storage_path: a.p_storage_path, released_at: now() });
+        return old.id;
+      }
+      const id = crypto.randomUUID();
+      db.mutable('payslips').push({ id, org_id: ORG, employee_id: e.id, period_year: a.p_year, period_month: a.p_month, net_pay: a.p_net_pay, storage_path: a.p_storage_path, released_at: now() });
+      return id;
+    },
+    publish_resource: (a, db) => {
+      if (!trimOrNull(a.p_title)) fail('a resource needs a title');
+      if (!RESOURCE_CATEGORIES.includes(String(a.p_category))) fail(`category must be one of ${RESOURCE_CATEGORIES.join(', ')}`);
+      if (!['application/pdf', 'image/jpeg', 'image/png', 'image/webp'].includes(String(a.p_mime_type))) fail('only PDF and images can be published');
+      let family: unknown = null;
+      let version = 1;
+      if (a.p_replaces) {
+        const cur = find(db, 'resources', a.p_replaces) ?? fail('resource not found');
+        if (cur.status !== 'active') fail('only the current version can be replaced');
+        cur.status = 'superseded';
+        family = cur.family_id;
+        version = Number(cur.version) + 1;
+      }
+      const id = crypto.randomUUID();
+      db.mutable('resources').push({
+        id, org_id: ORG, title: String(a.p_title).trim(), category: a.p_category, description: trimOrNull(a.p_description), storage_path: a.p_storage_path,
+        file_name: trimOrNull(a.p_file_name), mime_type: a.p_mime_type, size_bytes: a.p_size_bytes, version, family_id: family ?? id, status: 'active', published_by: null, published_at: now(),
+      });
+      return id;
+    },
+    archive_resource: (a, db) => {
+      const r = db.rows('resources').find(x => x.id === a.p_id && x.status === 'active') ?? fail('no current resource with that id');
+      r.status = 'archived';
+      return null;
+    },
+    delete_resource: (a, db) => {
+      const r = find(db, 'resources', a.p_id) ?? fail('resource not found');
+      const gone = db.rows('resources').filter(x => x.family_id === r.family_id);
+      db.replace('resources', db.rows('resources').filter(x => x.family_id !== r.family_id));
+      return gone.map(x => x.storage_path);
+    },
+    create_survey: (a, db) => {
+      if (String(a.p_title ?? '').trim().length < 3) fail('give the survey a title');
+      const active = a.p_active !== false;
+      if (active) for (const s of db.rows('surveys')) s.is_active = false;
+      const id = crypto.randomUUID();
+      db.mutable('surveys').push({ id, org_id: ORG, title: String(a.p_title).trim(), body: trimOrNull(a.p_body), is_active: active, created_at: now() });
+      audit(db, 'started a survey', 'Survey', String(a.p_title).trim());
+      return id;
+    },
+    set_survey_active: (a, db) => {
+      const s = find(db, 'surveys', a.p_id) ?? fail('no survey you may see has that id');
+      if (a.p_active) for (const x of db.rows('surveys')) if (x !== s) x.is_active = false;
+      s.is_active = Boolean(a.p_active);
+      audit(db, a.p_active ? 'reopened a survey' : 'closed a survey', 'Survey', String(s.title));
+      return null;
+    },
+    request_export: (a, db) => {
+      const id = crypto.randomUUID();
+      db.mutable('export_jobs').push({ id, org_id: ORG, requested_by: null, kind: a.p_kind, params: a.p_params ?? {}, status: 'queued', storage_path: null, error: null, created_at: now(), finished_at: null });
+      return id;
+    },
+    complete_export: (a, db) => {
+      const j = find(db, 'export_jobs', a.p_job_id) ?? fail('export job not found');
+      Object.assign(j, a.p_failed
+        ? { status: 'failed', error: trimOrNull(a.p_error) ?? 'failed', finished_at: now() }
+        : { status: 'ready', storage_path: trimOrNull(a.p_storage_path), error: null, finished_at: now() });
+      return null;
+    },
+  };
+}

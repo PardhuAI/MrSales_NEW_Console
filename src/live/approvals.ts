@@ -22,7 +22,7 @@ const CATEGORY: Record<string, string> = {
   phone: 'Phone',
   other: 'Other',
 };
-const categoryLabel = (c: string) =>
+export const categoryLabel = (c: string) =>
   CATEGORY[c] ?? c.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^./, x => x.toUpperCase());
 
 const LEAVE: Record<string, string> = {

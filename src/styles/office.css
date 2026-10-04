@@ -1,0 +1,26 @@
+/* Expenses and pay, sharing with the field, and reports. */
+
+/* ── expense claims ──────────────────────────────────────────────────── */
+.claim-flags {
+  margin-bottom: var(--s-4);
+}
+
+.claim-days {
+  font-variant-numeric: tabular-nums;
+}
+
+.claim-date {
+  white-space: nowrap;
+}
+
+.claim-end {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--s-1) var(--s-3);
+  white-space: nowrap;
+}
+
+.show-days {
+  margin-top: var(--s-3);
+}
