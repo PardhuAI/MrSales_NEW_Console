@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom';
+import { BrowserRouter, MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { Shell } from './components/Shell';
 import { SectionLayout } from './components/SectionLayout';
 import { Dashboard } from './pages/Dashboard';
@@ -33,13 +33,22 @@ function TitleAndScroll() {
   return null;
 }
 
+/**
+ * A preview build (VITE_PREVIEW=1) is shown inside a hosted page whose own
+ * address the console cannot use, so it keeps its place in memory instead.
+ */
+const Router = ({ children }: { children: JSX.Element }) =>
+  import.meta.env.VITE_PREVIEW
+    ? <MemoryRouter initialEntries={[import.meta.env.VITE_PREVIEW_START || '/']}>{children}</MemoryRouter>
+    : <BrowserRouter>{children}</BrowserRouter>;
+
 export function App() {
   return (
     <ThemeProvider>
       <SessionProvider>
-        <BrowserRouter>
+        <Router>
           <Gate />
-        </BrowserRouter>
+        </Router>
       </SessionProvider>
     </ThemeProvider>
   );
