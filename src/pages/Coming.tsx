@@ -45,7 +45,10 @@ export function NotFound() {
   const allowed = useCan();
   // A real page this role may not open says so, and who can change that, rather than pretending it is not there.
   // The page itself, or else the longest page address this one sits under.
-  const page = allPages().find(p => p.path === pathname)
+  // An action ("Add a person") is named for itself, before the section it sits under.
+  const action = NEW_ACTIONS.find(a => a.path === pathname);
+  const page = (action && { label: action.label, module: action.module, path: action.path })
+    ?? allPages().find(p => p.path === pathname)
     ?? allPages().filter(p => p.path !== '/' && pathname.startsWith(`${p.path}/`)).sort((a, b) => b.path.length - a.path.length)[0];
   if (page && !allowed(page.module)) {
     return (

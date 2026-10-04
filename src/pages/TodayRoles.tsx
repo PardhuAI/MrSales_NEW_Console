@@ -125,7 +125,11 @@ export function HrToday() {
   const m = r.data;
   const d = m.day;
   const atWork = d.present;
-  const expected = d.present + d.absent + d.leave;
+  // Today has no attendance row for someone who has not declared yet: the
+  // database leaves it out, because today is never a missed day. So today is
+  // measured against the roster, and the gap is "not declared yet", not "nobody".
+  const expected = d.isToday && !m.todayOff ? Math.max(d.present + d.absent + d.leave, m.headcount) : d.present + d.absent + d.leave;
+  const notYet = d.isToday && !m.todayOff ? expected - d.present - d.leave : d.absent;
   const dayLine = `${d.isToday ? 'Today' : longDay(d.date)}: ${atWork} of ${count(expected, 'person', 'people')} at work`
     + (d.leave ? `, ${d.leave} on leave` : '') + (d.absent ? `, ${d.absent} not in` : '') + '.';
 
@@ -142,7 +146,7 @@ export function HrToday() {
         <p className="hero-sub">
           {m.todayOff || !d.isToday ? dayLine : [
             d.leave ? `${d.leave} on approved leave.` : '',
-            d.absent ? `${count(d.absent, 'person has', 'people have')} not declared a day plan yet.` : 'Everyone expected has declared their day.',
+            notYet ? `${count(notYet, 'person has', 'people have')} not declared a day plan yet.` : 'Everyone expected has declared their day.',
           ].filter(Boolean).join(' ')}
           {' '}{count(m.headcount, 'person', 'people')} on the roster{m.joinedThisMonth.length ? `, ${m.joinedThisMonth.length} joined this month` : ''}.
         </p>
@@ -299,6 +303,7 @@ export function FinanceToday() {
           </div>
           <div className="mf"><span className="mf-value">{rupeesShort(mo.approved)}</span><span className="mf-label">approved</span></div>
           <div className="mf"><span className="mf-value">{rupeesShort(mo.pending)}</span><span className="mf-label">waiting</span></div>
+          {mo.rejected > 0 && <div className="mf"><span className="mf-value">{rupeesShort(mo.rejected)}</span><span className="mf-label">rejected</span></div>}
           <div className="mf"><span className="mf-value">{rupeesShort(mo.draft)}</span><span className="mf-label">in drafts, not sent</span></div>
         </div>
         <p className="block-note">
@@ -326,7 +331,7 @@ export function FinanceToday() {
                     <p className="row-sub">
                       {e.categories.join(', ')}{e.note ? ` · ${e.note}` : ''}
                       {' · '}{e.bills ? count(e.bills, 'bill') : <span className="warn-text">no bill</span>}
-                      {e.status === 'pending' ? ' · waiting' : ' · approved'}
+                      {e.status === 'pending' ? ' · waiting' : e.status === 'rejected' ? ' · rejected' : ' · approved'}
                     </p>
                   </div>
                   <span className="row-figure">{rupees(e.amount)}</span>

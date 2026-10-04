@@ -150,10 +150,39 @@ named after the wrong page.
   two disagreed by the GST; both now say which. The date and month pickers lost a key
   pressed straight after opening, and an arrow key on a strip could move two days.
 
+## Live run as every office role, 2026-10-05
+
+`scripts/testbed-role-logins.sql` gives Testbed one console login per role (HR,
+finance, IT, and management as Rajesh Verma with team scope; addresses in the
+gitignored `.env.testbed`). Each was signed in live and sent to all 51 pages.
+
+| Role | Menu | Pages open | Refused, with the reason |
+|---|---|---|---|
+| Admin | every section | 50 | Payroll |
+| HR | Home, Approvals, Field, Team, Expenses and pay, Reports, Settings | 21 | 30 |
+| Finance | Home, Approvals, Sales, Team, Expenses and pay, Reports, Settings | 18 | 33 |
+| IT | Home, Team, Settings | 12 | 39 |
+| Management | Home, Field, Clients, Sales, Team, Expenses and pay, Share with field, Reports | 31 | 20 |
+
+Every open page loaded with no error and no failed request, for every role, and what
+each role may open is the old console's grant matrix. Found and fixed on the way:
+
+- **"Add a person" for a role without onboarding** fell into a person's record and asked
+  the database for an employee called "new" (eleven failed reads). Forbidden actions
+  now have their own refusal, named for the action.
+- **HR's Today said "Nobody is on the roster yet"** over "14 people on the roster" in the
+  early morning: the database leaves today out for anyone who has not declared, because
+  today is never a missed day. Today is now measured against the roster, the gap named
+  "not declared yet".
+- **Finance's Today counted ₹1,000 claimed** for September where Expense claims counted
+  ₹1,980: it left out a rejected ₹980 day, and so also said no day was claimed above the
+  allowance. Claimed now means sent (waiting, approved or rejected) on both, with the
+  rejected amount shown.
+
 ## Still open
 
-- Live runs as the other office roles (HR, finance, IT, management). Testbed has an
-  Admin console login only; the others need one each.
 - Writes other than a leave decision, run live end to end (signatures are checked).
+- A team-scope check with two managers: in Testbed everyone reports to Rajesh Verma, so
+  "sees only their team" cannot yet be told apart from "sees everyone".
 - `seam.spec.ts` (the console and the phone agree), which needs the phone.
 - The owner's review of each screen, and the decisions listed in `FEATURE_CHECKLIST.md`.

@@ -198,7 +198,7 @@ export type FinanceModel = {
   allowance: number;
   billAbove: number;
   waiting: { claims: number; days: number; amount: number; oldestSent: string | null };
-  month: { claimed: number; approved: number; pending: number; draft: number; people: number; allowancePart: number; abovePart: number };
+  month: { claimed: number; approved: number; pending: number; rejected: number; draft: number; people: number; allowancePart: number; abovePart: number };
   lastMonth: { label: string; approved: number; people: number };
   aboveAllowance: { id: string; personId: string; name: string; date: string; amount: number; categories: string[]; note: string | null; status: string; bills: number }[];
   byPerson: { personId: string; name: string; days: number; amount: number; perDay: number }[];
@@ -239,7 +239,9 @@ export async function loadFinance(): Promise<FinanceModel> {
   const draftsNow = expenses.filter(e => e.work_date.startsWith(mk(y, m)) && e.status === 'draft');
   const sum = (l: typeof expenses) => l.reduce((s, e) => s + Number(e.amount), 0);
   const pending = expenses.filter(e => e.status === 'pending');
-  const sent = thisMonth.filter(e => e.status === 'pending' || e.status === 'approved');
+  // Claimed means sent: waiting, approved or rejected. The same word on Expense
+  // claims counts the same rows, so the two screens give one figure.
+  const sent = thisMonth.filter(e => e.status === 'pending' || e.status === 'approved' || e.status === 'rejected');
   const da = (e: (typeof expenses)[number]) => ((e.categories ?? []).includes('dailyAllowance') ? Math.min(Number(e.amount), allowance) : 0);
   const per = new Map<string, { days: number; amount: number }>();
   for (const e of sent) {
@@ -270,6 +272,7 @@ export async function loadFinance(): Promise<FinanceModel> {
       claimed: sum(sent),
       approved: sum(thisMonth.filter(e => e.status === 'approved')),
       pending: sum(thisMonth.filter(e => e.status === 'pending')),
+      rejected: sum(thisMonth.filter(e => e.status === 'rejected')),
       draft: sum(thisMonth.filter(e => e.status === 'draft')),
       people: per.size,
       allowancePart: sent.reduce((s, e) => s + da(e), 0),
@@ -281,7 +284,7 @@ export async function loadFinance(): Promise<FinanceModel> {
       people: new Set(lastMonth.filter(e => e.status === 'approved').map(e => e.employee_id)).size,
     },
     aboveAllowance: expenses
-      .filter(e => (e.status === 'pending' || e.status === 'approved') && e.work_date.startsWith(mk(fy, fm)) && allowance > 0 && Number(e.amount) > allowance)
+      .filter(e => (e.status === 'pending' || e.status === 'approved' || e.status === 'rejected') && e.work_date.startsWith(mk(fy, fm)) && allowance > 0 && Number(e.amount) > allowance)
       .sort((a, b) => Number(b.amount) - Number(a.amount))
       .slice(0, 6)
       .map(e => ({

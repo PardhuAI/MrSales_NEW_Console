@@ -182,6 +182,13 @@ function Console() {
           {pages.filter(p => !allowed(p.module)).map(p => (
             <Route key={`no:${p.path}`} path={p.path} element={<SectionLayout><NotFound /></SectionLayout>} />
           ))}
+          {/* The same for actions and fixed addresses: "Add a person" without the
+              permission must not fall into /team/:id and load a person called "new". */}
+          {[...NEW_ACTIONS.map(a => ({ path: a.path, module: a.module })), ...DETAIL.filter(d => !d.path.includes(':'))]
+            .filter(x => !allowed(x.module) && !pages.some(p => p.path === x.path))
+            .map(x => (
+              <Route key={`no:${x.path}`} path={x.path} element={<SectionLayout><NotFound /></SectionLayout>} />
+            ))}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Shell>
