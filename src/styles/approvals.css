@@ -39,7 +39,7 @@
 }
 
 .seg-count {
-  color: var(--faint);
+  color: var(--muted);
   font-weight: var(--w-medium);
 }
 
