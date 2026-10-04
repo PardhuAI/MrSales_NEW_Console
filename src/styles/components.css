@@ -1,0 +1,297 @@
+/* Shared pieces every rebuilt screen uses. Tokens only. */
+
+/* ── states ──────────────────────────────────────────────────────────── */
+.state-loading {
+  display: grid;
+  gap: var(--s-6);
+}
+
+.state-loading .skeleton {
+  display: block;
+  border-radius: var(--r-panel);
+  background: var(--panel-bg);
+  animation: breathe 1.4s var(--ease) infinite alternate;
+}
+
+.state-empty {
+  display: grid;
+  gap: var(--s-1);
+  padding: var(--s-6) 0;
+}
+
+.state-empty-title {
+  font-weight: var(--w-medium);
+}
+
+.state-empty-text {
+  max-width: 60ch;
+  color: var(--muted);
+  font-size: var(--t-sm);
+  line-height: var(--lh-body);
+}
+
+.form-error {
+  color: var(--bad);
+  font-size: var(--t-sm);
+}
+
+.warn-text {
+  color: var(--warn);
+}
+
+/* ── a list of rows: who, what, and a figure or time on the right ───── */
+.rows > li {
+  border-bottom: var(--hairline-w) solid var(--hairline);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: var(--s-4);
+  padding: var(--s-3) 0;
+}
+
+.row-title {
+  font-weight: var(--w-medium);
+  line-height: var(--lh-snug);
+}
+
+.row-title-sub {
+  color: var(--muted);
+  font-weight: var(--w-regular);
+}
+
+.row-sub {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: var(--t-sm);
+  line-height: var(--lh-body);
+}
+
+.row-meta {
+  color: var(--muted);
+  font-size: var(--t-sm);
+  white-space: nowrap;
+}
+
+.row-figure {
+  font-weight: var(--w-semibold);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.sub-title {
+  margin-top: var(--s-6);
+  padding-bottom: var(--s-2);
+  border-bottom: var(--hairline-w) solid var(--hairline);
+  color: var(--muted);
+  font-size: var(--t-sm);
+  font-weight: var(--w-semibold);
+}
+
+.block-note {
+  margin-top: var(--s-5);
+  color: var(--muted);
+  font-size: var(--t-sm);
+}
+
+.cell-link {
+  color: inherit;
+  font-weight: var(--w-medium);
+}
+
+.cell-link:hover {
+  color: var(--accent);
+}
+
+/* ── a two-part bar with its words beside it ─────────────────────────── */
+.split {
+  display: flex;
+  gap: 2px;
+  height: 6px;
+  margin-top: var(--s-4);
+  border-radius: var(--r-pill);
+  overflow: hidden;
+}
+
+.split-a {
+  background: var(--accent);
+}
+
+.split-b {
+  background: var(--track);
+}
+
+.split-key {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-4);
+  margin-top: var(--s-2);
+  color: var(--muted);
+  font-size: var(--t-xs);
+}
+
+.split-key > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.k-a,
+.k-b {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+}
+
+.k-a {
+  background: var(--accent);
+}
+
+.k-b {
+  background: var(--track);
+  box-shadow: inset 0 0 0 1px var(--hairline);
+}
+
+/* ── first-run setup ─────────────────────────────────────────────────── */
+.setup {
+  display: grid;
+  gap: var(--s-4);
+  padding: var(--s-6) var(--s-8);
+  border: var(--hairline-w) solid var(--panel-edge);
+  border-radius: var(--r-panel);
+  background: var(--panel-bg);
+}
+
+.setup-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--s-8);
+}
+
+.setup-sub {
+  margin-top: var(--s-1);
+  max-width: 62ch;
+  color: var(--muted);
+  font-size: var(--t-sm);
+}
+
+.setup-meter {
+  flex: none;
+  width: 160px;
+  height: 6px;
+  border-radius: var(--r-pill);
+  background: var(--track);
+  overflow: hidden;
+}
+
+.setup-meter span {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  transform-origin: left;
+}
+
+.setup-steps > li {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) auto;
+  align-items: start;
+  gap: var(--s-4);
+  padding: var(--s-4) 0;
+  border-top: var(--hairline-w) solid var(--hairline);
+}
+
+.setup-n {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: var(--hairline-w) solid var(--hairline);
+  color: var(--muted);
+  font-size: var(--t-xs);
+  font-weight: var(--w-semibold);
+  font-variant-numeric: tabular-nums;
+}
+
+.setup-steps > li.next .setup-n {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.setup-steps > li.done .setup-n {
+  border-color: transparent;
+  background: var(--track);
+  color: var(--muted);
+}
+
+.setup-steps > li.done .setup-title {
+  color: var(--muted);
+}
+
+.setup-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--s-2);
+  font-weight: var(--w-medium);
+}
+
+.setup-optional {
+  color: var(--faint);
+  font-size: var(--t-xs);
+  font-weight: var(--w-regular);
+}
+
+.setup-body {
+  margin-top: 2px;
+  max-width: 66ch;
+  color: var(--muted);
+  font-size: var(--t-sm);
+  line-height: var(--lh-body);
+}
+
+.setup-actions {
+  display: flex;
+  gap: var(--s-2);
+  align-items: center;
+}
+
+.setup-toggle {
+  justify-self: start;
+  font-size: var(--t-sm);
+}
+
+@media (max-width: 700px) {
+  .setup {
+    padding: var(--s-5) var(--s-4);
+  }
+
+  .setup-head {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--s-3);
+  }
+
+  .setup-meter {
+    width: 100%;
+  }
+
+  .setup-steps > li {
+    grid-template-columns: 28px minmax(0, 1fr);
+  }
+
+  .setup-actions {
+    grid-column: 2;
+    flex-wrap: wrap;
+  }
+}
+
+/* On a phone a wide table scrolls inside its own box; the first column keeps a readable width. */
+@media (max-width: 600px) {
+  .table th[scope='row'] {
+    min-width: 9.5rem;
+  }
+}

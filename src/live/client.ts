@@ -1,4 +1,5 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { demoClient } from '../demo/fakedb';
 
 /**
  * The connection, and whether there is one.
@@ -18,9 +19,12 @@ export const supabase: SupabaseClient | null = isLive
   ? createClient(url!, key!, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } })
   : null;
 
+/**
+ * The database: the live project, or in demo mode the in-memory demo company,
+ * which answers the same queries. Screens never know which.
+ */
 export function db(): SupabaseClient {
-  if (!supabase) throw new Error('No backend is configured.');
-  return supabase;
+  return supabase ?? (demoClient() as unknown as SupabaseClient);
 }
 
 /** Reads every row of a query, a page at a time (the API returns 1,000 at most). */

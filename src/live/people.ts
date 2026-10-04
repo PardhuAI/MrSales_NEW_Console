@@ -9,12 +9,13 @@ export type Employee = Person & {
   managerId: string | null;
   territoryId: string | null;
   lastSeenAt: string | null;
+  joinedAt: string;
 };
 
 type Row = {
   id: string; code: string | null; name: string; hq: string | null; mobile_role: string | null;
   designation_short: string | null; designation: string | null; status: string | null;
-  territory_id: string | null; last_seen_at: string | null;
+  territory_id: string | null; last_seen_at: string | null; joined_at: string | null;
 };
 
 /**
@@ -26,7 +27,7 @@ export async function loadEmployees(): Promise<Map<string, Employee>> {
   const sb = db();
   const [rows, terr, rep] = await Promise.all([
     readAll<Row>((a, b) => sb.from('employees')
-      .select('id, code, name, hq, mobile_role, designation_short, designation, status, territory_id, last_seen_at')
+      .select('id, code, name, hq, mobile_role, designation_short, designation, status, territory_id, last_seen_at, joined_at')
       .order('name').range(a, b)),
     sb.from('territories').select('id, name'),
     sb.from('current_reporting').select('employee_id, manager_id'),
@@ -51,6 +52,7 @@ export async function loadEmployees(): Promise<Map<string, Employee>> {
       managerId,
       manager: (managerId && names.get(managerId)) || 'nobody',
       lastSeenAt: r.last_seen_at,
+      joinedAt: r.joined_at ?? '',
     }];
   }));
 }

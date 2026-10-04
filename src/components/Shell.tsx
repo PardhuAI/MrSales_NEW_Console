@@ -3,7 +3,7 @@ import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import * as Menu from '@radix-ui/react-dropdown-menu';
 import { Check, List, MagnifyingGlass, Plus, X } from '@phosphor-icons/react';
 import { ACCOUNT_PAGES, NEW_ACTIONS, SECTIONS, sectionOf, type Section } from '../app/nav';
-import { ROLE_LABEL, useCan } from '../app/access';
+import { ROLE_LABEL, useCan, type Role } from '../app/access';
 import { useMe, useSession } from '../live/session';
 import { THEMES, useTheme } from '../app/theme';
 import { requestCount, useApprovals } from '../data/approvals';
@@ -255,7 +255,7 @@ function AccountMenu() {
   const nav = useNavigate();
   const me = useMe();
   const allowed = useCan();
-  const { signOut } = useSession();
+  const { signOut, viewAs } = useSession();
   return (
     <Menu.Root>
       <Menu.Trigger asChild>
@@ -269,6 +269,20 @@ function AccountMenu() {
             <strong>{me.name}</strong>
             <span>{ROLE_LABEL[me.role]} · {me.orgName}</span>
           </div>
+          {viewAs && (
+            <>
+              <Menu.Separator className="menu-sep" />
+              <Menu.Label className="menu-label">Demo: see the console as</Menu.Label>
+              <Menu.RadioGroup value={me.role} onValueChange={v => { viewAs(v as Role); nav('/'); }}>
+                {(Object.keys(ROLE_LABEL) as Role[]).map(r => (
+                  <Menu.RadioItem key={r} value={r} className="menu-item menu-radio">
+                    <span>{ROLE_LABEL[r]}</span>
+                    <Menu.ItemIndicator className="menu-check"><Check size={15} weight="bold" /></Menu.ItemIndicator>
+                  </Menu.RadioItem>
+                ))}
+              </Menu.RadioGroup>
+            </>
+          )}
           <Menu.Separator className="menu-sep" />
           <Menu.Label className="menu-label">Appearance</Menu.Label>
           <Menu.RadioGroup value={theme} onValueChange={v => setTheme(v as typeof theme)}>

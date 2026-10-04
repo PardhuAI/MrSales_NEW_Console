@@ -1,4 +1,4 @@
-import { db, readAll } from './client';
+import { db, isLive, readAll } from './client';
 import { loadEmployees, type Employee } from './people';
 import type {
   Attention, CallMark, CallState, DashboardModel, DayFigures, DayState, Ranked, RibbonGroup,
@@ -72,7 +72,12 @@ export async function loadLiveDashboard(orgName: string): Promise<DashboardModel
   const today = dayKey(now);
   const nowH = hoursOf(now);
   const [ty, tm] = parts(today);
-  const windowStart = shift(today, -40);
+  const prevMonthStart = (() => {
+    const d = new Date(ty, tm - 2, 1);
+    return `${monthKey(d.getFullYear(), d.getMonth() + 1)}-01`;
+  })();
+  // Six weeks for the day views, and back to the start of last month for the month chart.
+  const windowStart = [shift(today, -40), prevMonthStart].sort()[0];
   const monthStart = `${monthKey(ty, tm)}-01`;
   const yearStart = (() => {
     const d = new Date(ty, tm - 1 - 11, 1);
@@ -121,7 +126,11 @@ export async function loadLiveDashboard(orgName: string): Promise<DashboardModel
   const isWorking = (k: string) => weekdayOf(k) !== weekOff && !holidayName.has(k);
 
   // ── the people who carry a phone ──
-  const field = [...employees.values()].filter(e => e.status === 'active' && e.role);
+  // Field people are the ones whose app is the field app (mobile role MR, from
+  // the company's own role names), plus any manager who logs calls of their own.
+  // A manager who only approves is not "a person who has not visited anyone".
+  const callers = new Set(activities.map(a => a.employee_id));
+  const field = [...employees.values()].filter(e => e.status === 'active' && (e.role === 'MR' || callers.has(e.id)));
   const fieldIds = new Set(field.map(e => e.id));
   const person = (id: string) => employees.get(id);
 
@@ -299,6 +308,8 @@ export async function loadLiveDashboard(orgName: string): Promise<DashboardModel
   const lastWeek = Array.from({ length: 7 }, (_, i) => shift(today, -1 - i)).filter(isWorking);
   const silent = field.filter(e =>
     lastWeek.length >= 3
+    // Someone who joined during the week has not had a week to be quiet in.
+    && (!e.joinedAt || e.joinedAt <= lastWeek[lastWeek.length - 1])
     && !lastWeek.every(k => onLeave(e.id, k))
     && !calls.some(c => c.employee === e.id && c.status === 'done' && lastWeek.includes(c.day)));
   if (silent.length) {
@@ -389,10 +400,35 @@ export async function loadLiveDashboard(orgName: string): Promise<DashboardModel
     });
   }
 
+  // ── the same chart for this month and last month ──
+  const monthTrend = (start: string, end: string) => {
+    const out: DashboardModel['trend'] = [];
+    for (let k = start; k <= end; k = shift(k, 1)) {
+      if (!isWorking(k) || (k === today && todayState !== 'working')) continue;
+      const list = byDay.get(k) ?? [];
+      out.push({
+        date: k,
+        label: dateOf(k).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }),
+        done: list.filter(c => c.status === 'done').length,
+        missed: list.filter(c => c.status === 'missed').length,
+      });
+    }
+    return out;
+  };
+  const trends: DashboardModel['trends'] = {
+    recent: trend,
+    thisMonth: { label: monthLabel(ty, tm), days: monthTrend(monthStart, today) },
+    lastMonth: { label: monthLabel(...(parts(prevMonthStart).slice(0, 2) as [number, number])), days: monthTrend(prevMonthStart, shift(monthStart, -1)) },
+  };
+
   // ── managers and their teams ──
   const weekStart = shift(today, -((weekdayOf(today) + 6) % 7));
+  // In the first week a month has too little in it to rank anyone on, so the
+  // ranking and the manager table read the month just closed, and say so.
   const monthHasTargets = monthTarget > 0;
-  const [sy, sm] = monthHasTargets || !prevTarget ? [ty, tm] : [py, pm];
+  const early = parts(today)[2] <= 7;
+  const [sy, sm] = (monthHasTargets && !early) || !prevTarget ? [ty, tm] : [py, pm];
+  const salesMonth = monthLabel(sy, sm);
   const managers = [...new Set([...employees.values()].map(e => e.managerId).filter(Boolean) as string[])]
     .map(id => person(id))
     .filter((m): m is Employee => Boolean(m) && m!.status === 'active')
@@ -428,6 +464,7 @@ export async function loadLiveDashboard(orgName: string): Promise<DashboardModel
   if (withTarget.length >= 4) {
     ranks = {
       basis: 'target',
+      month: salesMonth,
       top: withTarget.slice(0, 3).map(x => rank(x.e, `${pct(x.s, x.t)}%`)),
       low: withTarget.slice(-3).reverse().map(x => rank(x.e, `${pct(x.s, x.t)}%`)),
     };
@@ -442,6 +479,7 @@ export async function loadLiveDashboard(orgName: string): Promise<DashboardModel
     if (top.length) {
       ranks = {
         basis: 'calls',
+        month: salesMonth,
         top: top.map(x => rank(x.e, String(x.n))),
         low: low.map(x => rank(x.e, String(x.n))),
       };
@@ -449,7 +487,7 @@ export async function loadLiveDashboard(orgName: string): Promise<DashboardModel
   }
 
   return {
-    demo: false,
+    demo: !isLive,
     orgName,
     now,
     today: { date: dateOf(today), state: todayState, holidayName: holidayName.get(today), ...figuresFor(today, true) },
@@ -476,7 +514,9 @@ export async function loadLiveDashboard(orgName: string): Promise<DashboardModel
       year,
     },
     trend,
+    trends,
     managers,
+    salesMonth,
     ranks,
   };
   void fieldIds;

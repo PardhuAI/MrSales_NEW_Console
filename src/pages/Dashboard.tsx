@@ -1,4 +1,5 @@
 import { ArrowRight, ArrowClockwise } from '@phosphor-icons/react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useReducedMotion } from 'motion/react';
 import { useDashboard, dashboardStore, type DashboardModel, type Attention } from '../data/dashboard';
@@ -8,6 +9,10 @@ import { useCan } from '../app/access';
 import { count, days, percent, rupees, rupeesShort } from '../lib/format';
 import { Arrive, CountUp, EASE } from '../components/motion';
 import { DayRibbon } from './DayRibbon';
+import { Segmented } from '../components/Segmented';
+import { dayOf, longDay } from '../lib/days';
+import { FinanceToday, HrToday, ItToday, SetupGuide } from './TodayRoles';
+import { useMe } from '../live/session';
 
 /**
  * Today: how the field is doing, what needs a decision or a word, and whether
@@ -22,7 +27,7 @@ const severityWord: Record<Attention['severity'], string> = {
   info: 'When you can',
 };
 
-const weekdayDate = (d: Date) => d.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' });
+const weekdayDate = (d: Date) => longDay(dayOf(d));
 const weekday = (d: Date) => d.toLocaleDateString('en-IN', { weekday: 'long' });
 const ago = (d: Date | null) => {
   if (!d) return '';
@@ -35,7 +40,17 @@ const hoursNow = (d: Date) => {
   return (h % 24) + m / 60;
 };
 
+/** Today, for whoever is signed in: each office role sees its own question answered first. */
 export function Dashboard() {
+  const me = useMe();
+  if (me.role === 'hr') return <HrToday />;
+  if (me.role === 'finance') return <FinanceToday />;
+  if (me.role === 'it') return <ItToday />;
+  return <FieldToday />;
+}
+
+/** Owner, admin and management: how the field is doing, what needs them, and the month. */
+function FieldToday() {
   const { status, model, error, at } = useDashboard();
 
   if (status === 'error' && !model) {
@@ -66,6 +81,7 @@ function DashboardView({ m, updatedAt, refreshError }: { m: DashboardModel; upda
   const waiting = approvals.reduce((s, q) => s + q.count, 0);
   const seesField = allowed('field');
   const seesSales = allowed('sales');
+  const me = useMe();
 
   return (
     <div className="dash">
@@ -87,6 +103,8 @@ function DashboardView({ m, updatedAt, refreshError }: { m: DashboardModel; upda
       </Arrive>
 
       {seesField && <Hero m={m} />}
+
+      {(me.role === 'owner' || me.role === 'admin') && <SetupGuide />}
 
       {seesField && m.shown.team > 0 && (
         <Arrive index={2}>
@@ -165,7 +183,7 @@ function DashboardView({ m, updatedAt, refreshError }: { m: DashboardModel; upda
 
       {(seesSales || seesField) && <Month m={m} sales={seesSales} field={seesField} />}
 
-      {seesField && m.trend.some(t => t.done || t.missed) && <Trend m={m} />}
+      {seesField && <Trend m={m} />}
 
       {seesField && (m.managers.length > 0 || m.ranks) && (
         <div className="pair pair-wide">
@@ -182,7 +200,7 @@ function DashboardView({ m, updatedAt, refreshError }: { m: DashboardModel; upda
                       <th scope="col">Manager</th>
                       <th scope="col" className="num">Calls this week</th>
                       <th scope="col" className="num">Location checked</th>
-                      {seesSales && <th scope="col" className="num">Sold</th>}
+                      {seesSales && <th scope="col" className="num">Sold in {m.salesMonth}</th>}
                       {seesSales && <th scope="col" className="num">Of target</th>}
                     </tr>
                   </thead>
@@ -222,7 +240,7 @@ function DashboardView({ m, updatedAt, refreshError }: { m: DashboardModel; upda
             <Arrive as="section" className="block" index={8}>
               <div className="block-head">
                 <h2 className="section-title">Ahead and behind</h2>
-                <span className="block-meta">{m.ranks.basis === 'target' ? 'Share of monthly target' : 'Calls done, last 30 days'}</span>
+                <span className="block-meta">{m.ranks.basis === 'target' ? `Share of ${m.ranks.month}'s target` : 'Calls done, last 30 days'}</span>
               </div>
               <div className="ranks">
                 <RankList title="Furthest ahead" people={m.ranks.top} />
@@ -408,47 +426,71 @@ function YearChart({ year }: { year: DashboardModel['month']['year'] }) {
   );
 }
 
-/** Calls done on each recent working day, with the missed ones on top. */
+/** Calls done on each working day, with the missed ones on top: the last 20 working days, this month or last month. */
 function Trend({ m }: { m: DashboardModel }) {
   const reduce = useReducedMotion();
-  const max = Math.max(...m.trend.map(t => t.done + t.missed), 1);
+  const [range, setRange] = useState<'recent' | 'thisMonth' | 'lastMonth'>('recent');
+  // The bars draw once, on first view; switching the range changes them in place.
+  const [drawn, setDrawn] = useState(false);
+  useEffect(() => {
+    const t = window.setTimeout(() => setDrawn(true), 900);
+    return () => window.clearTimeout(t);
+  }, []);
+  const days = range === 'recent' ? m.trends.recent : m.trends[range].days;
+  const title = range === 'recent' ? `Calls on the last ${count(days.length, 'working day')}` : `Calls in ${m.trends[range].label}`;
+  const max = Math.max(...days.map(t => t.done + t.missed), 1);
   const H = 90;
-  const total = m.trend.reduce((s, t) => s + t.done, 0);
-  const avg = Math.round(total / Math.max(m.trend.length, 1));
+  const total = days.reduce((s, t) => s + t.done, 0);
+  const missed = days.reduce((s, t) => s + t.missed, 0);
+  const avg = Math.round(total / Math.max(days.length, 1));
   return (
     <Arrive as="section" className="block trend" index={6}>
       <div className="block-head">
-        <h2 className="section-title">Calls on the last {m.trend.length} working days</h2>
-        <span className="block-meta">{avg} a day on average</span>
+        <h2 className="section-title">{title}</h2>
+        <Segmented
+          label="Range"
+          value={range}
+          onChange={setRange}
+          options={[
+            { value: 'recent', label: 'Last 20 days' },
+            { value: 'thisMonth', label: m.trends.thisMonth.label },
+            { value: 'lastMonth', label: m.trends.lastMonth.label },
+          ]}
+        />
       </div>
-      <figure className="trend-figure">
-        <div className="trend-plot">
-          <svg viewBox={`0 0 ${m.trend.length * 20} ${H}`} preserveAspectRatio="none" aria-hidden="true">
-            {m.trend.map((t, i) => {
-              const hd = (t.done / max) * H;
-              const hm = (t.missed / max) * H;
-              return (
-                <g key={t.date}>
-                  <motion.rect className="tbar" x={i * 20 + 4} width={12} rx={2} y={H - hd} height={hd}
-                    style={{ transformOrigin: `0 ${H}px`, transformBox: 'view-box' }}
-                    initial={reduce ? false : { scaleY: 0 }} animate={{ scaleY: 1 }}
-                    transition={{ duration: 0.45, ease: EASE, delay: reduce ? 0 : 0.15 + i * 0.02 }} />
-                  {t.missed > 0 && <rect className="tbar-missed" x={i * 20 + 4} width={12} rx={2} y={H - hd - hm} height={hm} />}
-                </g>
-              );
-            })}
-          </svg>
-        </div>
-        <div className="trend-axis" aria-hidden="true">
-          <span>{m.trend[0]?.label}</span>
-          <span className="trend-key"><span className="k-done" />Done <span className="k-missed" />Missed</span>
-          <span>{m.trend[m.trend.length - 1]?.label}</span>
-        </div>
-        <table className="visually-hidden">
-          <caption>Calls done and missed by day</caption>
-          <tbody>{m.trend.map(t => <tr key={t.date}><th scope="row">{t.label}</th><td>{t.done} done</td><td>{t.missed} missed</td></tr>)}</tbody>
-        </table>
-      </figure>
+      {days.length === 0 || total + missed === 0 ? (
+        <p className="block-empty">No calls were recorded in {range === 'recent' ? 'the last 20 working days' : m.trends[range].label} yet.</p>
+      ) : (
+        <figure className="trend-figure">
+          <p className="trend-summary">{count(total, 'call')} done, {missed} missed, {avg} a day on average.</p>
+          <div className="trend-plot">
+            <svg viewBox={`0 0 ${days.length * 20} ${H}`} preserveAspectRatio="none" aria-hidden="true">
+              {days.map((t, i) => {
+                const hd = (t.done / max) * H;
+                const hm = (t.missed / max) * H;
+                return (
+                  <g key={t.date}>
+                    <motion.rect className="tbar" x={i * 20 + 4} width={12} rx={2} y={H - hd} height={hd}
+                      style={{ transformOrigin: `0 ${H}px`, transformBox: 'view-box' }}
+                      initial={reduce || drawn ? false : { scaleY: 0 }} animate={{ scaleY: 1 }}
+                      transition={{ duration: 0.45, ease: EASE, delay: reduce || drawn ? 0 : 0.15 + i * 0.02 }} />
+                    {t.missed > 0 && <rect className="tbar-missed" x={i * 20 + 4} width={12} rx={2} y={H - hd - hm} height={hm} />}
+                  </g>
+                );
+              })}
+            </svg>
+          </div>
+          <div className="trend-axis" aria-hidden="true">
+            <span>{days[0]?.label}</span>
+            <span className="trend-key"><span className="k-done" />Done <span className="k-missed" />Missed</span>
+            <span>{days[days.length - 1]?.label}</span>
+          </div>
+          <table className="visually-hidden">
+            <caption>Calls done and missed by day</caption>
+            <tbody>{days.map(t => <tr key={t.date}><th scope="row">{t.label}</th><td>{t.done} done</td><td>{t.missed} missed</td></tr>)}</tbody>
+          </table>
+        </figure>
+      )}
     </Arrive>
   );
 }

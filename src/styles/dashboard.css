@@ -455,11 +455,11 @@
 }
 
 .bar {
-  fill: var(--track);
+  fill: color-mix(in srgb, var(--muted) 38%, var(--ground));
 }
 
 .bar.met {
-  fill: color-mix(in srgb, var(--ink) 22%, var(--track));
+  fill: var(--muted);
 }
 
 .bar.current {
@@ -871,4 +871,23 @@
   margin-left: var(--s-2);
   background: var(--bad);
   opacity: 0.55;
+}
+
+.trend .block-head {
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.trend-summary {
+  margin-bottom: var(--s-3);
+  color: var(--muted);
+  font-size: var(--t-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+/* The manager table needs the full width below a wide screen; the ranking goes under it. */
+@media (max-width: 1360px) {
+  .pair-wide {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }

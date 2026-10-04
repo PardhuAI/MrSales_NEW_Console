@@ -74,6 +74,12 @@ export type DashboardModel = {
   };
   /** Calls done and missed on each of the last working days, oldest first. */
   trend: { date: string; label: string; done: number; missed: number }[];
+  /** The same, for the range switch: the last 20 working days, this month, last month. */
+  trends: {
+    recent: { date: string; label: string; done: number; missed: number }[];
+    thisMonth: { label: string; days: { date: string; label: string; done: number; missed: number }[] };
+    lastMonth: { label: string; days: { date: string; label: string; done: number; missed: number }[] };
+  };
   managers: {
     id: string;
     name: string;
@@ -85,7 +91,9 @@ export type DashboardModel = {
     sales: number;
     target: number;
   }[];
-  ranks: { basis: 'target' | 'calls'; top: Ranked[]; low: Ranked[] } | null;
+  /** The month the manager table's sales and the ranking read: the current one, or last month in its first week. */
+  salesMonth: string;
+  ranks: { basis: 'target' | 'calls'; month: string; top: Ranked[]; low: Ranked[] } | null;
 };
 
 export type Ranked = { id: string; name: string; hq: string; value: string };

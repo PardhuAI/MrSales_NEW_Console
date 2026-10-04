@@ -23,6 +23,27 @@ export type Identity = {
 
 const CONSOLE_ROLES: Role[] = ['owner', 'admin', 'hr', 'it', 'finance', 'management'];
 
+/** Who each role is in the demo company, so the role picker shows a believable person. */
+const DEMO_PEOPLE: Record<Role, string> = {
+  owner: 'Pardhu Karnati', admin: 'Sneha Kapoor', hr: 'Anusha Rao', it: 'Kiran Kumar', finance: 'Ramesh Iyer', management: 'Venkata Ramana Rao',
+};
+const demoIdentity = (role: Role): Identity => ({
+  ...DEMO_IDENTITY,
+  role,
+  name: DEMO_PEOPLE[role],
+  initials: initialsOf(DEMO_PEOPLE[role]),
+  scope: role === 'management' ? 'team' : 'company',
+});
+const DEMO_ROLE_KEY = 'mrsales.demoRole';
+const savedDemoRole = (): Role => {
+  try {
+    const r = sessionStorage.getItem(DEMO_ROLE_KEY) as Role | null;
+    return r && CONSOLE_ROLES.includes(r) ? r : 'owner';
+  } catch {
+    return 'owner';
+  }
+};
+
 const initialsOf = (name: string) =>
   name.split(/[\s@.]+/).filter(Boolean).slice(0, 2).map(w => w[0]!.toUpperCase()).join('');
 
@@ -114,13 +135,15 @@ type Ctx = {
   signOut: () => Promise<void>;
   sendReset: (email: string) => Promise<string | null>;
   setPassword: (password: string) => Promise<string | null>;
+  /** Demo only: see the console as another of the six roles. */
+  viewAs: ((role: Role) => void) | null;
 };
 
 const SessionCtx = createContext<Ctx | null>(null);
 
 export function SessionProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<SessionState>(
-    isLive ? { status: 'loading' } : { status: 'signedIn', me: DEMO_IDENTITY },
+    isLive ? { status: 'loading' } : { status: 'signedIn', me: demoIdentity(savedDemoRole()) },
   );
 
   const refresh = async () => {
@@ -156,11 +179,19 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     async signOut() {
       if (supabase) await supabase.auth.signOut();
       signOutHooks.forEach(f => f());
-      setState(isLive ? { status: 'signedOut' } : { status: 'signedIn', me: DEMO_IDENTITY });
+      setState(isLive ? { status: 'signedOut' } : { status: 'signedIn', me: demoIdentity('owner') });
     },
     async sendReset(email) {
       const { error } = await db().auth.resetPasswordForEmail(email.trim(), { redirectTo: window.location.origin });
       return error ? error.message : null;
+    },
+    viewAs: isLive ? null : role => {
+      try {
+        sessionStorage.setItem(DEMO_ROLE_KEY, role);
+      } catch {
+        // Remembering the choice is a convenience; the switch works without it.
+      }
+      setState({ status: 'signedIn', me: demoIdentity(role) });
     },
     async setPassword(password) {
       const { error } = await db().auth.updateUser({ password });
