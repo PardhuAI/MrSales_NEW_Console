@@ -242,6 +242,8 @@ export function Downloads() {
                     <span className="row-actions">
                       {j.status === 'ready' && j.path ? <button type="button" className="link" onClick={() => open(j.path!)}>Open</button>
                         : j.status === 'failed' ? <Pill tone="critical">Failed</Pill>
+                        // A sheet is made in seconds; one still open after an hour never will be.
+                        : Date.now() - new Date(j.at).getTime() > 3_600_000 ? <Pill>Not finished</Pill>
                         : <Pill>Being made</Pill>}
                     </span>
                   </li>

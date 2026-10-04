@@ -40,7 +40,7 @@ export function Managers() {
         <Arrive>
           <div className="table-wrap">
             <table className="table">
-              <thead><tr><th scope="col">Manager</th><th scope="col" className="num">Team</th><th scope="col" className="num">Calls this week</th><th scope="col" className="num hide-narrow">At the client</th><th scope="col" className="num">Sold in {monthName(monthKey)}</th><th scope="col" className="num">Of target</th></tr></thead>
+              <thead><tr><th scope="col">Manager</th><th scope="col" className="num">Team</th><th scope="col" className="num">Calls this week</th><th scope="col" className="num hide-narrow">At the client, 30 days</th><th scope="col" className="num">Sold in {monthName(monthKey)}</th><th scope="col" className="num">Of target</th></tr></thead>
               <tbody>
                 {managers.map(m => (
                   <tr key={m.id}>

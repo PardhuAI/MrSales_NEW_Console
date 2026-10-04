@@ -92,7 +92,7 @@ function AttendanceGrid({ m }: { m: AttendanceModel }) {
                       const c = p.cells[k];
                       const a = c ? ATT[c.status] : null;
                       const why = !c ? (k === today ? 'Nothing yet today' : 'Not on the roster that day') : c.status === 'present' ? `Day plan at ${c.declaredAt ? timeOf(c.declaredAt) : 'an unknown time'}, ${count(c.visits, 'visit')}` : c.status === 'holiday' ? c.holiday ?? 'Holiday' : a?.word ?? c.status;
-                      return <td key={k} className="att-td"><span className={`att-cell s-${a?.letter ?? 'x'}`} title={`${dayMonth(k)}: ${why}`} aria-label={`${dayMonth(k)}: ${why}`}>{a?.letter ?? ''}</span></td>;
+                      return <td key={k} className="att-td"><span className={`att-cell s-${a?.letter ?? 'x'}`} title={`${dayMonth(k)}: ${why}`}><span aria-hidden="true">{a?.letter ?? ''}</span><span className="visually-hidden">{`${dayMonth(k)}: ${why}`}</span></span></td>;
                     })}
                     <td className="num">{present}</td>
                   </tr>

@@ -185,9 +185,9 @@ function MonthTab({ p, r }: { p: Person; r: Rec }) {
               <h3 className="fig-title">Orders and sales</h3>
               <dl className="figs">
                 <div><dt>Orders</dt><dd>{o.orderCount}</dd></div>
-                <div><dt>Order value</dt><dd>{rupeesShort(o.orderValue)}</dd></div>
+                <div><dt>Order value, with GST</dt><dd>{rupeesShort(o.orderValue)}</dd></div>
                 <div><dt>Primary sales</dt><dd>{rupeesShort(o.primary)}</dd></div>
-                <div><dt>Field orders</dt><dd>{rupeesShort(o.orders)}</dd></div>
+                <div><dt>Field orders, before GST</dt><dd>{rupeesShort(o.orders)}</dd></div>
               </dl>
               {o.noStockist > 0 && <p className="fig-note warn-text">{count(o.noStockist, 'order names', 'orders name')} no stockist, so there is nobody to send {o.noStockist === 1 ? 'it' : 'them'} to.</p>}
             </section>

@@ -179,10 +179,43 @@ each role may open is the old console's grant matrix. Found and fixed on the way
   allowance. Claimed now means sent (waiting, approved or rejected) on both, with the
   rejected amount shown.
 
+## Two managers, writes and a full look, 2026-10-05
+
+**Team scope, proven.** The seed now carries a second manager, Lakshmi Prasad (TBM9002,
+Vijayawada) with two reps of her own, Kiran Kumar and Meena Reddy. Signed in as
+management (Rajesh Verma's team), the console shows 14 people and 13 in the field, and
+none of Lakshmi's three anywhere: Today, People, Managers, Field, Day plans, Attendance,
+Tour plans and search. The Admin sees all 17 and 15. The seed no longer holds the
+Testbed password; it is given as `mrsales.testbed_password`, like the role logins.
+
+**58 writes, run live.** Every form and decision in the console was run against Testbed
+and checked in the database, then removed again. Not run, on purpose: the invitation and
+the password reset (they send real email, and Testbed addresses receive none), and a
+request to the Mr Sales team (it would reach the platform's own queue).
+
+Two backend faults found and fixed (Mr_Sales_Web migrations, applied):
+
+- **0097** An export's copy is a CSV and the documents bucket refused CSV, so every
+  export was recorded as failed and Recent exports had nothing to offer again.
+- **0098** Sent notifications was empty for every office login: a person could read only
+  their own. Owner, admin and management now read those of the people they may see
+  (checked: admin 203, management its team, HR none, a rep their own).
+
+**Every page, looked at.** 220 page views as the Admin on live data, at 1440 in light and
+dark and at 390 on a phone, plus 1024: no sideways page scroll, no console error, no
+failed request; axe passes in light and dark. Fixed from the look:
+
+- Large figures used tabular numerals, which spaced "₹3,000" as "₹3 , 000"; the headline
+  figure now uses proportional numerals (columns keep tabular).
+- Exports queued by the app's own tests and never finished read "Being made" for days;
+  after an hour they read "Not finished".
+- Labels that left a period or a tax basis to guess: Managers' "At the client, 30 days",
+  and on a person's record "Order value, with GST" against "Field orders, before GST".
+- The attendance grid's cells carried an aria-label on a plain span (axe); the reason is
+  now visually hidden text.
+
 ## Still open
 
-- Writes other than a leave decision, run live end to end (signatures are checked).
-- A team-scope check with two managers: in Testbed everyone reports to Rajesh Verma, so
-  "sees only their team" cannot yet be told apart from "sees everyone".
+- The invitation and password-reset emails, sent to a real inbox from the new console.
 - `seam.spec.ts` (the console and the phone agree), which needs the phone.
 - The owner's review of each screen, and the decisions listed in `FEATURE_CHECKLIST.md`.

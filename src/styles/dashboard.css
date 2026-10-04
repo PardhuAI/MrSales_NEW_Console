@@ -55,7 +55,9 @@
 }
 
 .hero-figure {
-  font-variant-numeric: tabular-nums;
+  /* Proportional: a lone large figure reads as a word. Tabular figures in this
+     family set a comma apart ("₹3 , 000"); they belong in columns only. */
+  font-variant-numeric: proportional-nums;
 }
 
 .hero-sub {
