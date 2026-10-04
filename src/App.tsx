@@ -178,6 +178,10 @@ function Console() {
           {NEW_ACTIONS.filter(a => allowed(a.module) && !DETAIL.some(d => d.path === a.path)).map(a => (
             <Route key={a.path} path={a.path} element={<SectionLayout><Coming /></SectionLayout>} />
           ))}
+          {/* A page this role may not open keeps its own route, so it says so rather than falling into a record's address. */}
+          {pages.filter(p => !allowed(p.module)).map(p => (
+            <Route key={`no:${p.path}`} path={p.path} element={<SectionLayout><NotFound /></SectionLayout>} />
+          ))}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Shell>

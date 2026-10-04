@@ -94,7 +94,7 @@ function View({ p, m, r }: { p: Person; m: RosterModel; r: Rec }) {
           <dt>Joined</dt><dd>{p.joinedAt ? `${dayMonth(p.joinedAt)} ${p.joinedAt.slice(0, 4)}` : 'Not recorded'}</dd>
           <dt>Mobile</dt><dd>{p.mobile ?? 'Not given'}</dd>
           <dt>Email</dt><dd>{p.email ?? 'Not given'}</dd>
-          <dt>Last seen on the phone</dt><dd>{p.lastSeenAt ? `${ago(p.lastSeenAt)}, ${timeOf(p.lastSeenAt)}` : 'Never'}</dd>
+          <dt>Last seen on the phone</dt><dd>{p.lastSeenAt ? `${ago(p.lastSeenAt)}, ${timeOf(p.lastSeenAt)}${p.lastPlace ? `, near ${p.lastPlace}` : ''}` : 'Never'}</dd>
           <dt>Clients</dt><dd>{count(p.clients, 'client')}{p.reports ? ` · ${count(p.reports, 'person reports', 'people report')} to them` : ''}</dd>
           {p.bloodGroup && <><dt>Blood group</dt><dd>{p.bloodGroup}</dd></>}
         </dl>

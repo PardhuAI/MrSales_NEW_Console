@@ -3,7 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { CaretLeft, CaretRight, Faders } from '@phosphor-icons/react';
 import { useResource } from '../../data/resource';
 import { loadFieldDay, workTypeLabel, type FieldDayModel, type PersonDay } from '../../live/field';
-import { IST_TODAY, longDay, shiftDay, timeOf } from '../../lib/days';
+import { IST_TODAY, ago, longDay, shiftDay, timeOf } from '../../lib/days';
 import { count } from '../../lib/format';
 import { DateInput, Filter, Pill, SearchBox, Summary, Toolbar, useShowMore } from '../../components/kit';
 import { Empty, Freshness, LoadError, Loading } from '../../components/States';
@@ -166,6 +166,7 @@ function DayTable({ m, goTo }: { m: FieldDayModel; goTo: (d: string) => void }) 
                     <th scope="row">
                       <Link className="cell-link" to={to} onClick={e => e.stopPropagation()}>{p.name}</Link>
                       <span className="cell-sub">{[p.code, p.hq, p.manager && `reports to ${p.manager}`].filter(Boolean).join(' · ')}</span>
+                      {isToday && p.lastPlace && p.lastSeenAt && <span className="cell-sub">last seen near {p.lastPlace}, {ago(p.lastSeenAt)}</span>}
                     </th>
                     <td>
                       {p.plan ? <span>{timeOf(p.plan.at)}<span className="cell-sub">{[p.plan.workType === 'fieldWork' ? '' : workTypeLabel(p.plan.workType), p.plan.area].filter(Boolean).join(' · ')}</span></span>

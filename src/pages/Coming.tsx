@@ -44,7 +44,9 @@ export function NotFound() {
   const me = useMe();
   const allowed = useCan();
   // A real page this role may not open says so, and who can change that, rather than pretending it is not there.
-  const page = allPages().find(p => p.path === pathname || (p.path !== '/' && pathname.startsWith(`${p.path}/`)));
+  // The page itself, or else the longest page address this one sits under.
+  const page = allPages().find(p => p.path === pathname)
+    ?? allPages().filter(p => p.path !== '/' && pathname.startsWith(`${p.path}/`)).sort((a, b) => b.path.length - a.path.length)[0];
   if (page && !allowed(page.module)) {
     return (
       <div className="coming">

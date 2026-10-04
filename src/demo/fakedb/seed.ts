@@ -393,6 +393,12 @@ export function seed(now = new Date()): Tables {
   const lastAct = new Map<string, string>();
   for (const a of T.activities ?? []) if (a.actual_start && (!lastAct.has(a.employee_id as string) || (a.actual_start as string) > lastAct.get(a.employee_id as string)!)) lastAct.set(a.employee_id as string, a.actual_start as string);
   for (const e of everyone) e.last_seen_at = lastAct.get(e.id) ?? (e.last_device_id ? at(lastWork, 18.5) : null);
+  // The phone names the place it was last seen; here, the area of the last client visited.
+  const areaName = new Map((T.areas ?? []).map(a => [a.id as string, a.name as string]));
+  const clientArea = new Map(clients.map(c => [c.id as string, areaName.get(c.area_id as string) ?? null]));
+  const lastClient = new Map<string, string>();
+  for (const a of [...(T.activities ?? [])].filter(x => x.actual_start).sort((x, y) => String(x.actual_start).localeCompare(String(y.actual_start)))) lastClient.set(a.employee_id as string, a.client_id as string);
+  for (const e of everyone) e.last_place = e.last_seen_at ? (lastClient.has(e.id) ? clientArea.get(lastClient.get(e.id)!) ?? e.hq : e.hq) : null;
   for (const c of clients) {
     const next = (T.activities ?? []).find(a => a.client_id === c.id && a.status === 'planned');
     c.next_planned_visit_at = next ? dayKey(new Date(next.scheduled_start as string)) : null;

@@ -492,6 +492,15 @@ behaviour can be checked against it. The "Data" column names the function in
 ## 9. Known gaps in the old console (decide: build in the new one, or leave)
 
 Shown in the old console as "not built yet" or missing altogether.
+
+> **2026-10-04, where the new console stands on each:** fake-location attempts are listed and
+> warned about (Field activity, a person's day, Today and Attention). The place a phone was last
+> seen is shown by name from `employees.last_place` (Field activity for today, and a person's
+> record); a visit's own position still has no name in the database, only coordinates and the day
+> plan's declared address. Joiner drafts are kept and reopened from People. Every report the old
+> console marked "v1" is built from real records. Leave policies, salary structures and expense
+> rules per role have no table, so they wait on an owner decision and a backend change. Payslip
+> PDFs are attached when released, not generated.
 - [ ] Fake-location attempts list and warning (the phone app has it since 2026-10-03; the console does not)
 - [ ] Place names instead of coordinates on a person's day (the app has `PlaceNames`)
 - [ ] Saved joiner drafts cannot be reopened
@@ -507,6 +516,16 @@ Shown in the old console as "not built yet" or missing altogether.
 
 The old console's end-to-end tests (`Mr_Sales_Web/e2e/`) and what each proves. Each needs
 an equivalent in the new console before the switch.
+
+> **2026-10-04: equivalents written, running on demo data** (`e2e/`, `npm run e2e`, 25 tests, all
+> passing): every page for every role and the "not open to your role" page for the rest, no
+> sideways scroll at 390, add a person end to end, roles (add, duplicate refused, retire, delete,
+> held role kept), phone login (mismatch refused, given), switching a login off with a reason, an
+> HR document with its expiry, a staffed territory and the in-use refusal, leave, clients, orders,
+> approvals, claims, payslips, resources, surveys, reports downloading the sheet on screen, and
+> company rules (read back, refused radius, read-only for finance). They do not yet run against
+> Testbed Pharma, and `seam.spec.ts` (console and phone agree) needs the phone, so neither box is
+> ticked.
 - [ ] `every-page.spec.ts`: every route opens for every role it is granted to
 - [ ] `roles.spec.ts`: the permission matrix
 - [ ] `employee.spec.ts`: add an employee end to end

@@ -34,7 +34,7 @@ function readEntries(buf: Uint8Array, view: DataView): Entry[] {
   for (let i = buf.length - 22; i >= 0 && i > buf.length - 65558; i--) {
     if (view.getUint32(i, true) === 0x06054b50) { eocd = i; break; }
   }
-  if (eocd < 0) throw new Error('that file is not a workbook — no zip directory in it');
+  if (eocd < 0) throw new Error('that file is not a workbook; it has no zip directory in it');
 
   const count = view.getUint16(eocd + 10, true);
   let p = view.getUint32(eocd + 16, true);
@@ -93,7 +93,7 @@ function columnOf(ref: string): number {
  */
 export async function readXlsx(file: File): Promise<string[][]> {
   if (typeof DecompressionStream === 'undefined') {
-    throw new Error('this browser cannot open .xlsx files — save the sheet as CSV instead');
+    throw new Error('this browser cannot open .xlsx files, so save the sheet as CSV instead');
   }
 
   const buf = new Uint8Array(await file.arrayBuffer());

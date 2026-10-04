@@ -71,6 +71,9 @@ export type PersonDay = {
   hq: string;
   managerId: string | null;
   manager: string;
+  /** Where the phone was last seen, by name, and when. */
+  lastPlace: string | null;
+  lastSeenAt: string | null;
   territoryId: string | null;
   regionId: string | null;
   areaIds: string[];
@@ -128,7 +131,7 @@ export async function loadFieldDay(date: string): Promise<FieldDayModel> {
       const hours = done.map(a => hoursOf(a.actual_start ?? a.scheduled_start)).sort((x, y) => x - y);
       return {
         id: e.id, name: e.name, code: e.code, hq: e.hq,
-        managerId: e.managerId, manager: e.managerId ? e.manager : '',
+        managerId: e.managerId, manager: e.managerId ? e.manager : '', lastPlace: e.lastPlace, lastSeenAt: e.lastSeenAt,
         territoryId: e.territoryId, regionId: e.territoryId ? regionOf.get(e.territoryId) ?? null : null,
         areaIds: geo.postings.get(e.id) ?? [],
         plan: plan ? { at: plan.declared_at, workType: plan.work_type, area: plan.area_id ? areaName.get(plan.area_id) ?? '' : '' } : null,
