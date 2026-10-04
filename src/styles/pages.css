@@ -326,7 +326,7 @@
   display: grid;
   gap: var(--s-1);
   position: sticky;
-  top: calc(var(--topbar-h, 56px) + var(--s-6));
+  top: calc(var(--bar-h) + var(--s-6));
 }
 
 .attn-group-meta {

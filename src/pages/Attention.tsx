@@ -16,7 +16,7 @@ import { Arrive } from '../components/motion';
 
 const GROUPS: { severity: Item['severity']; title: string; about: string }[] = [
   { severity: 'critical', title: 'Act today', about: 'Location and travel the records cannot explain.' },
-  { severity: 'warning', title: 'This week', about: 'Work that stalled, people who went quiet, decisions waiting.' },
+  { severity: 'warning', title: 'This week', about: 'Work that stalled, people who went quiet, and decisions waiting.' },
   { severity: 'info', title: 'Worth knowing', about: 'Gaps in the client list that stop visits being checked.' },
 ];
 
@@ -127,7 +127,7 @@ export function Attention() {
                     <p className="att-title">{a.title}</p>
                     <p className="attn-reason">{a.reason}</p>
                   </div>
-                  <Link className="btn btn-secondary attn-go" to={a.to}>{a.action}</Link>
+                  <Link className="link attn-go" to={a.to}>{a.action}</Link>
                 </li>
               ))}
             </ol>

@@ -47,6 +47,7 @@
   --s-16: 64px;
   --gutter: clamp(16px, 2.4vw, 40px);
   --nav-w: 248px;
+  --bar-h: 64px;
   --content-max: 1240px;
 
   /* Shape, by object. */
