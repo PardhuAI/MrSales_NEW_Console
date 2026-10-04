@@ -8,7 +8,8 @@ import { IST_TODAY, dayMonth, dayOf } from '../../lib/days';
 import { count, rupees } from '../../lib/format';
 import { download, toCsv } from '../../lib/sheet';
 import { openFile } from '../../lib/openFile';
-import { Drawer, Field, Filter, Notice, SearchBox, Summary, Toolbar, useFocusFirstError, useShowMore } from '../../components/kit';
+import { Drawer, Field, Notice, SearchBox, Summary, Toolbar, useFocusFirstError, useShowMore } from '../../components/kit';
+import { MonthStrip } from '../../components/MonthStrip';
 import { Segmented } from '../../components/Segmented';
 import { Empty, Freshness, LoadError, Loading } from '../../components/States';
 import { Arrive } from '../../components/motion';
@@ -37,7 +38,7 @@ export function Payroll() {
   return (
     <div className="page-body">
       <Toolbar>
-        <Filter label="Month" value={month} onChange={setMonth} options={months.map(k => ({ value: k, label: label(k) }))} />
+        <MonthStrip value={month} onChange={setMonth} label="Payslips for" />
         <span className="toolbar-end"><Freshness at={r.at} error={r.error} reload={() => void r.reload()} label="Read the payslips again" /></span>
       </Toolbar>
       {r.status === 'error' && !r.data ? <LoadError what="The payslips" error={r.error} retry={() => void r.reload()} />

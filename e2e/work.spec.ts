@@ -186,3 +186,25 @@ test('Leave shows who is away on a day, with the count on each day of the week',
   await away.click();
   await expect(page.locator('.away-list .row').first()).toContainText(/leave/i);
 });
+
+test('the month strip picks a month by tap, arrow key or the year panel, and offers no future month', async ({ page }) => {
+  await as(page, 'owner', '/team/attendance');
+  const months = page.getByRole('radiogroup', { name: 'Attendance for' });
+  const now = months.getByRole('radio', { name: /, this month/ });
+  await expect(now).toBeChecked();
+  await now.press('ArrowLeft');
+  await expect(months.getByRole('radio', { checked: true })).not.toHaveAccessibleName(/this month/);
+  await page.getByRole('button', { name: 'Pick a month' }).click();
+  const year = page.getByRole('dialog', { name: /Pick a month/ });
+  // Every month after this one is offered disabled, never as a choice.
+  const thisMonth = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }).slice(0, 7);
+  for (const b of await year.locator('button[data-month]').all()) {
+    if ((await b.getAttribute('data-month'))! > thisMonth) await expect(b).toBeDisabled();
+  }
+  await page.keyboard.press('PageUp');
+  await page.keyboard.press('Enter');
+  await expect(year).toHaveCount(0);
+  await expect(months.getByRole('radio', { checked: true })).toHaveAccessibleName(/\d{4}/);
+  await page.getByRole('button', { name: 'This month' }).click();
+  await expect(now).toBeChecked();
+});

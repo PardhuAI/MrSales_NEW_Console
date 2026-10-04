@@ -32,7 +32,7 @@ box in `FEATURE_CHECKLIST.md` is ticked.
 | Sentence case, counts with the right noun | `count()` in `lib/format.ts` for every count; read through on screen | Checked by eye |
 | Never invent figures; demo data labelled | every figure is read from a table; "Demo data" shown beside the freshness of every list | Checked; findings below |
 
-`npm run check` runs the rule script, the typecheck and all 30 browser tests.
+`npm run check` runs the rule script, the typecheck and all 31 browser tests.
 
 ---
 
@@ -92,14 +92,14 @@ groups; *states:* no roles, no geography. **Managers, Org chart:** *hero* the re
 line; a move is read back before it is saved. **Attendance:** *question* who was present
 each day and why; *hero* the month grid, each cell's reason spoken to screen readers.
 **Leave:** *question* who is away and what waits; *hero* Who is away on the strip, then the
-requests. **Tasks:** *hero* open tasks, the late ones named. Fixed in review: default `dd`
+requests. Attendance picks its month from the month strip. **Tasks:** *hero* open tasks, the late ones named. Fixed in review: default `dd`
 indent, form fields misaligned, a hidden label escaping its scroll box, leave on a day
 with a day plan in the demo.
 
 ## Expenses and pay
 
 **Expense claims.** *Question:* whose claims wait, and does each day claimed have work
-behind it? *Hero:* the claims table; a claim day by day in a drawer. *States:* no claims,
+behind it? *Hero:* the claims table; a claim day by day in a drawer. Both pick the month from the month strip. *States:* no claims,
 a month not yet claimed. **Payroll.** *Question:* has everyone got this month's payslip?
 *Hero:* the month's payslips with the change from last month. Found: the old console's
 gross, basic and deductions were made up from net pay; only net and the PDF are shown.

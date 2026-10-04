@@ -8,7 +8,8 @@ import { monthName } from '../../live/sales';
 import { IST_TODAY, ago, weekdayOf } from '../../lib/days';
 import { count, rupees } from '../../lib/format';
 import { openFile } from '../../lib/openFile';
-import { Confirm, Drawer, Filter, Notice, Pill, SearchBox, Summary, Toolbar, useShowMore } from '../../components/kit';
+import { Confirm, Drawer, Notice, Pill, SearchBox, Summary, Toolbar, useShowMore } from '../../components/kit';
+import { MonthStrip } from '../../components/MonthStrip';
 import { Segmented } from '../../components/Segmented';
 import { Empty, Freshness, LoadError, Loading } from '../../components/States';
 import { Arrive } from '../../components/motion';
@@ -42,7 +43,7 @@ export function Claims() {
   return (
     <div className="page-body">
       <Toolbar>
-        <Filter label="Month" value={month} onChange={setMonth} options={months.map(k => ({ value: k, label: `${monthName(k)} ${k.slice(0, 4)}` }))} />
+        <MonthStrip value={month} onChange={setMonth} label="Claims for" />
         <span className="toolbar-end"><Freshness at={r.at} error={r.error} reload={() => void r.reload()} label="Read the claims again" /></span>
       </Toolbar>
       {r.status === 'error' && !r.data ? <LoadError what="The claims" error={r.error} retry={() => void r.reload()} />

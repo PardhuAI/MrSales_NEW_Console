@@ -772,3 +772,22 @@
 .pday-head .daystrip {
   margin-top: var(--s-4);
 }
+
+/* ── the month strip and the year panel ────────────────────────────────── */
+.monthstrip .daystrip-days {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+.monthstrip .daystrip-wd {
+  white-space: nowrap;
+}
+
+.yearpick-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--s-1);
+}
+
+.yearpick-grid .monthpick-day {
+  height: 44px;
+}

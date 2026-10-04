@@ -177,4 +177,5 @@ Dated. These amend everything above; where they differ, this section wins.
 - **2026-10-04.** Days are picked as on the phone: a strip of the week to tap, and one
   month calendar of our own behind "Pick a date", the same on every page that picks a
   day (Field activity, Day plans, a person's day, Leave). The browser's own date box is
-  used only inside forms.
+  used only inside forms. Months are picked the same way (Attendance, Expense claims,
+  Payroll): six months to tap, and a year panel behind "Pick a month".
