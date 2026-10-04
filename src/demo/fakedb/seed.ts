@@ -571,7 +571,7 @@ export function seed(now = new Date()): Tables {
   ];
   for (const [title, who, due, status] of taskSpecs) {
     const e = everyone.find(x => x.name === who)!;
-    add('tasks', { id: uid('tsk'), assignee_id: e.id, assigner_id: e.manager_id ?? rsm.id, title, description: null, due_date: shift(today, due), status, completed_at: status === 'done' ? at(shift(today, due - 1), 16) : null, created_at: at(shift(today, due - 9), 10) });
+    add('tasks', { id: uid('tsk'), assignee_id: e.id, assigner_id: e.manager_id ?? rsm.id, title, description: null, due_date: shift(today, due), status, completed_at: status === 'done' ? at(shift(today, due - 1), 16) : null, created_at: at(shift(today, Math.min(due - 9, -1)), 10) });
   }
   const complaintSpecs: [string, string, string, string, boolean][] = [
     ['Short supply in the last order', 'Received 40 strips of Cleopan 40 against 60 ordered. The stockist says the rest is on the way.', 'Harika Naidu', 'open', false],
@@ -591,21 +591,29 @@ export function seed(now = new Date()): Tables {
   const answers = ['Will start with diabetic patients over 50.', 'Wants the price closer to Glycomet.', 'Already prescribing, happy with results.', 'Needs more samples before deciding.', 'Not convinced yet.', 'Asked for a CME on the molecule.'];
   for (let i = 0; i < 14; i++) {
     const rep = pick(reps);
-    add('survey_responses', { id: uid('srr'), survey_id: survey.id, employee_id: rep.id, answers: { client_id: pick(ownClients.get(rep.id)!).id, score: chance(0.15) ? null : between(2, 5), answer: pick(answers) }, submitted_at: at(shift(today, -between(0, 16)), 12 + rnd() * 5) });
+    add('survey_responses', { id: uid('srr'), survey_id: survey.id, employee_id: rep.id, answers: (() => { const c = pick(ownClients.get(rep.id)!); return { client_id: c.id, client_name: c.name, client_type: c.type, location_name: rep.hq, rating: chance(0.15) ? null : between(2, 5), feedback: pick(answers), remarks: null }; })(), submitted_at: at(shift(today, -between(0, 16)), 12 + rnd() * 5) });
   }
-  const resources: [string, string, string, string, string, string][] = [
-    ['Glimecure M2 visual aid', 'E-Detailing', 'glimecure-m2-va.pdf', 'application/pdf', 'active', 'Six pages for the first detailing of Glimecure M2 to diabetologists.'],
-    ['Price list, October', 'Price List', 'price-list-october.pdf', 'application/pdf', 'active', 'PTS, PTR and MRP for every active product.'],
-    ['Atorcure product monograph', 'Product Information', 'atorcure-monograph.pdf', 'application/pdf', 'active', null as unknown as string],
-    ['Telmicure detailing video', 'E-Detailing', 'telmicure-detailing.mp4', 'video/mp4', 'active', 'Three minute video for tablets.'],
-    ['Price list, September', 'Price List', 'price-list-september.pdf', 'application/pdf', 'archived', 'Superseded by October.'],
+  // Files on the phones: PDFs and images only, as publish_resource allows. The October
+  // price list replaced September's, so the two share a family.
+  const resources: [string, string, string, string, string, string | null, number, string][] = [
+    ['Glimecure M2 visual aid', 'E-Detailing', 'glimecure-m2-va.pdf', 'application/pdf', 'active', 'Six pages for the first detailing of Glimecure M2 to diabetologists.', 1, 'glim'],
+    ['Price list', 'Price List', 'price-list-september.pdf', 'application/pdf', 'superseded', 'PTS, PTR and MRP for every active product, September.', 1, 'price'],
+    ['Price list', 'Price List', 'price-list-october.pdf', 'application/pdf', 'active', 'PTS, PTR and MRP for every active product, October.', 2, 'price'],
+    ['Atorcure product monograph', 'Product Information', 'atorcure-monograph.pdf', 'application/pdf', 'active', null, 1, 'ator'],
+    ['Telmicure leave-behind card', 'E-Detailing', 'telmicure-card.jpg', 'image/jpeg', 'active', 'One page for the doctor to keep.', 1, 'telmi'],
+    ['Objection handling, cardiology', 'Training', 'objection-handling-cardio.pdf', 'application/pdf', 'active', 'The ten objections cardiologists raise most, with answers.', 1, 'obj'],
+    ['Monsoon scheme circular', 'Document', 'monsoon-scheme.pdf', 'application/pdf', 'archived', 'The 10 + 1 scheme that ran in July and August.', 1, 'monsoon'],
   ];
-  resources.forEach(([title, category, file_name, mime_type, status, description], i) => {
-    const fam = uid('fam');
-    add('resources', { id: uid('res'), title, category, storage_path: `demo/resources/${file_name}`, published_at: at(shift(today, -between(3, 60) - i * 5), 11), description, file_name, mime_type, size_bytes: mime_type === 'video/mp4' ? 18_400_000 : between(400_000, 3_800_000), version: i === 1 ? 2 : 1, family_id: fam, status, published_by: DEMO_USER });
+  const families = new Map<string, string>();
+  const ages: Record<string, number> = { glim: 18, price: 36, ator: 52, telmi: 9, obj: 24, monsoon: 80 };
+  resources.forEach(([title, category, file_name, mime_type, status, description, version, famKey]) => {
+    const id = uid('res');
+    if (!families.has(famKey)) families.set(famKey, id);
+    const age = famKey === 'price' && version === 2 ? 6 : ages[famKey];
+    add('resources', { id, title, category, storage_path: `demo/resources/${file_name}`, published_at: at(shift(today, -age), 11), description, file_name, mime_type, size_bytes: between(400_000, 3_800_000), version, family_id: families.get(famKey), status, published_by: DEMO_USER });
   });
   for (const e of (T.expenses ?? []).filter(x => x.status === 'approved').slice(0, 60)) {
-    if (chance(0.25)) add('notifications', { id: uid('not'), employee_id: e.employee_id, title: 'Expense approved', body: `Your claim for ${e.work_date} was approved.`, kind: 'approval', is_read: chance(0.7), created_at: e.decided_at, entity: 'expense', entity_id: e.id, deep_link: null, group_count: 1 });
+    if (chance(0.25)) add('notifications', { id: uid('not'), employee_id: e.employee_id, title: 'Expense approved', body: 'Your expense claim was approved.', kind: 'approval', is_read: chance(0.7), created_at: e.decided_at, entity: 'expense', entity_id: e.id, deep_link: null, group_count: 1 });
   }
   for (const t of T.tasks ?? []) add('notifications', { id: uid('not'), employee_id: t.assignee_id, title: 'New task', body: t.title, kind: 'task', is_read: t.status === 'done', created_at: t.created_at, entity: 'task', entity_id: t.id, deep_link: null, group_count: 1 });
   add('notifications', { id: uid('not'), employee_id: fake.id, title: 'Fake location blocked', body: 'A fake location app was detected. Turn it off to log visits.', kind: 'location', is_read: false, created_at: fake.last_mock_at, entity: null, entity_id: null, deep_link: null, group_count: 1 });
