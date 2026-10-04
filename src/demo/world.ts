@@ -133,8 +133,8 @@ export const attention: Attention[] = [
     id: 'a1',
     severity: 'critical',
     title: 'Sai Kiran Reddy tried to log a visit with a fake location',
-    reason: 'At Dr. Padmaja Kolli, 11:12 am. Blocked. His last genuine position was 2.4 km away.',
-    action: 'Open his day',
+    reason: 'At Dr. Padmaja Kolli, 11:12 am. Blocked. The last genuine position was 2.4 km away.',
+    action: 'Open their day',
     to: '/field',
   },
   {
@@ -149,8 +149,8 @@ export const attention: Attention[] = [
     id: 'a3',
     severity: 'warning',
     title: 'Nikhil Varma has not logged a call today',
-    reason: '8 calls planned in Uppal. His day plan was filed at 9:05 am.',
-    action: 'Open his day',
+    reason: '8 calls planned in Uppal. The day plan was filed at 9:05 am.',
+    action: 'Open their day',
     to: '/field',
   },
   {

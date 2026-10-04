@@ -281,3 +281,119 @@
     padding: var(--s-6) var(--s-5);
   }
 }
+
+/* ── needs attention ─────────────────────────────────────────────────── */
+.attn-page {
+  display: grid;
+  gap: var(--s-12);
+}
+
+.attn-head {
+  display: grid;
+  gap: var(--s-3);
+  max-width: 72ch;
+}
+
+.attn-lede {
+  font-size: var(--t-title);
+  font-weight: var(--w-semibold);
+  letter-spacing: var(--track-title);
+  line-height: var(--lh-tight);
+  text-wrap: balance;
+  color: var(--muted);
+}
+
+.attn-lede-strong {
+  color: var(--ink);
+}
+
+.attn-sub {
+  max-width: 62ch;
+  color: var(--muted);
+  line-height: var(--lh-body);
+  text-wrap: pretty;
+}
+
+/* The group's name sits in its own column, the items beside it. */
+.attn-group {
+  display: grid;
+  grid-template-columns: minmax(0, 15rem) minmax(0, 1fr);
+  gap: var(--s-8);
+  align-items: start;
+}
+
+.attn-group-head {
+  display: grid;
+  gap: var(--s-1);
+  position: sticky;
+  top: calc(var(--topbar-h, 56px) + var(--s-6));
+}
+
+.attn-group-meta {
+  color: var(--ink);
+  font-size: var(--t-sm);
+  font-weight: var(--w-medium);
+  font-variant-numeric: tabular-nums;
+}
+
+.attn-group-about {
+  color: var(--muted);
+  font-size: var(--t-sm);
+  line-height: var(--lh-body);
+}
+
+.attn-list {
+  border-top: var(--hairline-w) solid var(--hairline);
+}
+
+.attn-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--s-6);
+  padding: var(--s-5) 0;
+  border-bottom: var(--hairline-w) solid var(--hairline);
+}
+
+.attn-reason {
+  max-width: 68ch;
+  margin-top: var(--s-1);
+  color: var(--muted);
+  font-size: var(--t-sm);
+  line-height: var(--lh-body);
+  text-wrap: pretty;
+}
+
+.attn-go {
+  white-space: nowrap;
+}
+
+@media (max-width: 900px) {
+  .attn-group {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--s-4);
+  }
+
+  .attn-group-head {
+    position: static;
+  }
+}
+
+@media (max-width: 600px) {
+  .attn-page {
+    gap: var(--s-10);
+  }
+
+  .attn-lede {
+    font-size: 1.5rem;
+  }
+
+  .attn-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--s-3);
+  }
+
+  .attn-go {
+    justify-self: start;
+  }
+}

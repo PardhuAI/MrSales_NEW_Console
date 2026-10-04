@@ -7,6 +7,7 @@ import { Coming, NotFound } from './pages/Coming';
 import { SettingsHome } from './pages/SettingsHome';
 import { Approvals } from './pages/Approvals';
 import { ApprovalsDecided } from './pages/ApprovalsDecided';
+import { Attention } from './pages/Attention';
 import { ThemeProvider } from './app/theme';
 import { SessionProvider, useSession } from './live/session';
 import { Blocked, ChoosePassword, Loading, SignIn } from './pages/SignIn';
@@ -19,6 +20,7 @@ const BUILT: Record<string, JSX.Element> = {
   '/settings': <SettingsHome />,
   '/approvals': <Approvals />,
   '/approvals/decided': <ApprovalsDecided />,
+  '/attention': <Attention />,
 };
 
 function TitleAndScroll() {

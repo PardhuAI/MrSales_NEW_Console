@@ -87,6 +87,13 @@ behaviour can be checked against it. The "Data" column names the function in
 - [ ] IT view: system users, MFA enabled, mobile devices, audit entries; recent changes; data freshness
 
 ### Attention (`/attention`) · Old: `pages/Attention.tsx` · Data: `pullAttention`
+
+> **2026-10-04: built in the new design** (`src/pages/Attention.tsx`). Reads the same list as
+> the Dashboard (`src/live/dashboard.ts`: `fake_location_attempts`, mocked visits, RPC
+> `travel_exceptions`, unfinished visits, quiet today, silent for a week, no GPS, out of radius,
+> client master gaps) plus the decisions waiting from the approvals store. Checked on demo data
+> at 1440, 1024 and 390; not yet run against the live testbed, so boxes stay unticked. Action
+> links to a person's day go to Field, which is not rebuilt yet.
 - [ ] Ranked list of exceptions, critical first, each with a reason and an action link
 - [ ] Phone reported a simulated (mocked) location during a visit → opens that day
 - [ ] Journeys that do not add up (too fast, identical position, clock ran backwards) · Data: RPC `travel_exceptions`
