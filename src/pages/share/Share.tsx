@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Plus } from '@phosphor-icons/react';
 import { invalidate, useResource } from '../../data/resource';
 import {
@@ -34,7 +34,10 @@ function ResourcesView({ list, at, error, reload }: { list: Resource[]; at: Date
   const may = mayPublish(me.role);
   const [show, setShow] = useState<Resource['status']>('active');
   const [q, setQ] = useState('');
-  const [upload, setUpload] = useState<Resource | 'new' | null>(null);
+  const loc = useLocation();
+  const nav = useNavigate();
+  const [upload, setUploadState] = useState<Resource | 'new' | null>(loc.pathname.endsWith('/new') ? 'new' : null);
+  const setUpload = (v: Resource | 'new' | null) => { setUploadState(v); if (!v && loc.pathname.endsWith('/new')) nav('/share', { replace: true }); };
   const [ask, setAsk] = useState<{ r: Resource; act: 'archive' | 'delete' } | null>(null);
   const [busy, setBusy] = useState(false);
   const [problem, setProblem] = useState('');
@@ -189,7 +192,10 @@ function SurveysView({ list, at, error, reload }: { list: Survey[]; at: Date | n
   const may = ['owner', 'admin', 'management'].includes(me.role);
   const open = list.find(s => s.active) ?? null;
   const [pick, setPick] = useState(open?.id ?? list[0]?.id ?? '');
-  const [adding, setAdding] = useState(false);
+  const loc = useLocation();
+  const nav = useNavigate();
+  const [adding, setAddingState] = useState(loc.pathname.endsWith('/new'));
+  const setAdding = (v: boolean) => { setAddingState(v); if (!v && loc.pathname.endsWith('/new')) nav('/share/surveys', { replace: true }); };
   const [ask, setAsk] = useState<Survey | null>(null);
   const [busy, setBusy] = useState(false);
   const [problem, setProblem] = useState('');

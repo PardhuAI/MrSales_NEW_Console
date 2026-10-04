@@ -334,6 +334,16 @@ export function fakeClient(db: FakeDb, user: { id: string; email: string }) {
         remove: (paths: string[]) => later(() => ({ data: paths, error: null })),
       }),
     },
+    // Edge functions answer from the same registry, under "fn:<name>".
+    functions: {
+      invoke: (name: string, opts: { body?: Record<string, unknown> } = {}) => later(() => {
+        try {
+          return { data: db.call(`fn:${name}`, opts.body ?? {}), error: null };
+        } catch (e) {
+          return { data: null, error: { message: e instanceof Error ? e.message : String(e) } };
+        }
+      }),
+    },
     auth: {
       getUser: () => later(() => ({ data: { user }, error: null })),
       getSession: () => later(() => ({ data: { session: null }, error: null })),

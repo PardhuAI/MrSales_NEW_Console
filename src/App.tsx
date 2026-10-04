@@ -33,6 +33,9 @@ import { Claims } from './pages/money/Claims';
 import { Payroll } from './pages/money/Payroll';
 import { Resources, SentNotifications, Surveys } from './pages/share/Share';
 import { Downloads, Reports } from './pages/reports/Reports';
+import { AuditLog, CompanyRules, HrRules, Ownership } from './pages/settings/Rules';
+import { Geography, Logins, Roles } from './pages/settings/Setup';
+import { BillingPage, Help } from './pages/account/Account';
 import { ThemeProvider } from './app/theme';
 import { SessionProvider, useSession } from './live/session';
 import { Blocked, ChoosePassword, Loading, SignIn } from './pages/SignIn';
@@ -73,6 +76,15 @@ const BUILT: Record<string, JSX.Element> = {
   '/share/sent': <SentNotifications />,
   '/reports': <Reports />,
   '/reports/downloads': <Downloads />,
+  '/settings/rules': <CompanyRules />,
+  '/settings/geography': <Geography />,
+  '/settings/roles': <Roles />,
+  '/settings/logins': <Logins />,
+  '/settings/hr': <HrRules />,
+  '/settings/ownership': <Ownership />,
+  '/settings/audit': <AuditLog />,
+  '/help': <Help />,
+  '/billing': <BillingPage />,
 };
 
 /** Records and other pages reached from a list rather than the menu. */
@@ -87,6 +99,10 @@ const DETAIL: { path: string; module: string; element: JSX.Element }[] = [
   { path: '/team/tasks/new', module: 'tasks', element: <Tasks /> },
   { path: '/team/managers/:id', module: 'people', element: <ManagerPage /> },
   { path: '/team/:id', module: 'people', element: <PersonRecordPage /> },
+  { path: '/settings/hr/holiday', module: 'hr', element: <HrRules /> },
+  { path: '/share/new', module: 'resources', element: <Resources /> },
+  { path: '/share/surveys/new', module: 'surveys', element: <Surveys /> },
+  { path: '/settings/logins/invite', module: 'users', element: <Logins /> },
 ];
 
 function TitleAndScroll() {

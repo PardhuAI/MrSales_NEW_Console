@@ -388,3 +388,159 @@ export function officeRpcs(audit: (db: FakeDb, action: string, entity: string, l
     },
   };
 }
+
+/** Settings, logins, holidays, and the account pages' platform functions. */
+export function settingsRpcs(audit: (db: FakeDb, action: string, entity: string, label: string, before?: unknown, after?: unknown, reason?: unknown) => void): Record<string, Rpc> {
+  const named = (v: unknown, what: string) => (String(v ?? '').trim().length >= 2 ? String(v).trim() : fail(`give the ${what} a name`));
+  const unique = (db: FakeDb, t: string, name: string, extra: (r: Row) => boolean = () => true) => {
+    if (db.rows(t).some(r => String(r.name).toLowerCase() === name.toLowerCase() && extra(r))) fail(`${name} is already there`);
+  };
+  const place = (db: FakeDb, t: string, id: unknown, what: string) => find(db, t, id) ?? fail(`no such ${what} in this organisation`);
+  const inUse = (name: string, parts: [number, string][]) => {
+    if (parts.some(([n]) => n > 0)) fail(`${name} is in use: ${parts.map(([n, w]) => `${n} ${w}`).join(', ')} name it`);
+  };
+  const tickets: Row[] = [];
+  const thread: Row[] = [];
+  const day = (n: number) => new Date(Date.now() + n * 86_400_000).toISOString();
+  if (!tickets.length) {
+    tickets.push(
+      { id: crypto.randomUUID(), type: 'data_issue', priority: 'high', status: 'waiting_customer', subject: 'Two clients merged by mistake in Kukatpally', raised_by: 'Demo owner', created_at: day(-3), updated_at: day(-1), sla_due_at: null },
+      { id: crypto.randomUUID(), type: 'training', priority: 'low', status: 'resolved', subject: 'Training for the new Warangal team', raised_by: 'Demo owner', created_at: day(-20), updated_at: day(-12), sla_due_at: null },
+    );
+    thread.push(
+      { id: crypto.randomUUID(), ticket: tickets[0].id, at: day(-3), author: 'Demo owner', from_mr_sales: false, body: 'Dr. Lalitha Krishna and Dr. Lalitha Murthy show as one client on Anil\'s phone since Tuesday.' },
+      { id: crypto.randomUUID(), ticket: tickets[0].id, at: day(-1), author: 'Mr Sales support', from_mr_sales: true, body: 'We have split them back. Could you ask Anil to sign out and in once, and tell us if both now appear?' },
+      { id: crypto.randomUUID(), ticket: tickets[1].id, at: day(-20), author: 'Demo owner', from_mr_sales: false, body: 'Four new representatives join in Warangal next week. Can someone take them through the app?' },
+      { id: crypto.randomUUID(), ticket: tickets[1].id, at: day(-12), author: 'Mr Sales support', from_mr_sales: true, body: 'Done on a call on Friday; all four signed in and filed a day plan.' },
+    );
+  }
+  const month = (n: number) => { const d = new Date(); d.setMonth(d.getMonth() + n, 1); return d.toISOString().slice(0, 10); };
+  const invoices = [-2, -1, 0].map((n, i) => ({
+    id: crypto.randomUUID(), number: `MRS-2026-${String(41 + i).padStart(4, '0')}`, issue_date: month(n), due_date: month(n).slice(0, 8) + '15',
+    period_start: month(n), period_end: new Date(Date.parse(month(n + 1)) - 86_400_000).toISOString().slice(0, 10), plan_code: 'growth', seats: 25, amount: 12500, gst_percent: 18, total: 14750,
+    amount_paid: n === 0 ? 0 : 14750, status: n === 0 ? 'issued' : 'paid',
+  }));
+  return {
+    update_org_settings: (a, db) => {
+      const r = Number(a.p_geo_fence_radius_m);
+      if (a.p_geo_fence_radius_m != null && (r < 10 || r > 5000)) fail('a geo-fence radius is between 10 and 5000 metres');
+      const s = db.rows('org_settings')[0];
+      Object.assign(s, { daily_allowance: a.p_daily_allowance ?? 350, week_off_weekday: a.p_week_off_weekday ?? 0, receipt_threshold: a.p_receipt_threshold ?? 500, geo_fence_policy: a.p_geo_fence_policy ?? 'warn', geo_fence_radius_m: a.p_geo_fence_radius_m ?? 50, updated_at: now() });
+      return null;
+    },
+    create_region: (a, db) => {
+      const name = named(a.p_name, 'region'); unique(db, 'regions', name);
+      const id = crypto.randomUUID(); db.mutable('regions').push({ id, org_id: ORG, name, created_at: now() }); audit(db, 'added a region', 'Region', name); return id;
+    },
+    create_territory: (a, db) => {
+      place(db, 'regions', a.p_region_id, 'region'); const name = named(a.p_name, 'territory'); unique(db, 'territories', name);
+      const id = crypto.randomUUID(); db.mutable('territories').push({ id, org_id: ORG, region_id: a.p_region_id, name, hq: trimOrNull(a.p_hq) ?? name, created_at: now() }); audit(db, 'added a territory', 'Territory', name); return id;
+    },
+    create_area: (a, db) => {
+      place(db, 'territories', a.p_territory_id, 'territory'); const name = named(a.p_name, 'area'); unique(db, 'areas', name, r => r.territory_id === a.p_territory_id);
+      const id = crypto.randomUUID(); db.mutable('areas').push({ id, org_id: ORG, territory_id: a.p_territory_id, name, created_at: now() }); audit(db, 'added an area', 'Area', name); return id;
+    },
+    create_cluster: (a, db) => {
+      place(db, 'areas', a.p_area_id, 'area'); const name = named(a.p_name, 'cluster'); unique(db, 'clusters', name, r => r.area_id === a.p_area_id);
+      const id = crypto.randomUUID(); db.mutable('clusters').push({ id, org_id: ORG, area_id: a.p_area_id, name, created_at: now() }); audit(db, 'added a cluster', 'Cluster', name); return id;
+    },
+    delete_territory: (a, db) => {
+      const t = place(db, 'territories', a.p_id, 'territory');
+      inUse(String(t.name), [[db.rows('areas').filter(x => x.territory_id === t.id).length, 'areas'], [db.rows('clients').filter(x => x.territory_id === t.id).length, 'clients'], [db.rows('employees').filter(x => x.territory_id === t.id).length, 'employees']]);
+      db.replace('territories', db.rows('territories').filter(x => x !== t)); audit(db, 'removed a territory', 'Territory', String(t.name)); return `${t.name} is gone.`;
+    },
+    delete_area: (a, db) => {
+      const t = place(db, 'areas', a.p_id, 'area');
+      inUse(String(t.name), [[db.rows('clients').filter(x => x.area_id === t.id).length, 'clients'], [db.rows('clusters').filter(x => x.area_id === t.id).length, 'clusters'], [db.rows('day_plans').filter(x => x.area_id === t.id).length, 'day plans']]);
+      db.replace('areas', db.rows('areas').filter(x => x !== t)); audit(db, 'removed an area', 'Area', String(t.name)); return `${t.name} is gone.`;
+    },
+    delete_cluster: (a, db) => {
+      const t = place(db, 'clusters', a.p_id, 'cluster');
+      inUse(String(t.name), [[db.rows('clients').filter(x => x.cluster_id === t.id).length, 'clients'], [db.rows('day_plans').filter(x => x.cluster_id === t.id).length, 'day plans']]);
+      db.replace('clusters', db.rows('clusters').filter(x => x !== t)); audit(db, 'removed a cluster', 'Cluster', String(t.name)); return `${t.name} is gone.`;
+    },
+    create_designation: (a, db) => {
+      const name = String(a.p_name ?? '').trim();
+      if (name.length < 2) fail('give the role a name; it is what your team sees on the phone');
+      if (!['field', 'manager'].includes(String(a.p_app_view))) fail('a role gets either the field app or the manager app');
+      const short = (trimOrNull(a.p_short_name) ?? (name.length <= 6 ? name.toUpperCase() : name.split(/\s+/).map(w => w[0]?.toUpperCase()).join(''))).slice(0, 6);
+      if (db.rows('designations').some(r => String(r.name).toLowerCase() === name.toLowerCase())) fail(`${name} is already one of your roles`);
+      if (db.rows('designations').some(r => String(r.short_name).toUpperCase() === short.toUpperCase())) fail(`${short} is already the short name of another role; give this one its own`);
+      const id = crypto.randomUUID();
+      db.mutable('designations').push({ id, org_id: ORG, name, short_name: short, app_view: a.p_app_view, rank: a.p_app_view === 'manager' ? 10 : 0, is_active: true, created_at: now(), updated_at: now() });
+      audit(db, `added a role on the ${a.p_app_view} app`, 'Role', name); return id;
+    },
+    update_designation: (a, db) => {
+      const d = place(db, 'designations', a.p_id, 'role');
+      const name = String(a.p_name ?? '').trim();
+      if (name.length < 2) fail('give the role a name; it is what your team sees on the phone');
+      if (db.rows('designations').some(r => r !== d && String(r.name).toLowerCase() === name.toLowerCase())) fail(`${name} is already one of your roles`);
+      Object.assign(d, { name, app_view: a.p_app_view, short_name: (trimOrNull(a.p_short_name) ?? d.short_name), updated_at: now() });
+      audit(db, 'changed a role', 'Role', name); return d.id;
+    },
+    set_designation_active: (a, db) => {
+      const d = place(db, 'designations', a.p_id, 'role');
+      d.is_active = Boolean(a.p_active);
+      const held = db.rows('employees').filter(e => e.designation_id === d.id).length;
+      audit(db, a.p_active ? 'brought a role back' : 'retired a role', 'Role', String(d.name));
+      return a.p_active ? `${d.name} is offered again when you add somebody.` : held ? `${d.name} is retired: it is off the list for new people, and the ${held} ${held === 1 ? 'person' : 'people'} who have it keep it.` : `${d.name} is retired.`;
+    },
+    delete_designation: (a, db) => {
+      const d = place(db, 'designations', a.p_id, 'role');
+      const held = db.rows('employees').filter(e => e.designation_id === d.id).length;
+      if (held) fail(`${held} ${held === 1 ? 'person holds' : 'people hold'} this role, so it stays; retire it instead and it will not be offered again`);
+      db.replace('designations', db.rows('designations').filter(x => x !== d)); audit(db, 'removed a role', 'Role', String(d.name)); return `${d.name} is off the list.`;
+    },
+    set_field_login: (a, db) => {
+      const e = place(db, 'employees', a.p_employee_id, 'employee');
+      if (String(a.p_password ?? '').length < 8) fail('a password has at least 8 characters');
+      const u = db.rows('app_users').find(x => x.employee_id === e.id && x.role === 'field');
+      if (u) Object.assign(u, { must_change_password: true, invited_at: u.invited_at ?? now(), updated_at: now() });
+      else db.mutable('app_users').push({ id: crypto.randomUUID(), user_id: crypto.randomUUID(), employee_id: e.id, role: 'field', scope: 'own', status: 'active', created_at: now(), updated_at: now(), email: e.email, must_change_password: true, invited_at: now() });
+      audit(db, u ? 'reset a phone password' : 'gave a phone login', 'Employee', String(e.name));
+      return u ? `${e.name}'s password is reset.` : `${e.name} can sign in on the phone.`;
+    },
+    set_login_status: (a, db) => {
+      if (String(a.p_reason ?? '').trim().length < 5) fail('a reason is required; it is what the next person reads');
+      const t = place(db, 'app_users', a.p_app_user_id, 'login');
+      if (t.status === a.p_status) fail(`that login is already ${a.p_status}`);
+      const before = t.status; t.status = a.p_status; t.updated_at = now();
+      audit(db, a.p_status === 'suspended' ? 'switched a login off' : 'switched a login back on', 'Login', String(t.email ?? t.role), before, a.p_status, String(a.p_reason).trim());
+      return a.p_status;
+    },
+    upsert_holiday: (a, db) => {
+      if (!trimOrNull(a.p_name)) fail('give the holiday a name');
+      const h = db.rows('holidays').find(x => x.holiday_date === a.p_date);
+      if (h) { h.name = String(a.p_name).trim(); return h.id; }
+      const id = crypto.randomUUID(); db.mutable('holidays').push({ id, org_id: ORG, holiday_date: a.p_date, name: String(a.p_name).trim() }); return id;
+    },
+    my_platform_tickets: () => [...tickets].sort((x, y) => String(y.updated_at).localeCompare(String(x.updated_at))),
+    my_platform_ticket_thread: a => thread.filter(m => m.ticket === a.p_ticket),
+    raise_platform_ticket: a => {
+      if (String(a.p_subject ?? '').trim().length < 4) fail('give the request a subject');
+      if (String(a.p_body ?? '').trim().length < 10) fail('say what happened, so we can help');
+      const id = crypto.randomUUID();
+      const sla = ({ urgent: 4, high: 24, medium: 72, low: 168 } as Record<string, number>)[String(a.p_priority)] ?? 72;
+      tickets.push({ id, type: a.p_type, priority: a.p_priority, status: 'open', subject: String(a.p_subject).trim(), raised_by: 'Demo owner', created_at: now(), updated_at: now(), sla_due_at: new Date(Date.now() + sla * 3_600_000).toISOString() });
+      thread.push({ id: crypto.randomUUID(), ticket: id, at: now(), author: 'Demo owner', from_mr_sales: false, body: String(a.p_body).trim() });
+      return id;
+    },
+    reply_platform_ticket: a => {
+      const t = tickets.find(x => x.id === a.p_ticket) ?? fail('no such request');
+      if (!trimOrNull(a.p_body)) fail('write a reply');
+      thread.push({ id: crypto.randomUUID(), ticket: t.id, at: now(), author: 'Demo owner', from_mr_sales: false, body: String(a.p_body).trim() });
+      Object.assign(t, { status: t.status === 'resolved' || t.status === 'closed' ? 'open' : t.status === 'waiting_customer' ? 'in_progress' : t.status, updated_at: now() });
+      return null;
+    },
+    my_invoices: () => [...invoices].reverse(),
+    'fn:invite-user': (a, db) => {
+      const email = String(a.email ?? '').trim();
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) fail('that is not an email address');
+      if (db.rows('app_users').some(u => String(u.email ?? '').toLowerCase() === email.toLowerCase())) fail(`${email} already has a login`);
+      db.mutable('app_users').push({ id: crypto.randomUUID(), user_id: crypto.randomUUID(), employee_id: a.employee_id ?? null, role: a.role, scope: 'company', status: 'active', created_at: now(), updated_at: now(), email, must_change_password: true, invited_at: now() });
+      audit(db, `invited a ${a.role} login`, 'Login', email);
+      return { email, role: a.role };
+    },
+    'fn:field-password-reset': () => ({ message: 'If that account has an email on file, a link is on its way.' }),
+  };
+}

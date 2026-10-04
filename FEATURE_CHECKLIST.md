@@ -418,6 +418,25 @@ behaviour can be checked against it. The "Data" column names the function in
 
 ## 7. Setup
 
+> **2026-10-04: Settings is built in the new design** (`src/pages/settings/`, `src/live/settings.ts`).
+> The organisation tree and hierarchy are Team, Org chart (built with the Team section). Company
+> rules (allowance, bill threshold, week off, visit check off, warn or block, and radius, read
+> back before saving through `update_org_settings`); geography (regions, territories with HQ,
+> areas and clusters, who is posted where, add and remove with the database's in-use refusal);
+> roles (add, edit, retire, offer again, delete when nobody holds it); logins and access (a phone
+> login for each person through `set_field_login` and the `field-password-reset` email, office
+> logins invited through `invite-user`, switch off and on with a reason through
+> `set_login_status`, only the roles the actor may grant); HR rules (holidays through
+> `upsert_holiday`, leave types in use); field ownership (the old console's reference, unchanged);
+> the audit log (by period, person and words).
+> **For the owner:** `update_org_settings` checks no role in the database, so any signed-in office
+> user could change the company rules; the console offers the change to owner and admin only.
+> There is no database function to delete a holiday or a region, so neither is offered. Leave
+> allowances, salary structures and per-role expense rules have no table; the old console's HR
+> configuration showed demo values for them, and the new one says they are not stored.
+> Checked on demo data at 1440, 1024 (dark) and 390, flows run in the browser. Not yet run against
+> the live testbed.
+
 ### Organisation tree (`/org`) · Old: `pages/Hierarchy.tsx` `OrgTree`
 - [ ] Everyone in scope as a tree; reporting is dated, so a change leaves a trail
 
@@ -452,6 +471,11 @@ behaviour can be checked against it. The "Data" column names the function in
 ---
 
 ## 8. From Mr Sales
+
+> **2026-10-04: Help and Plan and billing are built** (`src/pages/account/Account.tsx`): requests
+> to the Mr Sales team (raise, read the conversation, reply) through the platform ticket
+> functions, and the plan, field seats used and invoices through `my_org_access` and
+> `my_invoices`. Checked on demo data; not yet run against the live testbed.
 
 ### Help (`/help`) · Old: `pages/MrSales.tsx` `HelpPage` · Data: `myPlatformTickets`, `myPlatformTicketThread`, `raisePlatformTicket`, `replyPlatformTicket`
 - [ ] Open, waiting for you, resolved, urgent answer time

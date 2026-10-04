@@ -1,6 +1,6 @@
 import { type ReactNode } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { sectionOf } from '../app/nav';
+import { pageOf, sectionOf } from '../app/nav';
 import { useVisibleSections } from './Shell';
 
 /**
@@ -32,6 +32,10 @@ export function SectionLayout({ children, hideTitle = false }: { children: React
             </nav>
           )}
         </header>
+      )}
+      {/* A page outside every section, such as Help or billing, still says what it is. */}
+      {!section && pageOf(loc.pathname) && (
+        <header className="section-head"><h1 className="section-name">{pageOf(loc.pathname)!.label}</h1></header>
       )}
       {children}
     </div>

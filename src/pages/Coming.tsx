@@ -1,5 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
-import { NEW_ACTIONS, pageOf } from '../app/nav';
+import { NEW_ACTIONS, allPages, pageOf } from '../app/nav';
+import { ROLE_LABEL, useCan } from '../app/access';
+import { useMe } from '../live/session';
 import { Arrive } from '../components/motion';
 
 /**
@@ -38,6 +40,22 @@ export function Coming() {
 }
 
 export function NotFound() {
+  const { pathname } = useLocation();
+  const me = useMe();
+  const allowed = useCan();
+  // A real page this role may not open says so, and who can change that, rather than pretending it is not there.
+  const page = allPages().find(p => p.path === pathname || (p.path !== '/' && pathname.startsWith(`${p.path}/`)));
+  if (page && !allowed(page.module)) {
+    return (
+      <div className="coming">
+        <h1 className="page-title-lg">{page.label} is not open to your role</h1>
+        <p className="coming-about">
+          You are signed in as {ROLE_LABEL[me.role] ?? me.role}, and {page.label.toLowerCase()} needs the {page.module} permission, which that role does not have. An owner or admin can change your role under Logins and access.
+        </p>
+        <Link className="link" to="/">Back to Today</Link>
+      </div>
+    );
+  }
   return (
     <div className="coming">
       <h1 className="page-title-lg">There is no page here</h1>
