@@ -153,8 +153,10 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     try {
       const next = await whoAmI();
       // An invitation or a reset email lands on /welcome, already signed in from
-      // the link but with no password of their own yet: they choose one first.
-      if (onWelcome() && next.status === 'signedIn') setState({ status: 'recovery' });
+      // the link but with no password of their own yet: they choose one first,
+      // as in the old console, whatever the login. A phone login is told where
+      // it belongs only after it has a password.
+      if (onWelcome() && next.status !== 'signedOut') setState({ status: 'recovery' });
       else if (onWelcome() && next.status === 'signedOut') setState({ status: 'signedOut', message: DEAD_LINK });
       else setState(next);
     } catch (e) {
