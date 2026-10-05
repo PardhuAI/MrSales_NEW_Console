@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
 import { ArrowLeft, PaperPlaneRight, Plus } from '@phosphor-icons/react';
-import { loadContacts, loadMessages, loadThreads, markRead, openDirect, sendMessage, type Contact, type Message, type Thread } from '../../live/chat';
-import { useMe } from '../../live/session';
+import { loadContacts, loadMessages, loadThreads, markRead, openDirect, sendMessage, setChatName, type Contact, type Message, type Thread } from '../../live/chat';
+import { useMe, useSession } from '../../live/session';
+import { ROLE_LABEL } from '../../app/access';
 import { IST_TODAY, dayMonth, dayOf, shortDay, timeOf } from '../../lib/days';
 import { count } from '../../lib/format';
-import { Drawer, SearchBox, Summary } from '../../components/kit';
+import { Drawer, Field, SearchBox, Summary } from '../../components/kit';
 import { Empty, LoadError, Loading } from '../../components/States';
 
 /**
@@ -12,23 +13,57 @@ import { Empty, LoadError, Loading } from '../../components/States';
  *
  * Read again every few seconds while the page is open and in front, and not at
  * all otherwise, so it costs nothing when nobody is looking. A message comes
- * from a person on the roster: a login with no person behind it is told how to
- * be linked, rather than shown a box it cannot send from.
+ * from a person on the roster or, for an office login, under the name it
+ * chose the first time it came here.
  */
 export function Messages() {
   const me = useMe();
-  if (!me.employeeId) return <NotLinked demo={me.demo} />;
+  if (me.demo) return <DemoNote />;
+  // An office login writes under a name of its own, chosen once.
+  if (!me.employeeId && !me.chatName) return <ChooseName role={ROLE_LABEL[me.role]} />;
   return <Inbox />;
 }
 
-function NotLinked({ demo }: { demo: boolean }) {
+function DemoNote() {
   return (
     <div className="page-body">
-      <Empty title={demo ? 'Messages work on a live account' : 'This login cannot send messages'}>
-        {demo
-          ? 'The demo company has no conversations. Signed in to your own company, this is where you message your team.'
-          : 'A message is sent as a person on the roster, so the phone can say who wrote it, and this login is not linked to one. A login linked to a person, such as a manager\'s, writes from here. Link a new office login to its person when you invite it, under Settings, Logins and access.'}
+      <Empty title="Messages work on a live account">
+        The demo company has no conversations. Signed in to your own company, this is where you write to your team.
       </Empty>
+    </div>
+  );
+}
+
+function ChooseName({ role }: { role: string }) {
+  const { refresh } = useSession();
+  const [name, setName] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [problem, setProblem] = useState('');
+  const save = async (e: FormEvent) => {
+    e.preventDefault();
+    if (name.trim().length < 2) return setProblem('Write the name your team knows you by.');
+    setBusy(true);
+    setProblem('');
+    try {
+      await setChatName(name.trim());
+      await refresh();
+    } catch (err) {
+      setProblem(err instanceof Error ? err.message : String(err));
+      setBusy(false);
+    }
+  };
+  return (
+    <div className="page-body">
+      <form className="chat-name" onSubmit={save} noValidate>
+        <h2 className="section-title">Write to your team</h2>
+        <p className="form-help">
+          Message anyone under you; it reaches their phone at once, and their replies come here. You see only your own conversations, never theirs with each other.
+        </p>
+        <Field label="Your name, as your team will see it" help={`Shown with your role: “${name.trim() || 'Pardhu'}, ${role}”.`} error={problem || undefined}>
+          {x => <input {...x} className="input" value={name} maxLength={60} autoFocus placeholder="For example: Pardhu" onChange={e => setName(e.target.value)} />}
+        </Field>
+        <button type="submit" className="btn btn-primary" disabled={busy}>{busy ? 'Saving…' : 'Start writing'}</button>
+      </form>
     </div>
   );
 }

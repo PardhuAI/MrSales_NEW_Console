@@ -16,6 +16,8 @@ export type Identity = {
   role: Role;
   scope: string;
   employeeId: string | null;
+  /** The name an office login's messages carry; null until it is chosen. */
+  chatName: string | null;
   disabledModules: string[];
   pastDue: boolean;
   demo: boolean;
@@ -59,6 +61,7 @@ export const DEMO_IDENTITY: Identity = {
   employeeId: null,
   disabledModules: [],
   pastDue: false,
+  chatName: null,
   demo: true,
 };
 
@@ -86,7 +89,7 @@ async function whoAmI(): Promise<SessionState> {
 
   const { data, error } = await sb
     .from('app_users')
-    .select('org_id, role, scope, employee_id, status, organisations(name)')
+    .select('org_id, role, scope, employee_id, status, display_name, organisations(name)')
     .eq('user_id', auth.user.id)
     .maybeSingle();
   if (error) throw new Error(`Could not read your account: ${error.message}`);
@@ -100,7 +103,8 @@ async function whoAmI(): Promise<SessionState> {
     return { status: 'blocked', message: 'This login has been suspended. Ask an owner or admin in your company to restore it.' };
   }
 
-  let name = auth.user.email ?? 'You';
+  const chatName = (data as { display_name?: string | null }).display_name?.trim() || null;
+  let name = chatName ?? auth.user.email ?? 'You';
   if (data.employee_id) {
     const { data: emp } = await sb.from('employees').select('name').eq('id', data.employee_id).maybeSingle();
     if (emp?.name) name = emp.name;
@@ -118,6 +122,7 @@ async function whoAmI(): Promise<SessionState> {
       role: data.role as Role,
       scope: data.scope ?? 'company',
       employeeId: data.employee_id,
+      chatName,
       disabledModules: access?.disabled_modules ?? [],
       pastDue: access?.status === 'past_due',
       demo: false,
@@ -138,6 +143,8 @@ type Ctx = {
   signOut: () => Promise<void>;
   sendReset: (email: string) => Promise<string | null>;
   setPassword: (password: string) => Promise<string | null>;
+  /** Reads who is signed in again, after something about them changed. */
+  refresh: () => Promise<void>;
   /** Demo only: see the console as another of the six roles. */
   viewAs: ((role: Role) => void) | null;
 };
@@ -176,6 +183,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   const ctx: Ctx = {
     state,
+    refresh,
     async signIn(email, password) {
       const { error } = await db().auth.signInWithPassword({ email: email.trim(), password });
       if (error) {

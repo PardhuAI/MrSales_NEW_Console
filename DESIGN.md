@@ -182,7 +182,8 @@ Dated. These amend everything above; where they differ, this section wins.
 - **2026-10-05.** The org chart opens as the old console's drag-and-drop board (drag a
   person onto another manager, review, save with a date and reason); the tree stays as
   the second view. Nothing beyond the drag was brought back.
-- **2026-10-05.** Messages (Share with field) for every office role: the phone app's
-  own conversations, through its functions. A message is sent as a person on the
-  roster, so only a login linked to one can write; the rest are told why. Owners
-  writing as themselves needs office-only people in the database, left for later.
+- **2026-10-05.** Messages (Share with field) for every office role: write to anyone
+  under you (the company for owner, admin and HR, the team for a manager), and read
+  only your own conversations, never the field's with each other. An office login
+  writes as itself under a name it chooses once (migration 0101), so it takes no
+  seat and never appears in attendance or the field counts.

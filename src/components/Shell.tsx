@@ -114,7 +114,7 @@ export function Shell({ children }: { children: ReactNode }) {
                 >
                   <SIcon size={19} weight={isCurrent ? 'fill' : 'regular'} aria-hidden="true" />
                   <span>{s.label}</span>
-                  {s.id === 'approvals' && <span className="nav-count" aria-label={`${pending} waiting`}>{pending}</span>}
+                  {s.id === 'approvals' && pending > 0 && <span className="nav-count" aria-label={`${pending} waiting`}>{pending}</span>}
                 </NavLink>
                 {/* The current section's pages open under it, on every screen. */}
                 {isCurrent && s.pages.length > 1 && (
@@ -164,7 +164,8 @@ export function Shell({ children }: { children: ReactNode }) {
 
           <div className="bar-right">
             <NewMenu />
-            {allowed('approvals') && (
+            {/* Only when something waits: a zero asks for nothing and is noise. */}
+            {allowed('approvals') && pending > 0 && (
               <Link className="bar-pending" to="/approvals">
                 <span className="long">{pending} waiting for you</span>
                 <span className="short" aria-hidden="true">{pending} waiting</span>

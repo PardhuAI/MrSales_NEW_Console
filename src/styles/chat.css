@@ -288,3 +288,18 @@
     max-width: 86%;
   }
 }
+
+/* The one question an office login is asked, the first time. */
+.chat-name {
+  display: grid;
+  gap: var(--s-4);
+  max-width: 520px;
+}
+
+.chat-name .section-title {
+  margin: 0;
+}
+
+.chat-name .btn {
+  justify-self: start;
+}

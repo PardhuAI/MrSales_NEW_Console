@@ -4,8 +4,9 @@ import { db } from './client';
  * Messages with the field: the same conversations the phone app has, through
  * the same functions (chat_threads_for_me, chat_messages_for_thread,
  * send_chat_message, find_or_create_direct_chat, mark_chat_read). A message
- * comes from a person on the roster, so a login takes part only when it is
- * linked to one; the database refuses the rest.
+ * is sent as a person on the roster or, for an office login with no person
+ * behind it, as that login under the name it chose (set_my_chat_name). It
+ * reads only the conversations it is in, never the field's with each other.
  */
 
 const call = async (fn: string, args: Record<string, unknown> = {}) => {
@@ -56,3 +57,5 @@ export async function loadContacts(): Promise<Contact[]> {
   const rows = (await call('chat_directory', { p_query: null })) as { id: string; name: string; employee_code: string; designation: string | null; headquarters: string | null }[];
   return (rows ?? []).map(r => ({ id: r.id, name: r.name, code: r.employee_code, designation: r.designation ?? '', hq: r.headquarters ?? '' }));
 }
+
+export const setChatName = async (name: string) => { await call('set_my_chat_name', { p_name: name }); };
