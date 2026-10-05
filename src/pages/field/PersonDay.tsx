@@ -10,6 +10,7 @@ import { Drawer, Pill } from '../../components/kit';
 import { Empty, Freshness, LoadError, Loading } from '../../components/States';
 import { Arrive } from '../../components/motion';
 import { useCan } from '../../app/access';
+import { useFieldLive } from '../../live/fieldLive';
 
 /**
  * One person's day: what they planned, every call in order, where the phone was
@@ -29,6 +30,7 @@ const STATUS: Record<string, { word: string; tone: 'good' | 'warning' | 'critica
 const metres = (m: number | null) => (m == null ? '' : m < 1000 ? `${Math.round(m)} m` : `${(m / 1000).toFixed(1)} km`);
 
 export function PersonDay() {
+  useFieldLive();
   const { employeeId = '', date = IST_TODAY() } = useParams();
   const r = useResource<DayRecord>(`field:person:${employeeId}:${date}`, () => loadDayRecord(employeeId, date));
   if (r.status === 'error' && !r.data) return <LoadError what="This day" error={r.error} retry={() => void r.reload()} />;

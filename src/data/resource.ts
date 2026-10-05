@@ -8,6 +8,11 @@ import { useCallback, useEffect, useSyncExternalStore } from 'react';
  * when it is older than a minute; a failed refresh keeps the last good result
  * on screen and says so, rather than blanking it. A write calls `invalidate`
  * with the keys it affects, so every screen showing them reads again.
+ *
+ * While the tab is in front, what is on screen is read again every minute, and
+ * at once when the office comes back to the tab, so the field's work appears
+ * without anyone pressing refresh. A hidden tab reads nothing. A report the
+ * office asked for is theirs to re-run, and is left as it is.
  */
 
 export type Resource<T> = {
@@ -81,4 +86,24 @@ export function useResource<T>(key: string | null, loader: () => Promise<T>, max
     at: e?.at ?? null,
     reload: load,
   };
+}
+
+/** Keys that hold a result somebody asked for, read again only when they ask. */
+const ON_REQUEST = ['reports:'];
+const EVERY = 60_000;
+
+function freshen(olderThan: number) {
+  const now = Date.now();
+  let any = false;
+  for (const [k, e] of entries) {
+    if (ON_REQUEST.some(p => k.startsWith(p)) || e.inFlight || e.stale || !e.at) continue;
+    if (now - e.at.getTime() >= olderThan) { e.stale = true; any = true; }
+  }
+  // Screens showing a stale key read it again; the rest wait until they are opened.
+  if (any) notify();
+}
+
+if (typeof window !== 'undefined') {
+  window.setInterval(() => { if (document.visibilityState === 'visible') freshen(EVERY - 5_000); }, EVERY);
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') freshen(15_000); });
 }

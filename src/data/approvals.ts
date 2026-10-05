@@ -172,7 +172,8 @@ export const approvalsStore = {
     inFlight = source
       .load()
       .then(data => set({ ...data, status: 'ready', error: '' }))
-      .catch(e => set({ status: 'error', error: e instanceof Error ? e.message : String(e) }))
+      // A failed refresh keeps the last good queue on screen; only a first read fails the page.
+      .catch(e => set({ status: state.status === 'ready' ? 'ready' : 'error', error: e instanceof Error ? e.message : String(e) }))
       .finally(() => {
         inFlight = null;
       });
@@ -204,11 +205,25 @@ export const approvalsStore = {
   },
 };
 
-/** Re-renders whenever the queue changes, and loads it the first time it is needed. */
+/**
+ * Re-renders whenever the queue changes, loads it the first time it is needed,
+ * and reads it again every minute while the tab is in front and on return to
+ * it, so a request sent from the phone reaches the count without a refresh.
+ */
+let readAt = 0;
 export const useApprovals = () => {
   useSyncExternalStore(approvalsStore.subscribe, () => version);
   useEffect(() => {
-    if (state.status === 'idle') void approvalsStore.load();
+    if (state.status === 'idle') { readAt = Date.now(); void approvalsStore.load(); }
+    const again = (olderThan: number) => {
+      if (document.visibilityState !== 'visible' || Date.now() - readAt < olderThan) return;
+      readAt = Date.now();
+      void approvalsStore.load();
+    };
+    const t = window.setInterval(() => again(55_000), 60_000);
+    const back = () => again(15_000);
+    document.addEventListener('visibilitychange', back);
+    return () => { window.clearInterval(t); document.removeEventListener('visibilitychange', back); };
   }, []);
   return approvalsStore;
 };

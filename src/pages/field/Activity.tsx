@@ -9,6 +9,7 @@ import { count } from '../../lib/format';
 import { Filter, Pill, SearchBox, Summary, Toolbar, useShowMore } from '../../components/kit';
 import { Empty, Freshness, LoadError, Loading } from '../../components/States';
 import { Arrive } from '../../components/motion';
+import { useFieldLive } from '../../live/fieldLive';
 
 /**
  * Activity: everyone in the field for one day. Called activity, never live
@@ -39,6 +40,7 @@ function locationOf(p: PersonDay): { word: string; tone: 'good' | 'warning' | 'c
 }
 
 export function FieldActivity() {
+  useFieldLive();
   const [params, setParams] = useSearchParams();
   const today = IST_TODAY();
   const date = params.get('date') ?? today;

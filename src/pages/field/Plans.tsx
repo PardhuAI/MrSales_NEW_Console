@@ -11,6 +11,7 @@ import { Segmented } from '../../components/Segmented';
 import { Empty, Freshness, LoadError, Loading } from '../../components/States';
 import { Arrive } from '../../components/motion';
 import { useCan } from '../../app/access';
+import { useFieldLive } from '../../live/fieldLive';
 
 // ── day plans ─────────────────────────────────────────────────────────
 
@@ -20,6 +21,7 @@ import { useCan } from '../../app/access';
  * can still act on before the day is lost.
  */
 export function DayPlans() {
+  useFieldLive();
   const [params, setParams] = useSearchParams();
   const today = IST_TODAY();
   const date = params.get('date') ?? today;

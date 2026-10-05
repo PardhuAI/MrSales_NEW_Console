@@ -13,6 +13,7 @@ import { Segmented } from '../components/Segmented';
 import { dayOf, longDay } from '../lib/days';
 import { FinanceToday, HrToday, ItToday, SetupGuide } from './TodayRoles';
 import { useMe } from '../live/session';
+import { useFieldLive } from '../live/fieldLive';
 
 /**
  * Today: how the field is doing, what needs a decision or a word, and whether
@@ -51,6 +52,7 @@ export function Dashboard() {
 
 /** Owner, admin and management: how the field is doing, what needs them, and the month. */
 function FieldToday() {
+  useFieldLive(true);
   const { status, model, error, at } = useDashboard();
 
   if (status === 'error' && !model) {

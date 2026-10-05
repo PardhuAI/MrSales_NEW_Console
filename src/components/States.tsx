@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { ArrowClockwise } from '@phosphor-icons/react';
 import type { ReactNode } from 'react';
 import { isLive } from '../live/client';
@@ -39,6 +40,12 @@ export function Empty({ title, children }: { title: string; children?: ReactNode
 
 /** "Demo data", or when the figures were read with a refresh button; and a failed refresh, said plainly. */
 export function Freshness({ at, error, reload, label = 'Refresh' }: { at: Date | null; error?: string; reload: () => void; label?: string }) {
+  // "Updated 2 minutes ago" keeps counting while the page is open.
+  const [, tick] = useState(0);
+  useEffect(() => {
+    const t = window.setInterval(() => tick(n => n + 1), 30_000);
+    return () => window.clearInterval(t);
+  }, []);
   return (
     <>
       {!isLive ? (

@@ -139,15 +139,21 @@ export const dashboardStore = {
   },
 };
 
-/** The Dashboard's data: read on first view, and again every five minutes while open. */
+/**
+ * The Dashboard's data: read on first view, every minute while it is in front,
+ * and at once on return to the tab. Live news from the field reads it sooner.
+ */
 export function useDashboard() {
   useSyncExternalStore(dashboardStore.subscribe, () => version);
   useEffect(() => {
     if (state.status === 'idle' || (state.at && Date.now() - state.at.getTime() > 60_000)) void dashboardStore.load();
-    const t = window.setInterval(() => {
-      if (document.visibilityState === 'visible') void dashboardStore.load();
-    }, 5 * 60_000);
-    return () => window.clearInterval(t);
+    const again = (olderThan: number) => {
+      if (document.visibilityState === 'visible' && (!state.at || Date.now() - state.at.getTime() >= olderThan)) void dashboardStore.load();
+    };
+    const t = window.setInterval(() => again(55_000), 60_000);
+    const back = () => again(15_000);
+    document.addEventListener('visibilitychange', back);
+    return () => { window.clearInterval(t); document.removeEventListener('visibilitychange', back); };
   }, []);
   return state;
 }
