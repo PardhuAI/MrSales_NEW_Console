@@ -245,6 +245,11 @@ export const SECTIONS: Section[] = [
         keywords: ['feedback', 'questionnaire', 'brand recall'],
       },
       {
+        path: '/share/messages', label: 'Messages', module: 'chat',
+        about: 'Write to anyone on your team; it reaches their phone, and their replies come here.',
+        keywords: ['chat', 'message', 'conversation', 'talk', 'whatsapp', 'write to'],
+      },
+      {
         path: '/share/sent', label: 'Sent notifications', module: 'notifications',
         about: 'Every message the phones received, and who it reached.',
         keywords: ['notifications', 'messages', 'alerts sent', 'push'],

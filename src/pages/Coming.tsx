@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { NEW_ACTIONS, allPages, pageOf } from '../app/nav';
-import { ROLE_LABEL, useCan } from '../app/access';
+import { ROLE_LABEL, can, useCan } from '../app/access';
 import { useMe } from '../live/session';
 import { Arrive } from '../components/motion';
 
@@ -50,6 +50,18 @@ export function NotFound() {
   const page = (action && { label: action.label, module: action.module, path: action.path })
     ?? allPages().find(p => p.path === pathname)
     ?? allPages().filter(p => p.path !== '/' && pathname.startsWith(`${p.path}/`)).sort((a, b) => b.path.length - a.path.length)[0];
+  // The role may, but the company's plan leaves the module out: say that, not "your role".
+  if (page && can(me.role, page.module) && me.disabledModules.includes(page.module)) {
+    return (
+      <div className="coming">
+        <h1 className="page-title-lg">{page.label} is not in your company's plan</h1>
+        <p className="coming-about">
+          Your Mr Sales plan leaves {page.label.toLowerCase()} out, for every login in the company. Ask Mr Sales to add it; nothing else needs to change.
+        </p>
+        <Link className="link" to="/help">Ask Mr Sales</Link>
+      </div>
+    );
+  }
   if (page && !allowed(page.module)) {
     return (
       <div className="coming">

@@ -27,6 +27,7 @@ import { People } from './pages/team/People';
 import { AddPerson } from './pages/team/AddPerson';
 import { PersonRecordPage } from './pages/team/PersonRecord';
 import { ManagerPage, Managers } from './pages/team/Managers';
+import { Messages } from './pages/share/Messages';
 import { OrgChart } from './pages/team/OrgChart';
 import { Attendance, Leave, Tasks } from './pages/team/PeopleOps';
 import { Claims } from './pages/money/Claims';
@@ -73,6 +74,7 @@ const BUILT: Record<string, JSX.Element> = {
   '/money/payroll': <Payroll />,
   '/share': <Resources />,
   '/share/surveys': <Surveys />,
+  '/share/messages': <Messages />,
   '/share/sent': <SentNotifications />,
   '/reports': <Reports />,
   '/reports/downloads': <Downloads />,

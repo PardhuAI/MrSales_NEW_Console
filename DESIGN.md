@@ -179,3 +179,10 @@ Dated. These amend everything above; where they differ, this section wins.
   day (Field activity, Day plans, a person's day, Leave). The browser's own date box is
   used only inside forms. Months are picked the same way (Attendance, Expense claims,
   Payroll): six months to tap, and a year panel behind "Pick a month".
+- **2026-10-05.** The org chart opens as the old console's drag-and-drop board (drag a
+  person onto another manager, review, save with a date and reason); the tree stays as
+  the second view. Nothing beyond the drag was brought back.
+- **2026-10-05.** Messages (Share with field) for every office role: the phone app's
+  own conversations, through its functions. A message is sent as a person on the
+  roster, so only a login linked to one can write; the rest are told why. Owners
+  writing as themselves needs office-only people in the database, left for later.
