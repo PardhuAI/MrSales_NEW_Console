@@ -86,7 +86,7 @@
   max-width: 70ch;
   margin-top: var(--s-3);
   color: var(--muted);
-  font-size: 1.375rem;
+  font-size: var(--t-section);
   font-weight: var(--w-regular);
   letter-spacing: var(--track-title);
   line-height: var(--lh-snug);
@@ -255,8 +255,9 @@
 
 .vmap-pt text {
   fill: var(--on-accent);
+  /* map units */
   font-size: 2.6px;
-  font-weight: 700;
+  font-weight: var(--w-bold);
   text-anchor: middle;
   pointer-events: none;
 }
@@ -281,6 +282,7 @@
 
 .vmap-scale text {
   fill: var(--muted);
+  /* map units */
   font-size: 2.4px;
 }
 
@@ -377,7 +379,7 @@
 
 @media (max-width: 600px) {
   .pday-line {
-    font-size: 1.125rem;
+    font-size: var(--t-lede);
   }
 
   .pday-nav {

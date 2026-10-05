@@ -281,23 +281,24 @@ button.org-toggle:hover {
   gap: var(--s-2);
 }
 
+/* Columns wrap onto new rows rather than running off to the side: every
+   manager is on screen, and a drag only ever needs the page to scroll down,
+   which the board does itself near the window's edge. */
 .board-scroll {
-  overflow-x: auto;
-  margin-inline: calc(var(--s-1) * -1);
-  padding: var(--s-1) var(--s-1) var(--s-4);
+  padding-bottom: var(--s-4);
 }
 
 .board {
-  display: flex;
-  align-items: flex-start;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  align-items: start;
   gap: var(--s-3);
-  width: max-content;
 }
 
 .board-col {
   display: grid;
   gap: var(--s-2);
-  width: 272px;
+  min-width: 0;
   padding: var(--s-3);
   border-radius: var(--r-panel);
   background: var(--panel-bg);
@@ -409,7 +410,7 @@ button.org-toggle:hover {
 }
 
 .board-was {
-  color: var(--accent);
+  color: var(--muted);
   font-size: var(--t-xs);
 }
 
@@ -506,7 +507,7 @@ button.org-toggle:hover {
 /* Present is the expected state and stays quiet; leave and absence stand out
    only through their letter and a soft ground beside the key. */
 .att-cell.s-P { color: var(--good); }
-.att-cell.s-L { background: var(--accent-soft); color: var(--accent); }
+.att-cell.s-L { background: var(--track); color: var(--ink); }
 .att-cell.s-A { background: var(--warn-soft); color: var(--warn); }
 .att-cell.s-W,
 .att-cell.s-H { background: var(--track); color: var(--faint); }

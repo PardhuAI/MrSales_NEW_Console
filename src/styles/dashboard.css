@@ -64,7 +64,7 @@
   max-width: 62ch;
   text-wrap: pretty;
   color: var(--muted);
-  font-size: 1.0625rem;
+  font-size: var(--t-lede);
   line-height: var(--lh-body);
 }
 
@@ -408,7 +408,7 @@
 }
 
 .mf-lead .mf-value {
-  font-size: clamp(2.25rem, 1.6rem + 1.6vw, 3rem);
+  font-size: var(--t-hero);
   letter-spacing: var(--track-hero);
 }
 

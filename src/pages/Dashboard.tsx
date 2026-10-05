@@ -368,7 +368,7 @@ function Month({ m, sales, field }: { m: DashboardModel; sales: boolean; field: 
             </div>
             <div className="mf">
               <span className="mf-value">{mo.clientsVisited.toLocaleString('en-IN')}</span>
-              <span className="mf-label">of {mo.clientsTotal.toLocaleString('en-IN')} clients visited{mo.newClients ? ` · ${mo.newClients} new` : ''}</span>
+              <span className="mf-label">of {mo.clientsTotal.toLocaleString('en-IN')} {mo.clientsTotal === 1 ? 'client' : 'clients'} visited{mo.newClients ? ` · ${mo.newClients} new` : ''}</span>
             </div>
           </>
         )}

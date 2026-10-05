@@ -309,7 +309,7 @@
 .summary-text {
   max-width: 80ch;
   color: var(--muted);
-  font-size: 1rem;
+  font-size: var(--t-lede);
   line-height: var(--lh-body);
 }
 

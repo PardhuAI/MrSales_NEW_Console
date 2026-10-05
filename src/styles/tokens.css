@@ -15,6 +15,8 @@
   --t-hero: clamp(2.25rem, 1.3rem + 2.6vw, 3.5rem);
   --t-title: 1.75rem;
   --t-section: 1.1875rem;
+  /* The line under a title that says what the page found. */
+  --t-lede: 1.0625rem;
   --t-figure: 1.75rem;
   --t-body: 0.9375rem;
   --t-sm: 0.8125rem;

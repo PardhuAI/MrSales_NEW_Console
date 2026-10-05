@@ -81,7 +81,7 @@
 }
 
 .page-title-lg {
-  font-size: clamp(1.75rem, 1.3rem + 1.2vw, 2.25rem);
+  font-size: var(--t-title);
   font-weight: var(--w-semibold);
   letter-spacing: var(--track-title);
   line-height: var(--lh-tight);
@@ -89,7 +89,7 @@
 
 .coming-about {
   color: var(--muted);
-  font-size: 1.0625rem;
+  font-size: var(--t-lede);
   text-wrap: pretty;
 }
 
@@ -202,13 +202,13 @@
   align-items: center;
   gap: var(--s-2);
   margin-bottom: var(--s-4);
-  font-size: 1.125rem;
+  font-size: var(--t-section);
   font-weight: var(--w-semibold);
   letter-spacing: var(--track-title);
 }
 
 .auth-title {
-  font-size: 1.5rem;
+  font-size: var(--t-title);
   font-weight: var(--w-semibold);
   letter-spacing: var(--track-title);
   line-height: var(--lh-tight);
@@ -419,7 +419,7 @@
   }
 
   .attn-lede {
-    font-size: 1.5rem;
+    font-size: var(--t-title);
   }
 
   .attn-row {

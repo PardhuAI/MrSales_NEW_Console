@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type DragEvent } from 'react';
+import { useEffect, useMemo, useState, type DragEvent as ReactDragEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { DotsSixVertical } from '@phosphor-icons/react';
 import { changeManager, type Person, type RosterModel } from '../../live/team';
@@ -68,6 +68,28 @@ export function OrgBoard({ m, may, needle, onSaved }: { m: RosterModel; may: boo
     });
   };
 
+  // While a card is dragged, the page scrolls when the pointer nears the top
+  // or bottom of the window. Browsers do this unevenly for a drag, and a
+  // column below the fold could not otherwise be reached.
+  useEffect(() => {
+    if (!dragging) return;
+    let y = -1;
+    let frame = 0;
+    const EDGE = 90;
+    const track = (e: DragEvent) => { y = e.clientY; };
+    const step = () => {
+      if (y >= 0) {
+        const h = window.innerHeight;
+        const speed = y < EDGE ? -(EDGE - y) / 4 : y > h - EDGE ? (y - (h - EDGE)) / 4 : 0;
+        if (speed) window.scrollBy(0, speed);
+      }
+      frame = requestAnimationFrame(step);
+    };
+    document.addEventListener('dragover', track);
+    frame = requestAnimationFrame(step);
+    return () => { document.removeEventListener('dragover', track); cancelAnimationFrame(frame); };
+  }, [dragging]);
+
   // A staged batch is unfinished work; leaving the page would lose it.
   useEffect(() => {
     if (!moves.length) return;
@@ -77,7 +99,7 @@ export function OrgBoard({ m, may, needle, onSaved }: { m: RosterModel; may: boo
   }, [moves.length]);
 
   const shows = (p: Person) => !needle || `${p.name} ${p.code} ${p.hq}`.toLowerCase().includes(needle);
-  const drop = (to: string | null) => (e: DragEvent) => {
+  const drop = (to: string | null) => (e: ReactDragEvent) => {
     e.preventDefault();
     const id = e.dataTransfer.getData('text/plain');
     if (id && byId.has(id)) stage(id, to);

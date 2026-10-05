@@ -1,7 +1,7 @@
 /* Sales: charts, shares, the target grid. Tokens only. */
 
 .sales-hero {
-  font-size: clamp(2rem, 1.3rem + 2vw, 3rem);
+  font-size: var(--t-hero);
 }
 
 .sales-chart {

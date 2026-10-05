@@ -35,7 +35,7 @@
   align-items: center;
   gap: var(--s-2);
   font-weight: var(--w-semibold);
-  font-size: 1.0625rem;
+  font-size: var(--t-lede);
   letter-spacing: var(--track-title);
 }
 
@@ -470,7 +470,7 @@
   outline: none;
   background: none;
   color: var(--ink);
-  font-size: 1.0625rem;
+  font-size: var(--t-lede);
 }
 
 .palette-input input::placeholder {

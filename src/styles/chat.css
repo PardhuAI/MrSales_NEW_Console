@@ -172,12 +172,13 @@
   border: var(--hairline-w) solid var(--hairline);
 }
 
+/* The accent is for actions and the selection, so one's own messages are
+   told apart by side and a quiet grey, not by blue. */
 .chat-msg.is-mine {
   align-self: flex-end;
   border-color: transparent;
   border-radius: 14px 14px 4px 14px;
-  background: var(--accent);
-  color: var(--on-accent);
+  background: var(--track);
 }
 
 .chat-msg p {
@@ -191,15 +192,15 @@
 }
 
 .chat-msg-who {
-  color: var(--accent);
+  color: var(--ink);
   font-size: var(--t-xs);
   font-weight: var(--w-semibold);
 }
 
 .chat-msg-at {
   justify-self: end;
-  font-size: 11px;
-  opacity: 0.7;
+  color: var(--faint);
+  font-size: var(--t-xs);
 }
 
 .chat-error,

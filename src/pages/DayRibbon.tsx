@@ -87,7 +87,7 @@ export function DayRibbon({
                         {r.calls.length === 0 ? (
                           <span className="ribbon-none">No calls</span>
                         ) : (
-                          <ol className="ribbon-calls" aria-label={`${r.name}: ${done} of ${r.calls.length} calls done`}>
+                          <ol className="ribbon-calls" aria-label={`${r.name}: ${done} of ${r.calls.length} ${r.calls.length === 1 ? 'call' : 'calls'} done`}>
                             {r.calls.map((c, i) => (
                               <motion.li
                                 key={i}

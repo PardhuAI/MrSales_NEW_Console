@@ -39,6 +39,7 @@ for (const file of files) {
       if (!file.endsWith('tokens.css') && /#[0-9a-fA-F]{3,8}\b|rgba?\(/.test(l)) say(file, n, 'raw colour outside tokens.css', l);
       if (/box-shadow:/.test(l) && !/var\(--shadow-float\)|inset|0 0 0 3px var\(--accent-soft\)|none/.test(l)) say(file, n, 'a shadow on something that does not float', l);
       if (/backdrop-filter/.test(l)) say(file, n, 'glass effect', l);
+      if (!file.endsWith('tokens.css') && /font-size:/.test(l) && !/var\(--t-|inherit/.test(l) && !/map units/.test(rawLines[i - 1] ?? '')) say(file, n, 'type off the named scale', l);
     }
     if (isUi) {
       if (/[—–]/.test(l)) say(file, n, 'em or en dash on screen', l);
