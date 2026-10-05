@@ -1,0 +1,53 @@
+# What has to be true before this reaches app.mrsales.in.
+#
+# Vercel deploys every push to main, so this is the check that runs beside it:
+# the hard rules hold, the types check, it builds, nothing that ships has a
+# known serious vulnerability, and every page and workflow passes in a real
+# browser on the demo company. Nothing here needs a secret or touches Supabase.
+# The database's own checks run in Mr_Sales_Web, where the migrations live.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  # A new push replaces the run in flight for the same branch.
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  console:
+    name: The console builds and every page works
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      # `npm ci` rather than install: the lockfile is the version that was
+      # tested, and it refuses when package.json and the lockfile disagree.
+      - run: npm ci
+      - name: The hard rules
+        run: npm run check:rules
+      - name: Types
+        run: npx tsc -b
+      - name: Build
+        run: npm run build
+      - name: Known vulnerabilities in what ships
+        run: npm audit --omit=dev --audit-level=high
+      - name: Browser
+        run: npx playwright install --with-deps chromium
+      - name: Every page, every role, every workflow (demo company)
+        run: npx playwright test
+      - name: Keep the traces of a failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-traces
+          path: test-results/
+          retention-days: 7

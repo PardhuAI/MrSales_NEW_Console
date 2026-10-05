@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+#
+# main only takes code that builds, as in Mr_Sales_Web.
+#
+# Vercel puts every push to main on app.mrsales.in, so a push that does not
+# build is a customer-facing outage. This runs the fast half of the checks
+# (the hard rules, the types, the build) before anything reaches main; CI runs
+# the browser tests after. `git push --no-verify` walks past it, on purpose.
+#
+# Enabled per clone with:  git config core.hooksPath .githooks
+set -uo pipefail
+
+to_main=false
+while read -r _local_ref _local_sha remote_ref _remote_sha; do
+  [ "$remote_ref" = "refs/heads/main" ] && to_main=true
+done
+$to_main || exit 0
+
+cd "$(git rev-parse --show-toplevel)" || exit 1
+echo "→ main: checking before push (skip with --no-verify)"
+
+fail() { echo "✗ $1 — not pushed to main."; exit 1; }
+
+node scripts/check-rules.mjs >/dev/null 2>&1 || fail "A hard rule is broken (npm run check:rules)"
+npx tsc -b >/dev/null 2>&1 || fail "Types do not check out"
+npm run build >/dev/null 2>&1 || fail "The build fails"
+
+echo "✓ rules, types and build — pushing"

@@ -1,0 +1,22 @@
+# Weekly, grouped: one PR for minor and patch updates, so updates arrive as
+# a handful of reviews instead of a stream. CI runs on each. Majors are
+# skipped: they are planned migrations, tracked in MRSALES_MASTER_PLAN.md (in the workspace).
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    groups:
+      minor-and-patch:
+        update-types: [minor, patch]
+    ignore:
+      # Majors are planned migrations, tracked in MRSALES_MASTER_PLAN.md (in the workspace).
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
