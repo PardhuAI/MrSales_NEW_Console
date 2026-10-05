@@ -142,8 +142,13 @@ test('approving one request takes it off the queue, and a rejection waits for a 
   await expect(top(page)).toBeVisible();
   await page.keyboard.press('Escape');
   // One request is approved at once, without a dialog; only several at a time ask first.
-  await page.locator('.ap-row').first().getByRole('button', { name: 'Approve' }).click();
-  await expect(waiting).not.toContainText(String(before));
+  // It leaves the queue. The count in the bar drops too, unless it was one day of a
+  // month's claim, which stays one request until its last day is decided.
+  const first = page.locator('.ap-row').first();
+  const id = await first.getAttribute('data-request');
+  await first.getByRole('button', { name: 'Approve' }).click();
+  await expect(page.locator(`.ap-row[data-request="${id}"]`)).toHaveCount(0);
+  expect(Number((await waiting.innerText()).match(/\d+/)?.[0])).toBeLessThanOrEqual(before);
 });
 
 test('the day strip picks a day by tap or arrow keys, and offers no future day', async ({ page }) => {

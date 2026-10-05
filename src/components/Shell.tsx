@@ -7,6 +7,7 @@ import { ROLE_LABEL, useCan, type Role } from '../app/access';
 import { useMe, useSession } from '../live/session';
 import { THEMES, useTheme } from '../app/theme';
 import { requestCount, useApprovals } from '../data/approvals';
+import { useUnreadMessages } from '../live/chat';
 import { CommandPalette } from './CommandPalette';
 
 /** A section as this person sees it: only the pages their role opens. */
@@ -28,6 +29,8 @@ export function Shell({ children }: { children: ReactNode }) {
   const current = sectionOf(loc.pathname);
   const sections = useVisibleSections();
   const allowed = useCan();
+  const me = useMe();
+  const unread = useUnreadMessages(allowed('chat') && !me.demo && Boolean(me.employeeId || me.chatName));
   const menuBtn = useRef<HTMLButtonElement>(null);
   const closeBtn = useRef<HTMLButtonElement>(null);
   const nav = useRef<HTMLElement>(null);
@@ -115,6 +118,7 @@ export function Shell({ children }: { children: ReactNode }) {
                   <SIcon size={19} weight={isCurrent ? 'fill' : 'regular'} aria-hidden="true" />
                   <span>{s.label}</span>
                   {s.id === 'approvals' && pending > 0 && <span className="nav-count" aria-label={`${pending} waiting`}>{pending}</span>}
+                  {s.id === 'share' && unread > 0 && <span className="nav-count" aria-label={`${unread} unread ${unread === 1 ? 'message' : 'messages'}`}>{unread}</span>}
                 </NavLink>
                 {/* The current section's pages open under it, on every screen. */}
                 {isCurrent && s.pages.length > 1 && (
@@ -175,7 +179,16 @@ export function Shell({ children }: { children: ReactNode }) {
           </div>
         </header>
 
-        <main id="main" className="content" tabIndex={-1}>{children}</main>
+        <main id="main" className="content" tabIndex={-1}>
+          {/* Past due is set by Mr Sales; the people who pay see it on every page but the bill itself. */}
+          {me.pastDue && allowed('billing') && loc.pathname !== '/billing' && (
+            <p className="past-due" role="status">
+              <strong>Your account is past due.</strong> Everything still works for now.
+              <Link className="link" to="/billing">See the invoice</Link>
+            </p>
+          )}
+          {children}
+        </main>
       </div>
 
       <CommandPalette open={search} onOpenChange={setSearch} />

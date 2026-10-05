@@ -1,5 +1,4 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
-import { demoClient } from '../demo/fakedb';
 
 /**
  * The connection, and whether there is one.
@@ -13,7 +12,9 @@ import { demoClient } from '../demo/fakedb';
 const url = import.meta.env.VITE_SUPABASE_URL as string | undefined;
 const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined;
 
-export const isLive = Boolean(url && key);
+// Written so the build can work it out: a live build then leaves the demo
+// company, and everything only it needs, out of what the browser downloads.
+export const isLive = !!(import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY);
 
 export const supabase: SupabaseClient | null = isLive
   ? createClient(url!, key!, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } })
@@ -24,7 +25,20 @@ export const supabase: SupabaseClient | null = isLive
  * which answers the same queries. Screens never know which.
  */
 export function db(): SupabaseClient {
-  return supabase ?? (demoClient() as unknown as SupabaseClient);
+  if (isLive) return supabase!;
+  if (!demo) throw new Error('The demo company is not loaded yet.');
+  return demo() as SupabaseClient;
+}
+
+/**
+ * The demo company is its own download, fetched only when there is no live
+ * project (main.tsx loads it before the first screen), so the console a
+ * company uses never carries it.
+ */
+let demo: (() => unknown) | null = null;
+export async function loadDemo(): Promise<void> {
+  if (isLive || demo) return;
+  demo = (await import('../demo/fakedb')).demoClient;
 }
 
 /** Reads every row of a query, a page at a time (the API returns 1,000 at most). */

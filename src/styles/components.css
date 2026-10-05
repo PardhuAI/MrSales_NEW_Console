@@ -830,3 +830,22 @@ select.input {
     grid-column: 1;
   }
 }
+
+/* Past due: said in words, on the warning colour, where billing is read. */
+.past-due {
+  margin: 0 0 var(--s-4);
+  padding: var(--s-3) var(--s-4);
+  border-radius: var(--r-control);
+  background: var(--warn-soft);
+  color: var(--ink);
+  font-size: var(--t-sm);
+  line-height: var(--lh-body);
+}
+
+.past-due strong {
+  color: var(--warn);
+}
+
+.past-due .link {
+  margin-left: var(--s-1);
+}

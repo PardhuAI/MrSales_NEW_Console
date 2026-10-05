@@ -560,6 +560,7 @@ function Row({
     <motion.li
       layout={!reduce}
       className={`ap-row${flagged ? ' look' : ''}`}
+      data-request={item.id}
       exit={reduce ? { opacity: 0 } : { opacity: 0, x: 12 }}
       transition={{ duration: 0.24, ease: EASE }}
     >

@@ -1,47 +1,80 @@
-import { useEffect } from 'react';
+import { Suspense, lazy, useEffect, useState, type ComponentType } from 'react';
 import { BrowserRouter, MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
+import { PageError } from './components/PageError';
+import { Loading as PageLoading } from './components/States';
 import { Shell } from './components/Shell';
 import { SectionLayout } from './components/SectionLayout';
-import { Dashboard } from './pages/Dashboard';
 import { Coming, NotFound } from './pages/Coming';
-import { SettingsHome } from './pages/SettingsHome';
-import { Approvals } from './pages/Approvals';
-import { ApprovalsDecided } from './pages/ApprovalsDecided';
-import { Attention } from './pages/Attention';
-import { FieldActivity } from './pages/field/Activity';
-import { PersonDay } from './pages/field/PersonDay';
-import { DayPlans, TourPlans } from './pages/field/Plans';
-import { Coverage } from './pages/field/Coverage';
-import { ClientList } from './pages/clients/ClientList';
-import { ClientRecordPage } from './pages/clients/ClientRecord';
-import { ClientQuality } from './pages/clients/Quality';
-import { Complaints } from './pages/clients/Complaints';
-import { Sales } from './pages/sales/Sales';
-import { Orders } from './pages/sales/Orders';
-import { Targets } from './pages/sales/Targets';
-import { Rcpa } from './pages/sales/Rcpa';
-import { Products } from './pages/sales/Products';
-import { Stockists } from './pages/sales/Stockists';
-import { Stock } from './pages/sales/Stock';
-import { People } from './pages/team/People';
-import { AddPerson } from './pages/team/AddPerson';
-import { PersonRecordPage } from './pages/team/PersonRecord';
-import { ManagerPage, Managers } from './pages/team/Managers';
-import { Messages } from './pages/share/Messages';
-import { OrgChart } from './pages/team/OrgChart';
-import { Attendance, Leave, Tasks } from './pages/team/PeopleOps';
-import { Claims } from './pages/money/Claims';
-import { Payroll } from './pages/money/Payroll';
-import { Resources, SentNotifications, Surveys } from './pages/share/Share';
-import { Downloads, Reports } from './pages/reports/Reports';
-import { AuditLog, CompanyRules, HrRules, Ownership } from './pages/settings/Rules';
-import { Geography, Logins, Roles } from './pages/settings/Setup';
-import { BillingPage, Help } from './pages/account/Account';
 import { ThemeProvider } from './app/theme';
 import { SessionProvider, useSession } from './live/session';
 import { Blocked, ChoosePassword, Loading, SignIn } from './pages/SignIn';
 import { ACCOUNT_PAGES, NEW_ACTIONS, SECTIONS, pageOf } from './app/nav';
 import { useCan } from './app/access';
+
+/**
+ * Each page is its own download, fetched the first time it is opened, so the
+ * console opens without carrying every screen. A page that fails to draw is
+ * caught by PageError inside the shell, and a slow download shows a quiet
+ * line only after a moment, so a fast one never flashes.
+ */
+function page<K extends string>(load: () => Promise<Record<K, ComponentType>>, name: K) {
+  return lazy(() => load().then(m => ({ default: m[name] })));
+}
+
+function Opening() {
+  const [show, setShow] = useState(false);
+  useEffect(() => { const t = window.setTimeout(() => setShow(true), 300); return () => window.clearTimeout(t); }, []);
+  return show ? <PageLoading label="Opening the page" lines={1} /> : null;
+}
+
+const Dashboard = page(() => import('./pages/Dashboard'), 'Dashboard');
+const SettingsHome = page(() => import('./pages/SettingsHome'), 'SettingsHome');
+const Approvals = page(() => import('./pages/Approvals'), 'Approvals');
+const ApprovalsDecided = page(() => import('./pages/ApprovalsDecided'), 'ApprovalsDecided');
+const Attention = page(() => import('./pages/Attention'), 'Attention');
+const FieldActivity = page(() => import('./pages/field/Activity'), 'FieldActivity');
+const PersonDay = page(() => import('./pages/field/PersonDay'), 'PersonDay');
+const DayPlans = page(() => import('./pages/field/Plans'), 'DayPlans');
+const TourPlans = page(() => import('./pages/field/Plans'), 'TourPlans');
+const Coverage = page(() => import('./pages/field/Coverage'), 'Coverage');
+const ClientList = page(() => import('./pages/clients/ClientList'), 'ClientList');
+const ClientRecordPage = page(() => import('./pages/clients/ClientRecord'), 'ClientRecordPage');
+const ClientQuality = page(() => import('./pages/clients/Quality'), 'ClientQuality');
+const Complaints = page(() => import('./pages/clients/Complaints'), 'Complaints');
+const Sales = page(() => import('./pages/sales/Sales'), 'Sales');
+const Orders = page(() => import('./pages/sales/Orders'), 'Orders');
+const Targets = page(() => import('./pages/sales/Targets'), 'Targets');
+const Rcpa = page(() => import('./pages/sales/Rcpa'), 'Rcpa');
+const Products = page(() => import('./pages/sales/Products'), 'Products');
+const Stockists = page(() => import('./pages/sales/Stockists'), 'Stockists');
+const Stock = page(() => import('./pages/sales/Stock'), 'Stock');
+const People = page(() => import('./pages/team/People'), 'People');
+const AddPerson = page(() => import('./pages/team/AddPerson'), 'AddPerson');
+const PersonRecordPage = page(() => import('./pages/team/PersonRecord'), 'PersonRecordPage');
+const ManagerPage = page(() => import('./pages/team/Managers'), 'ManagerPage');
+const Managers = page(() => import('./pages/team/Managers'), 'Managers');
+const Messages = page(() => import('./pages/share/Messages'), 'Messages');
+const OrgChart = page(() => import('./pages/team/OrgChart'), 'OrgChart');
+const Attendance = page(() => import('./pages/team/PeopleOps'), 'Attendance');
+const Leave = page(() => import('./pages/team/PeopleOps'), 'Leave');
+const Tasks = page(() => import('./pages/team/PeopleOps'), 'Tasks');
+const Claims = page(() => import('./pages/money/Claims'), 'Claims');
+const Payroll = page(() => import('./pages/money/Payroll'), 'Payroll');
+const Resources = page(() => import('./pages/share/Share'), 'Resources');
+const SentNotifications = page(() => import('./pages/share/Share'), 'SentNotifications');
+const Surveys = page(() => import('./pages/share/Share'), 'Surveys');
+const Downloads = page(() => import('./pages/reports/Reports'), 'Downloads');
+const Reports = page(() => import('./pages/reports/Reports'), 'Reports');
+const AuditLog = page(() => import('./pages/settings/Rules'), 'AuditLog');
+const CompanyRules = page(() => import('./pages/settings/Rules'), 'CompanyRules');
+const HrRules = page(() => import('./pages/settings/Rules'), 'HrRules');
+const Ownership = page(() => import('./pages/settings/Rules'), 'Ownership');
+const Geography = page(() => import('./pages/settings/Setup'), 'Geography');
+const Logins = page(() => import('./pages/settings/Setup'), 'Logins');
+const Roles = page(() => import('./pages/settings/Setup'), 'Roles');
+const BillingPage = page(() => import('./pages/account/Account'), 'BillingPage');
+const Help = page(() => import('./pages/account/Account'), 'Help');
+
 
 /** Pages that are rebuilt; every other page in nav.ts shows <Coming />. */
 const BUILT: Record<string, JSX.Element> = {
@@ -157,11 +190,14 @@ function Gate() {
 
 function Console() {
   const allowed = useCan();
+  const loc = useLocation();
   const pages = [...SECTIONS.flatMap(s => s.pages), ...ACCOUNT_PAGES];
   return (
     <>
       <TitleAndScroll />
       <Shell>
+        <PageError at={loc.pathname}>
+        <Suspense fallback={<Opening />}>
         <Routes>
           {pages.filter(p => allowed(p.module)).map(p => (
             <Route
@@ -193,6 +229,8 @@ function Console() {
             ))}
           <Route path="*" element={<NotFound />} />
         </Routes>
+        </Suspense>
+        </PageError>
       </Shell>
     </>
   );

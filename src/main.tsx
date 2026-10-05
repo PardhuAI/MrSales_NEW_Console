@@ -19,7 +19,11 @@ import { liveApprovals } from './live/approvals';
 import { dashboardStore } from './data/dashboard';
 import { loadLiveDashboard } from './live/dashboard';
 import { onSignOut } from './live/session';
+import { startCrashReporting } from './app/crashReporting';
 import { forgetAll } from './data/resource';
+import { loadDemo } from './live/client';
+
+startCrashReporting();
 
 // One switch decides where the data comes from; screens never know.
 const connect = () => {
@@ -31,8 +35,11 @@ connect();
 onSignOut(connect);
 onSignOut(forgetAll);
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
+// Demo mode fetches its company first; a live console starts at once.
+void loadDemo().then(() =>
+  createRoot(document.getElementById('root')!).render(
+    <StrictMode>
+      <App />
+    </StrictMode>,
+  ),
 );

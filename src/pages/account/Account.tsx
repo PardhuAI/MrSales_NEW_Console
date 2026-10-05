@@ -8,6 +8,7 @@ import { Drawer, Field, Notice, Pill, Summary, Toolbar, useFocusFirstError } fro
 import { Segmented } from '../../components/Segmented';
 import { Empty, Freshness, LoadError, Loading } from '../../components/States';
 import { Arrive } from '../../components/motion';
+import { useMe } from '../../live/session';
 
 const msg = (e: unknown) => (e instanceof Error ? e.message : String(e));
 
@@ -164,6 +165,7 @@ const PLAN: Record<string, string> = { starter: 'Starter', growth: 'Growth', sca
 
 /** Plan and billing: the plan, the field seats used, and every invoice. */
 export function BillingPage() {
+  const me = useMe();
   const r = useResource<Billing>('account:billing', loadBilling);
   if (r.status === 'error' && !r.data) return <LoadError what="Your plan" error={r.error} retry={() => void r.reload()} />;
   if (!r.data) return <Loading label="Reading your plan" lines={1} />;
@@ -178,6 +180,11 @@ export function BillingPage() {
         {b.plan ? <>You are on the <strong>{PLAN[b.plan] ?? b.plan}</strong> plan.</> : 'No plan is recorded yet.'}
         {owed ? <> <strong className={overdue.length ? 'warn-text' : ''}>{rupees(owed)} to pay</strong>{overdue.length ? `, ${count(overdue.length, 'invoice')} overdue` : ''}.</> : ' Nothing to pay.'}
       </Summary>
+      {me.pastDue && (
+        <p className="past-due" role="alert">
+          <strong>Your account is past due.</strong> Everything still works for now. Pay the overdue invoice below so your team keeps its access.
+        </p>
+      )}
       <Arrive className="bill-layout">
         <section className="bill-seats">
           <p className="fig-title">Field seats</p>

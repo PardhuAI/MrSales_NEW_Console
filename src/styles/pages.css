@@ -431,3 +431,22 @@
     justify-self: start;
   }
 }
+
+/* A page that stopped: the one line that says why, readable, in a quiet box. */
+.page-error-detail {
+  max-width: 640px;
+  margin: var(--s-4) 0;
+  padding: var(--s-3) var(--s-4);
+  border-radius: var(--r-control);
+  background: var(--track);
+  color: var(--ink);
+  font-size: var(--t-sm);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.page-error-actions {
+  display: flex;
+  gap: var(--s-2);
+  margin-bottom: var(--s-4);
+}

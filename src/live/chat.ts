@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { db } from './client';
 
 /**
@@ -59,3 +60,24 @@ export async function loadContacts(): Promise<Contact[]> {
 }
 
 export const setChatName = async (name: string) => { await call('set_my_chat_name', { p_name: name }); };
+
+/**
+ * Unread messages for the menu, read once a minute while the tab is in front,
+ * so a rep's message to the office is noticed without opening Messages.
+ */
+export function useUnreadMessages(on: boolean): number {
+  const [n, setN] = useState(0);
+  useEffect(() => {
+    if (!on) { setN(0); return; }
+    let live = true;
+    const read = () => {
+      if (document.visibilityState !== 'visible') return;
+      loadThreads().then(t => { if (live) setN(t.reduce((s, x) => s + x.unread, 0)); }, () => undefined);
+    };
+    read();
+    const t = window.setInterval(read, 60000);
+    document.addEventListener('visibilitychange', read);
+    return () => { live = false; window.clearInterval(t); document.removeEventListener('visibilitychange', read); };
+  }, [on]);
+  return n;
+}
