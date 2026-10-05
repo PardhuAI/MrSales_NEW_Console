@@ -243,3 +243,19 @@ test('a person dragged onto another manager is staged, reviewed and saved with a
   await expect(page.locator('.board-stage')).toHaveCount(0);
   expect(errors).toEqual([]);
 });
+
+test('a mark on Today shows what happened there, and opens that visit on the person\'s day', async ({ page }) => {
+  const errors = watchErrors(page);
+  await as(page, 'owner', '/');
+  const dot = page.locator('.ribbon-calls .mark.done .mark-hit').first();
+  await dot.hover();
+  await expect(page.locator('.mark-card')).toContainText('Click to open the visit');
+  const client = (await page.locator('.mark-card strong').innerText()).trim();
+  await dot.click();
+  await expect(page).toHaveURL(/\/field\/[^/]+\/\d{4}-\d{2}-\d{2}\?visit=/);
+  await expect(top(page)).toContainText(client);
+  await expect(top(page)).toContainText('Location evidence');
+  await page.keyboard.press('Escape');
+  await expect(page).not.toHaveURL(/visit=/);
+  expect(errors).toEqual([]);
+});

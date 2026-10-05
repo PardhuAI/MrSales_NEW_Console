@@ -20,6 +20,10 @@ export type CallMark = {
   state: CallState;
   client: string;
   note?: string;
+  /** The visit, so a mark can open it on the person's day. */
+  id?: string;
+  /** Its India day, "2026-10-05". */
+  day?: string;
 };
 
 export type RibbonPerson = { id: string; name: string; hq: string; calls: CallMark[] };

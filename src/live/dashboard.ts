@@ -193,13 +193,17 @@ export async function loadLiveDashboard(orgName: string): Promise<DashboardModel
     at: c.at,
     state: (c.mocked ? 'flagged' : c.status) as CallState,
     client: c.client,
+    id: c.id,
+    day: c.day,
     note: c.mocked
       ? 'The phone reported a fake location.'
       : c.status === 'done' && c.verdict === 'outOfRange'
         ? 'Logged outside the visit radius.'
-        : c.status === 'started'
-          ? 'Started on the phone and not finished.'
-          : undefined,
+        : c.status === 'done' && c.verdict === 'verified'
+          ? "At the client, by the phone's location."
+          : c.status === 'started'
+            ? 'Started on the phone and not finished.'
+            : undefined,
   });
 
   // Every field person appears, with or without calls: the empty rows are the point.

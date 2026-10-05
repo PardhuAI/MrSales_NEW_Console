@@ -793,3 +793,10 @@
 .yearpick-grid .monthpick-day {
   height: 44px;
 }
+
+/* From a visit to the client it was at. */
+.visit-client-link {
+  margin: 0 0 var(--s-4);
+  color: var(--muted);
+  font-size: var(--t-sm);
+}

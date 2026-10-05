@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, ArrowsOut } from '@phosphor-icons/react';
 import { DayStrip } from '../../components/DayStrip';
 import { useResource } from '../../data/resource';
@@ -49,7 +49,20 @@ function DayView({ d, at, error, reload }: { d: DayRecord; at: Date | null; erro
   const p = d.person!;
   const nav = useNavigate();
   const allowed = useCan();
-  const [open, setOpen] = useState<Visit | null>(null);
+  const [open, setOpenState] = useState<Visit | null>(null);
+  // A dot on Today links here with ?visit=<id>: that visit opens at once.
+  const [params, setParams] = useSearchParams();
+  const asked = params.get('visit');
+  useEffect(() => {
+    if (!asked) return;
+    const v = d.visits.find(x => x.id === asked);
+    if (v) setOpenState(v);
+  }, [asked, d.visits]);
+  const setOpen = (v: Visit | null) => {
+    setOpenState(v);
+    // Closing forgets the visit in the address, so Back and refresh do not reopen it.
+    if (!v && asked) setParams(p => { p.delete('visit'); return p; }, { replace: true });
+  };
   const [big, setBig] = useState(false);
   const done = d.visits.filter(v => v.status === 'completed');
   const missed = d.visits.filter(v => v.status === 'missed');
@@ -219,8 +232,12 @@ function VisitMap({ visits, selected, onSelect, tall = false }: { visits: Visit[
 }
 
 function VisitDrawer({ visit: v, onClose }: { visit: Visit | null; onClose: () => void }) {
+  const allowed = useCan();
   return (
     <Drawer open={Boolean(v)} onClose={onClose} title={v?.client?.name ?? 'Visit'} sub={v ? `${timeOf(v.at)}${v.endedAt ? ` to ${timeOf(v.endedAt)}` : ''} · ${(STATUS[v.status] ?? { word: v.status }).word}` : ''}>
+      {v?.client && allowed('clients') && (
+        <p className="visit-client-link"><Link className="link" to={`/clients/${v.client.id}`}>Open {v.client.name}'s record</Link> for every visit, order and complaint.</p>
+      )}
       {v && <VisitDetail v={v} />}
     </Drawer>
   );

@@ -1,6 +1,8 @@
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
+import { Link } from 'react-router-dom';
 import { motion, useReducedMotion } from 'motion/react';
-import type { CallState, RibbonGroup } from '../data/dashboard';
+import type { CallMark, CallState, RibbonGroup } from '../data/dashboard';
 import { clock } from '../lib/format';
 import { EASE } from '../components/motion';
 
@@ -38,6 +40,14 @@ export function DayRibbon({
 }) {
   const reduce = useReducedMotion();
   const [open, setOpen] = useState<Set<string>>(new Set());
+  // The card for the mark under the pointer or the keyboard. Fixed to the
+  // window, so the timeline's own scrolling never cuts it off.
+  const [peek, setPeek] = useState<{ c: CallMark; x: number; y: number } | null>(null);
+  const show = (c: CallMark) => (e: { currentTarget: Element }) => {
+    const r = e.currentTarget.getBoundingClientRect();
+    setPeek({ c, x: Math.min(Math.max(r.left + r.width / 2, 140), window.innerWidth - 140), y: r.top });
+  };
+  const hide = () => setPeek(null);
   const span = endHour - startHour;
   const x = (h: number) => `${Math.min(100, Math.max(0, ((h - startHour) / span) * 100))}%`;
   const hours = Array.from({ length: span + 1 }, (_, i) => startHour + i)
@@ -90,17 +100,29 @@ export function DayRibbon({
                           <ol className="ribbon-calls" aria-label={`${r.name}: ${done} of ${r.calls.length} ${r.calls.length === 1 ? 'call' : 'calls'} done`}>
                             {r.calls.map((c, i) => (
                               <motion.li
-                                key={i}
+                                key={c.id ?? i}
                                 className={`mark ${c.state}`}
                                 style={{ left: x(c.at) }}
-                                title={`${clock(c.at)} · ${c.client} · ${LABEL[c.state]}${c.note ? `. ${c.note}` : ''}`}
                                 initial={reduce ? false : { opacity: 0, scale: 0.4 }}
                                 animate={{ opacity: 1, scale: 1 }}
                                 transition={{ duration: 0.3, ease: EASE, delay: reduce ? 0 : 0.25 + ((c.at - startHour) / span) * 0.6 }}
                               >
-                                <span className="visually-hidden">
-                                  {clock(c.at)}, {c.client}, {LABEL[c.state]}{c.note ? `. ${c.note}` : ''}
-                                </span>
+                                {c.id && c.day ? (
+                                  // The visit itself, opened on the person's day: client, location, report, photos.
+                                  <Link
+                                    className="mark-hit"
+                                    to={`/field/${r.id}/${c.day}?visit=${c.id}`}
+                                    aria-label={`${clock(c.at)}, ${c.client}, ${LABEL[c.state]}${c.note ? `. ${c.note}` : ''}. Open the visit`}
+                                    onMouseEnter={show(c)}
+                                    onMouseLeave={hide}
+                                    onFocus={show(c)}
+                                    onBlur={hide}
+                                  />
+                                ) : (
+                                  <span className="visually-hidden">
+                                    {clock(c.at)}, {c.client}, {LABEL[c.state]}{c.note ? `. ${c.note}` : ''}
+                                  </span>
+                                )}
                               </motion.li>
                             ))}
                           </ol>
@@ -139,6 +161,15 @@ export function DayRibbon({
           )}
         </div>
       </div>
+      {peek && createPortal(
+        <div className="mark-card" role="presentation" style={{ left: peek.x, top: peek.y }}>
+          <strong>{peek.c.client}</strong>
+          <span>{clock(peek.c.at)} · {LABEL[peek.c.state]}</span>
+          {peek.c.note && <span className="mark-card-note">{peek.c.note}</span>}
+          <span className="mark-card-go">{peek.c.state === 'planned' ? 'Click to open the plan' : 'Click to open the visit'}</span>
+        </div>,
+        document.body,
+      )}
     </figure>
   );
 }

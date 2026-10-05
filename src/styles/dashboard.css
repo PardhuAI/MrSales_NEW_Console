@@ -895,3 +895,57 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* A mark opens its visit: a larger, invisible target than the dot itself. */
+.mark-hit {
+  position: absolute;
+  inset: -7px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.mark-hit:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 0;
+}
+
+/* The card above the mark under the pointer: what happened, and that a click opens it. */
+.mark-card {
+  position: fixed;
+  z-index: 70;
+  display: grid;
+  gap: 2px;
+  max-width: 260px;
+  padding: var(--s-2) var(--s-3);
+  border-radius: 10px;
+  background: var(--raised);
+  color: var(--ink);
+  border: var(--hairline-w) solid var(--hairline);
+  box-shadow: var(--shadow-float);
+  font-size: var(--t-sm);
+  line-height: var(--lh-snug);
+  pointer-events: none;
+  transform: translate(-50%, calc(-100% - 10px));
+  animation: mark-card-in var(--d-micro) var(--ease);
+}
+
+@keyframes mark-card-in {
+  from {
+    opacity: 0;
+  }
+}
+
+.mark-card strong {
+  font-weight: var(--w-semibold);
+}
+
+.mark-card-note {
+  color: var(--muted);
+}
+
+.mark-card-go {
+  margin-top: var(--s-1);
+  color: var(--accent);
+  font-size: var(--t-xs);
+  font-weight: var(--w-medium);
+}
