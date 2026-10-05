@@ -1,7 +1,7 @@
 import { db, readAll } from './client';
 import { loadEmployees, type Employee } from './people';
 import { loadGeo } from './geo';
-import { IST_TODAY, dayOf, shiftDay, startOfDay, weekdayOf } from '../lib/days';
+import { IST_TODAY, dayMonth, dayOf, shiftDay, startOfDay, weekdayOf } from '../lib/days';
 
 /**
  * The Team section: the roster, a person's record, joining, managers, the
@@ -28,6 +28,10 @@ export type Person = Employee & {
   login: 'phone' | 'office' | 'suspended' | 'none';
   reports: number;
   clients: number;
+  /** A move already decided and dated ahead (a transfer, or a cover with its end). */
+  next: { managerId: string | null; manager: string; from: string; until: string | null } | null;
+  /** The day a cover in force ends, and the person goes back to their own manager. */
+  coverUntil: string | null;
 };
 
 export type RosterModel = {
@@ -38,7 +42,7 @@ export type RosterModel = {
 
 export async function loadRoster(): Promise<RosterModel> {
   const sb = db();
-  const [employees, extra, users, roles, geo, owners] = await Promise.all([
+  const [employees, extra, users, roles, geo, owners, lines] = await Promise.all([
     loadEmployees(),
     readAll<{ id: string; mobile: string | null; email: string | null; department: string; designation_id: string | null; blood_group: string | null }>((a, b) =>
       sb.from('employees').select('id, mobile, email, department, designation_id, blood_group').range(a, b)),
@@ -46,12 +50,32 @@ export async function loadRoster(): Promise<RosterModel> {
     sb.from('designations').select('id, name, short_name, app_view, is_active, rank').order('rank').order('name'),
     loadGeo(),
     readAll<{ owner_employee_id: string | null }>((a, b) => sb.from('clients').select('owner_employee_id').range(a, b)),
+    readAll<{ employee_id: string; manager_id: string | null; period: string }>((a, b) =>
+      sb.from('manager_assignments').select('employee_id, manager_id, period').range(a, b)),
   ]);
   const u = (must(users, 'logins') ?? []) as { employee_id: string | null; role: string; status: string }[];
   const more = new Map(extra.map(e => [e.id, e]));
   const list = [...employees.values()];
   const clientCount = new Map<string, number>();
   for (const c of owners) if (c.owner_employee_id) clientCount.set(c.owner_employee_id, (clientCount.get(c.owner_employee_id) ?? 0) + 1);
+  // The dated line: "[2026-10-05,2026-10-20)". What is ahead of today, and a cover in force.
+  const today = IST_TODAY();
+  const span = (period: string) => {
+    const m = /^\[([^,]*),([^)\]]*)[)\]]$/.exec(period);
+    return { from: m?.[1] ?? '', until: m?.[2] || null };
+  };
+  const ahead = new Map<string, { managerId: string | null; from: string; until: string | null }>();
+  const coverUntil = new Map<string, string>();
+  for (const l of lines) {
+    const { from, until } = span(l.period);
+    if (from > today) {
+      const known = ahead.get(l.employee_id);
+      if (!known || from < known.from) ahead.set(l.employee_id, { managerId: l.manager_id, from, until });
+    } else if (until && until > today && lines.some(o => o.employee_id === l.employee_id && span(o.period).from === until)) {
+      coverUntil.set(l.employee_id, until);
+    }
+  }
+  const nameOf = (id: string | null) => (id && employees.get(id)?.name) || 'nobody';
   return {
     people: list.map(e => {
       const x = more.get(e.id);
@@ -62,12 +86,23 @@ export async function loadRoster(): Promise<RosterModel> {
         login: logins.some(l => l.status === 'active' && l.role === 'field') ? 'phone' : logins.some(l => l.status === 'active') ? 'office' : logins.length ? 'suspended' : 'none',
         reports: list.filter(r => r.managerId === e.id && r.status === 'active').length,
         clients: clientCount.get(e.id) ?? 0,
+        next: ahead.has(e.id) ? { ...ahead.get(e.id)!, manager: nameOf(ahead.get(e.id)!.managerId) } : null,
+        coverUntil: coverUntil.get(e.id) ?? null,
       } as Person;
     }),
     roles: ((must(roles, 'roles') ?? []) as { id: string; name: string; short_name: string; app_view: string; is_active: boolean }[])
       .map(r => ({ id: r.id, name: r.name, short: r.short_name, appView: r.app_view === 'manager' ? 'manager' : 'field', active: r.is_active })),
     territories: geo.territories.map(t => ({ id: t.id, name: t.name, hq: t.hq })),
   };
+}
+
+/** A move already decided, in words: "Moves to Rajesh Verma on 1 November". */
+export function nextMove(p: Pick<Person, 'next' | 'coverUntil'>): string {
+  if (p.next) {
+    if (p.next.until) return `Covered by ${p.next.manager} from ${dayMonth(p.next.from)} to ${dayMonth(p.next.until)}`;
+    return p.next.managerId ? `Moves to ${p.next.manager} on ${dayMonth(p.next.from)}` : `Reports to nobody from ${dayMonth(p.next.from)}`;
+  }
+  return p.coverUntil ? `On cover until ${dayMonth(p.coverUntil)}, then back to their own manager` : '';
 }
 
 // ── joining and correcting ────────────────────────────────────────────

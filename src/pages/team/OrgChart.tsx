@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { CaretDown, CaretRight } from '@phosphor-icons/react';
 import { invalidate, useResource } from '../../data/resource';
-import { changeManager, loadRoster, type Person, type RosterModel } from '../../live/team';
+import { changeManager, loadRoster, nextMove, type Person, type RosterModel } from '../../live/team';
 import { IST_TODAY, dayMonth } from '../../lib/days';
 import { count } from '../../lib/format';
 import { Drawer, Field, Notice, Pill, SearchBox, Summary, Toolbar, useFocusFirstError } from '../../components/kit';
@@ -81,7 +81,7 @@ function View({ m, at, error, reload }: { m: RosterModel; at: Date | null; error
           ) : <span className="org-toggle" aria-hidden="true" />}
           <span className="org-who">
             <Link className="cell-link" to={`/team/${p.id}`}>{p.name}</Link>
-            <span className="cell-sub">{[p.designation, p.hq, kids.length ? count(kids.length, 'report') : ''].filter(Boolean).join(' · ')}</span>
+            <span className="cell-sub">{[p.designation, p.hq, kids.length ? count(kids.length, 'report') : '', nextMove(p)].filter(Boolean).join(' · ')}</span>
           </span>
           {may && p.role && <button type="button" className="link org-move" onClick={() => setMoving(p)}>Move</button>}
         </div>

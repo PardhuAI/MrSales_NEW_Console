@@ -5,6 +5,7 @@ import { invalidate, useResource } from '../../data/resource';
 import {
   DOCUMENT_ACCEPT, DOCUMENT_CATEGORIES, changeManager, documentProblem, documentUrl, handOverClients, leaveLabel, loadPersonRecord, loadRoster,
   removeDocument, setPersonStatus, updatePerson, uploadDocument, type Person, type PersonRecord as Rec, type RosterModel,
+  nextMove,
 } from '../../live/team';
 import { ORDER_STATUS } from '../sales/Orders';
 import { IST_TODAY, ago, dayMonth, dayOf, dayRange, daysBetween, longDay, shiftDay, timeOf } from '../../lib/days';
@@ -78,7 +79,7 @@ function View({ p, m, r }: { p: Person; m: RosterModel; r: Rec }) {
         <div className="pday-title-row">
           <div>
             <h2 className="page-title-lg">{p.name}</h2>
-            <p className="pday-who">{[p.code, p.designation, p.hq, p.territory, p.managerId ? `reports to ${p.manager}` : 'reports to nobody'].filter(Boolean).join(' · ')}</p>
+            <p className="pday-who">{[p.code, p.designation, p.hq, p.territory, p.managerId ? `reports to ${p.manager}` : 'reports to nobody', nextMove(p)].filter(Boolean).join(' · ')}</p>
           </div>
           <div className="record-actions">
             {allowed('field') && p.role && <Link className="btn btn-secondary" to={`/field/${p.id}/${today}`}>Today in the field</Link>}

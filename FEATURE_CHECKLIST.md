@@ -16,6 +16,27 @@ behaviour can be checked against it. The "Data" column names the function in
 > figures match the database, and all 56 write functions match their signatures
 > (`REVIEW.md`, "Live run"). Boxes are ticked after the owner's review of each screen.
 
+> **Parity audit 2026-10-05, before the switch to app.mrsales.in.**
+> - *Data:* every database function and table the old console uses is used by the new one,
+>   except `decide_expense` and `decide_order` (replaced by the batch `decide_expenses` and
+>   `decide_orders`, so each person gets one message) and `apply_for_leave` (defined in the old
+>   console, never on a screen). All 66 calls match the live database's argument names.
+> - *Found missing and added:* crash reporting (off until `VITE_SENTRY_DSN` is set, as before);
+>   a page error inside the shell instead of a white tab; pages loaded on demand; the past-due
+>   notice; booked manager moves and covers ("Moves to Rajesh Verma on 15 October") on the board,
+>   the tree and the person's record.
+> - *Old form fields never saved:* the old "Add an employee" asked for blood group, address,
+>   areas, cluster, dotted line, salary, leave and expense settings, but `create_employee` stored
+>   none of them. The new form asks only what is kept.
+> - *Superseded by design:* "Menu remembers which sections were left open" (every section is
+>   always visible now, at the owner's request); "Clear demo world" (demo mode is a separate
+>   company, never mixed with live data).
+> - *Ops console (ops.mrsales.in):* organisation status (`active`, `past_due`, `suspended`,
+>   `closed`), plan modules, seats, invoices, support tickets and the owner's invite all reach the
+>   new console; checked against the database's own vocabulary.
+> - *App:* tasks (with client), chat both ways (office and field), notifications, manager moves,
+>   products on sale, overall targets and plan switches checked live end to end.
+
 ---
 
 ## 0. Across the whole console

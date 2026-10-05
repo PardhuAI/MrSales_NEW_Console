@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type DragEvent as ReactDragEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { DotsSixVertical } from '@phosphor-icons/react';
-import { changeManager, type Person, type RosterModel } from '../../live/team';
+import { changeManager, nextMove, type Person, type RosterModel } from '../../live/team';
 import { IST_TODAY, dayMonth } from '../../lib/days';
 import { count } from '../../lib/format';
 import { Drawer, Field, Pill, useFocusFirstError } from '../../components/kit';
@@ -160,6 +160,7 @@ export function OrgBoard({ m, may, needle, onSaved }: { m: RosterModel; may: boo
                   <span className="board-name">{c.name}{c.role === 'ASM' && <span className="board-tag">Manager</span>}</span>
                   <span className="cell-sub">{[c.code, c.hq].filter(Boolean).join(' · ')}</span>
                   {moved && <span className="board-was">Was under {was}</span>}
+                  {!moved && nextMove(c) && <span className="board-was">{nextMove(c)}</span>}
                 </span>
               </li>
             );
