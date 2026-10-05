@@ -18,7 +18,20 @@ import { useCan } from './app/access';
  * line only after a moment, so a fast one never flashes.
  */
 function page<K extends string>(load: () => Promise<Record<K, ComponentType>>, name: K) {
-  return lazy(() => load().then(m => ({ default: m[name] })));
+  const KEY = 'mrsales.reloaded-for-release';
+  return lazy(() => load().then(m => {
+    // A page file arrived, so a later stale one may reload once again.
+    try { sessionStorage.removeItem(KEY); } catch { /* not needed */ }
+    return { default: m[name] };
+  }, e => {
+    // A tab left open across a release asks for page files that no longer
+    // exist. Reload once to fetch the new release; a second failure is real
+    // and is shown by PageError rather than reloading forever.
+    let tried = false;
+    try { tried = sessionStorage.getItem(KEY) === '1'; sessionStorage.setItem(KEY, '1'); } catch { tried = true; }
+    if (!tried) window.location.reload();
+    throw e;
+  }));
 }
 
 function Opening() {
