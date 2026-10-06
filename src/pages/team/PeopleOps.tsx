@@ -189,7 +189,7 @@ function LeaveView({ list, at, error, reload }: { list: LeaveRow[]; at: Date | n
       <section className="block leave-rules">
         <div className="block-head"><h2 className="section-title">Leave types in use</h2><span className="block-meta">from the requests on record</span></div>
         {types.length === 0 ? <p className="block-empty">No leave type has been used yet.</p> : <ul className="tag-list">{types.map(t => <li key={t}><span>{leaveLabel(t)}</span></li>)}</ul>}
-        <p className="block-note">Leave balances and yearly allowances are not stored in the database yet, so none are shown or enforced here. The phone offers the types and a manager decides each request.</p>
+        <p className="block-note">Yearly allowances and carry-forward are set in <Link className="link" to="/settings/hr">HR rules</Link>. The phone applies those limits before a request is sent, and a manager decides the request here.</p>
       </section>
       <Confirm open={Boolean(ask)} title={ask ? `${ask.approve ? 'Approve' : 'Decline'} ${ask.l.person}'s leave?` : ''} confirmLabel={ask?.approve ? 'Approve the leave' : 'Decline the leave'} busy={busy} error={problem}
         reason={ask && !ask.approve ? { label: 'Why it is declined', required: true, placeholder: 'For example: please pick other dates; the team is short that week.' } : undefined}

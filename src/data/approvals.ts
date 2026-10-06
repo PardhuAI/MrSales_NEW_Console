@@ -38,6 +38,8 @@ export type ExpenseDay = Base & {
   bill?: string;
   /** Paths of the bill files in storage (bucket "receipts"). */
   bills: string[];
+  /** This person's daily allowance: their role's rule, else the company's. */
+  allowance?: number;
 };
 
 export type Order = Base & {
@@ -88,11 +90,11 @@ export type Decision = {
 
 /**
  * Whether a request needs a closer look before it is approved: an expense day
- * above the company's own daily allowance, an order above its stockist's
+ * above that person's daily allowance (their role's rule, else the company's), an order above its stockist's
  * discount slab (where one is set), a tour month with working days unplanned.
  */
 export const needsLook = (p: Pending) =>
-  (p.kind === 'expense' && p.amount > state.allowance) ||
+  (p.kind === 'expense' && p.amount > (p.allowance ?? state.allowance)) ||
   (p.kind === 'order' && p.slab !== undefined && p.discount > p.slab) ||
   (p.kind === 'tour' && p.plannedDays < p.workingDays);
 

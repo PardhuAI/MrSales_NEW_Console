@@ -125,6 +125,34 @@ test('company rules are read back before they are saved, and a bad radius is ref
   await expect(page.locator('.summary').first()).toContainText('₹400');
 });
 
+test('HR policy stores leave balances, salary structures and role expense rules', async ({ page }) => {
+  await as(page, 'owner', '/settings/hr');
+
+  await page.getByRole('row', { name: /Casual/ }).getByRole('button', { name: 'Edit' }).click();
+  await top(page).getByLabel('Days in a year').fill('14');
+  await page.getByRole('button', { name: 'Save policy' }).click();
+  await expect(page.getByRole('row', { name: /Casual/ })).toContainText('14');
+
+  await page.getByRole('button', { name: 'Salary structure' }).click();
+  await top(page).getByLabel('Name').fill('MR review band');
+  await top(page).getByLabel('Role').selectOption({ label: 'Medical Representative' });
+  await top(page).getByLabel('Monthly gross').fill('42000');
+  await top(page).getByLabel('Basic pay').fill('21000');
+  await top(page).getByLabel('HRA').fill('8400');
+  await top(page).getByLabel('Allowances').fill('12600');
+  await top(page).getByLabel('Deductions').fill('3000');
+  await page.getByRole('button', { name: 'Save structure' }).click();
+  await expect(page.getByRole('listitem').filter({ hasText: 'MR review band' })).toContainText('₹39,000');
+
+  await page.getByRole('button', { name: 'Expense rule' }).click();
+  await top(page).getByLabel('Role').selectOption({ label: 'Medical Representative' });
+  await top(page).getByLabel('Daily allowance').fill('425');
+  await top(page).getByLabel('Bill needed above').fill('650');
+  await top(page).getByLabel('Monthly ceiling').fill('14000');
+  await page.getByRole('button', { name: 'Save rule' }).click();
+  await expect(page.getByText('₹425 daily allowance, bill above ₹650, ₹14,000 monthly ceiling')).toBeVisible();
+});
+
 test('only an owner or admin may change the company rules', async ({ page }) => {
   await as(page, 'finance', '/settings/rules');
   await expect(page.getByText('Only an owner or admin changes these rules.')).toBeVisible();

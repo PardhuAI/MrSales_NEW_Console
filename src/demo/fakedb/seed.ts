@@ -100,6 +100,13 @@ export function seed(now = new Date()): Tables {
   const desAsm = add('designations', { id: uid('des'), name: 'Area Sales Manager', short_name: 'ASM', app_view: 'manager', rank: 2, is_active: true, created_at: created, updated_at: created });
   const desRsm = add('designations', { id: uid('des'), name: 'Regional Sales Manager', short_name: 'RSM', app_view: 'manager', rank: 3, is_active: true, created_at: created, updated_at: created });
   add('designations', { id: uid('des'), name: 'Key Account Manager', short_name: 'KAM', app_view: 'field', rank: 1, is_active: false, created_at: created, updated_at: created });
+  for (const [type, annual, carry, paid] of [['casual', 12, 3, true], ['sick', 8, 0, true], ['earned', 15, 5, true], ['compensatory', 6, 0, true], ['unpaid', 0, 0, false]] as const) {
+    add('leave_policies', { id: uid('lpo'), type, annual_days: annual, carry_forward_days: carry, requires_approval: true, is_paid: paid, updated_at: created });
+  }
+  add('salary_structures', { id: uid('sst'), designation_id: desMr.id, name: 'MR standard', monthly_gross: 34000, basic_pay: 17000, hra: 6800, allowances: 10200, deductions: 2500, net_pay: 31500, is_default: true, updated_at: created });
+  add('salary_structures', { id: uid('sst'), designation_id: desAsm.id, name: 'ASM standard', monthly_gross: 68000, basic_pay: 34000, hra: 13600, allowances: 20400, deductions: 5200, net_pay: 62800, is_default: false, updated_at: created });
+  add('expense_rules', { id: uid('exr'), designation_id: null, daily_allowance: 350, receipt_threshold: 500, monthly_ceiling: null, updated_at: created });
+  add('expense_rules', { id: uid('exr'), designation_id: desAsm.id, daily_allowance: 500, receipt_threshold: 750, monthly_ceiling: 18000, updated_at: created });
 
   // ── geography ──
   const geo: { region: string; territory: string; hq: string; areas: string[] }[] = [

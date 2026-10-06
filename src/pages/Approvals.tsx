@@ -473,7 +473,7 @@ function ExpenseBlock({
 
       {toCheck.length > 0 && (
         <>
-          <p className="ap-sub-title">Above the {rupees(approvalsStore.allowance())} allowance · {count(toCheck.length, 'day')} to look at</p>
+          <p className="ap-sub-title">Above the {rupees(toCheck[0].allowance ?? approvalsStore.allowance())} allowance · {count(toCheck.length, 'day')} to look at</p>
           <Rows>
             {toCheck.map(i => (
               <Row key={i.id} item={i} busy={busy} look onApprove={() => onApprove([i], 'this day')} onReject={() => onReject([i], `${dayLabel(i.date)}`)}>
@@ -491,7 +491,7 @@ function ExpenseBlock({
                 </div>
                 <div className="ap-row-figure">
                   <span className="ap-amount">{rupees(i.amount)}</span>
-                  <span className="ap-amount-note">{rupees(i.amount - approvalsStore.allowance())} over</span>
+                  <span className="ap-amount-note">{rupees(i.amount - (i.allowance ?? approvalsStore.allowance()))} over</span>
                 </div>
               </Row>
             ))}

@@ -429,6 +429,52 @@ export function settingsRpcs(audit: (db: FakeDb, action: string, entity: string,
       Object.assign(s, { daily_allowance: a.p_daily_allowance ?? 350, week_off_weekday: a.p_week_off_weekday ?? 0, receipt_threshold: a.p_receipt_threshold ?? 500, geo_fence_policy: a.p_geo_fence_policy ?? 'warn', geo_fence_radius_m: a.p_geo_fence_radius_m ?? 50, updated_at: now() });
       return null;
     },
+    save_leave_policy: (a, db) => {
+      const type = String(a.p_type ?? '');
+      if (!['casual', 'sick', 'earned', 'unpaid', 'compensatory'].includes(type)) fail('that is not a leave type');
+      const annual = Number(a.p_annual_days ?? 0);
+      const carry = Number(a.p_carry_forward_days ?? 0);
+      if (annual < 0 || carry < 0) fail('leave days cannot be negative');
+      const row = db.rows('leave_policies').find(x => x.type === type);
+      const next = { annual_days: annual, carry_forward_days: carry, requires_approval: a.p_requires_approval !== false, is_paid: a.p_is_paid !== false, updated_at: now() };
+      if (row) Object.assign(row, next);
+      else db.mutable('leave_policies').push({ id: crypto.randomUUID(), org_id: ORG, type, ...next });
+      audit(db, 'changed a leave policy', 'Leave policy', type);
+      return type;
+    },
+    save_salary_structure: (a, db) => {
+      const name = named(a.p_name, 'salary structure');
+      const gross = Number(a.p_monthly_gross);
+      if (!(gross > 0)) fail('monthly gross pay must be above zero');
+      if (a.p_designation_id) place(db, 'designations', a.p_designation_id, 'role');
+      const existing = db.rows('salary_structures').find(x => (x.designation_id ?? null) === (a.p_designation_id ?? null));
+      const id = a.p_id ? String(a.p_id) : existing?.id ? String(existing.id) : crypto.randomUUID();
+      if (a.p_is_default) for (const s of db.rows('salary_structures')) s.is_default = false;
+      const row = db.rows('salary_structures').find(x => x.id === id);
+      const next = {
+        designation_id: a.p_designation_id ?? null, name, monthly_gross: gross,
+        basic_pay: Number(a.p_basic_pay ?? 0), hra: Number(a.p_hra ?? 0), allowances: Number(a.p_allowances ?? 0), deductions: Number(a.p_deductions ?? 0),
+        net_pay: gross - Number(a.p_deductions ?? 0), is_default: Boolean(a.p_is_default), updated_at: now(),
+      };
+      if (row) Object.assign(row, next);
+      else db.mutable('salary_structures').push({ id, org_id: ORG, ...next });
+      audit(db, 'saved a salary structure', 'Salary structure', name);
+      return id;
+    },
+    save_expense_rule: (a, db) => {
+      if (a.p_designation_id) place(db, 'designations', a.p_designation_id, 'role');
+      const allowance = Number(a.p_daily_allowance ?? 0);
+      const threshold = Number(a.p_receipt_threshold ?? 0);
+      const ceiling = a.p_monthly_ceiling == null ? null : Number(a.p_monthly_ceiling);
+      if (allowance < 0 || threshold < 0 || (ceiling != null && ceiling < 0)) fail('expense amounts cannot be negative');
+      const id = a.p_id ? String(a.p_id) : crypto.randomUUID();
+      const row = db.rows('expense_rules').find(x => x.id === id) ?? db.rows('expense_rules').find(x => (x.designation_id ?? null) === (a.p_designation_id ?? null));
+      const next = { designation_id: a.p_designation_id ?? null, daily_allowance: allowance, receipt_threshold: threshold, monthly_ceiling: ceiling, updated_at: now() };
+      if (row) Object.assign(row, next);
+      else db.mutable('expense_rules').push({ id, org_id: ORG, ...next });
+      audit(db, 'saved an expense rule', 'Expense rule', a.p_designation_id ? String(a.p_designation_id) : 'company default');
+      return row?.id ?? id;
+    },
     create_region: (a, db) => {
       const name = named(a.p_name, 'region'); unique(db, 'regions', name);
       const id = crypto.randomUUID(); db.mutable('regions').push({ id, org_id: ORG, name, created_at: now() }); audit(db, 'added a region', 'Region', name); return id;

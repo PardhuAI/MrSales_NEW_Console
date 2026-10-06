@@ -218,6 +218,14 @@
   align-items: start;
 }
 
+.hr-layout > section {
+  min-width: 0;
+}
+
+.hr-layout > section:nth-child(n + 3) {
+  grid-column: 1 / -1;
+}
+
 .hr-list {
   margin-top: var(--s-2);
   border-top: var(--hairline-w) solid var(--hairline);
@@ -225,6 +233,19 @@
 
 .hr-list .row.past .row-title {
   color: var(--muted);
+}
+
+.compact-table {
+  min-width: 38rem;
+}
+
+.check-line {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  width: fit-content;
+  color: var(--ink);
+  font-size: var(--t-sm);
 }
 
 .own-note {
