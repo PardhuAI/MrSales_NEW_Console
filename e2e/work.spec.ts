@@ -233,6 +233,21 @@ test('only the owner changes the company details', async ({ page }) => {
   await expect(page.getByRole('button', { name: 'Save the details' })).toHaveCount(0);
 });
 
+test('leave balances show what is left, and HR adjusts one with a reason', async ({ page }) => {
+  await as(page, 'hr', '/team/leave');
+  const row = page.getByRole('row', { name: /Anil Kumar Goud/ }).filter({ has: page.getByRole('button', { name: 'Adjust' }) });
+  await expect(row).toContainText('of 15');
+  await row.getByRole('button', { name: 'Adjust' }).click();
+  await page.getByRole('radio', { name: 'Take away days' }).click();
+  await top(page).getByLabel('Days').fill('6');
+  await page.getByRole('button', { name: 'Save the adjustment' }).click();
+  await expect(top(page)).toContainText('Say why');
+  await top(page).getByLabel('Why').fill('6 casual days used before Mr Sales');
+  await page.getByRole('button', { name: 'Save the adjustment' }).click();
+  await expect(notice(page)).toContainText('down by 6 days');
+  await expect(row).toContainText('6 taken off');
+});
+
 test('only an owner or admin may change the company rules', async ({ page }) => {
   await as(page, 'finance', '/settings/rules');
   await expect(page.getByText('Only an owner or admin changes these rules.')).toBeVisible();

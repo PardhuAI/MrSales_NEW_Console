@@ -21,6 +21,7 @@ import { monthName } from '../../live/sales';
 import { typeLabel } from '../../live/clients';
 import { VERDICT } from '../../live/field';
 import { PAY_TAB_ROLES, PayTab } from './PersonPay';
+import { LeaveLeft } from './LeaveLeft';
 
 /**
  * One person: who they are, how their month is going, and everything on
@@ -312,6 +313,7 @@ function HrTab({ p, r, onDone }: { p: Person; r: Rec; onDone: (m: string) => voi
       <div>
         <section className="block">
           <div className="block-head"><h3 className="section-title">Leave</h3></div>
+          <LeaveLeft personId={p.id} />
           {r.leave.length === 0 ? <p className="block-empty">No leave applied for.</p> : (
             <ul className="rows">
               {r.leave.slice(0, 10).map(l => (

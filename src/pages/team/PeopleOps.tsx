@@ -2,7 +2,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Plus } from '@phosphor-icons/react';
 import { invalidate, useResource } from '../../data/resource';
-import { assignTask, decideLeave, leaveLabel, loadAttendance, loadLeave, loadTasks, type AttendanceModel, type LeaveRow, type TaskClient } from '../../live/team';
+import { LEAVE_TYPES, adjustLeave, assignTask, decideLeave, leaveLabel, loadAttendance, loadLeave, loadLeaveBalances, loadTasks, mayAdjustLeave, type AttendanceModel, type LeaveBalance, type LeaveRow, type TaskClient } from '../../live/team';
+import { loadEmployees } from '../../live/people';
+import { useMe } from '../../live/session';
 import { approvalsStore } from '../../data/approvals';
 import { IST_TODAY, ago, dayMonth, dayRange, dayOf, daysBetween, longDay, shiftDay, timeOf, weekdayOf } from '../../lib/days';
 import { count } from '../../lib/format';
@@ -127,9 +129,16 @@ function LeaveView({ list, at, error, reload }: { list: LeaveRow[]; at: Date | n
   const [problem, setProblem] = useState('');
   const [notice, setNotice] = useState('');
   const today = IST_TODAY();
+  const year = Number(today.slice(0, 4));
+  const balances = useResource(`team:leave-balances:${year}`, () => loadBalancesWithPeople(year));
+  const after = (l: LeaveRow) => {
+    if (Number(l.from.slice(0, 4)) !== year) return '';
+    const b = balances.data?.balances.find(x => x.personId === l.personId && x.type === l.type);
+    if (!b?.tracked) return '';
+    return b.left < 0 ? ` This takes them over their ${leaveLabel(l.type).toLowerCase()} for ${year} by ${count(-b.left, 'day')}.` : ` With this, ${count(b.left, 'day')} are left for ${year}.`;
+  };
   const by = (s: string) => list.filter(l => l.status === s).length;
   const away = list.filter(l => l.status === 'approved' && l.from <= shiftDay(today, 7) && l.to >= today);
-  const types = [...new Set(list.map(l => l.type))];
   const rows = useMemo(() => list
     .filter(l => status === 'all' || l.status === status)
     .filter(l => !q.trim() || l.person.toLowerCase().includes(q.trim().toLowerCase()))
@@ -186,18 +195,141 @@ function LeaveView({ list, at, error, reload }: { list: LeaveRow[]; at: Date | n
           {more}
         </Arrive>
       )}
-      <section className="block leave-rules">
-        <div className="block-head"><h2 className="section-title">Leave types in use</h2><span className="block-meta">from the requests on record</span></div>
-        {types.length === 0 ? <p className="block-empty">No leave type has been used yet.</p> : <ul className="tag-list">{types.map(t => <li key={t}><span>{leaveLabel(t)}</span></li>)}</ul>}
-        <p className="block-note">Yearly allowances and carry-forward are set in <Link className="link" to="/settings/hr">HR rules</Link>. The phone applies those limits before a request is sent, and a manager decides the request here.</p>
-      </section>
+      <LeaveBalances year={year} r={balances} />
       <Confirm open={Boolean(ask)} title={ask ? `${ask.approve ? 'Approve' : 'Decline'} ${ask.l.person}'s leave?` : ''} confirmLabel={ask?.approve ? 'Approve the leave' : 'Decline the leave'} busy={busy} error={problem}
         reason={ask && !ask.approve ? { label: 'Why it is declined', required: true, placeholder: 'For example: please pick other dates; the team is short that week.' } : undefined}
         onCancel={() => setAsk(null)} onConfirm={reason => void decide(reason)}>
-        {ask && `${leaveLabel(ask.l.type)}, ${count(ask.l.days, 'day')}: ${dayRange(ask.l.from, ask.l.to)}. ${ask.l.person} gets a message${ask.approve ? '.' : ' with your reason.'}`}
+        {ask && `${leaveLabel(ask.l.type)}, ${count(ask.l.days, 'day')}: ${dayRange(ask.l.from, ask.l.to)}.${ask.approve ? after(ask.l) : ''} ${ask.l.person} gets a message${ask.approve ? '.' : ' with your reason.'}`}
       </Confirm>
       {notice && <Notice onDone={() => setNotice('')}>{notice}</Notice>}
     </div>
+  );
+}
+
+type BalancesModel = { balances: LeaveBalance[]; people: { id: string; name: string; code: string; designation: string }[] };
+const loadBalancesWithPeople = async (year: number): Promise<BalancesModel> => {
+  const [balances, employees] = await Promise.all([loadLeaveBalances(year), loadEmployees()]);
+  const ids = new Set(balances.map(b => b.personId));
+  return { balances, people: [...employees.values()].filter(e => ids.has(e.id)).map(e => ({ id: e.id, name: e.name, code: e.code, designation: e.designation })).sort((a, b) => a.name.localeCompare(b.name)) };
+};
+
+/**
+ * What each person has left this year, by leave type: the policy's days plus
+ * any adjustment, less what was taken and what is waiting. Only types with a
+ * yearly allowance (or an adjustment) are counted; the rest are not limited.
+ */
+function LeaveBalances({ year, r }: { year: number; r: ReturnType<typeof useResource<BalancesModel>> }) {
+  const me = useMe();
+  const may = mayAdjustLeave(me.role);
+  const [q, setQ] = useState('');
+  const [adjust, setAdjust] = useState<{ id: string; name: string } | null>(null);
+  const [notice, setNotice] = useState('');
+  const m = r.data;
+  const types = m ? LEAVE_TYPES.filter(t => m.balances.some(b => b.type === t && b.tracked)) : [];
+  const of = (id: string, t: string) => m?.balances.find(b => b.personId === id && b.type === t);
+  const needle = q.trim().toLowerCase();
+  const people = (m?.people ?? []).filter(p => !needle || `${p.name} ${p.code}`.toLowerCase().includes(needle));
+  const over = m ? new Set(m.balances.filter(b => b.tracked && b.left < 0).map(b => b.personId)).size : 0;
+  const { shown, more } = useShowMore(people, 50);
+  return (
+    <section className="block leave-balances" aria-labelledby="leave-left">
+      <div className="block-head">
+        <h2 id="leave-left" className="section-title">Left in {year}</h2>
+        <span className="block-meta">{over ? <span className="warn-text">{count(over, 'person is', 'people are')} over a balance</span> : 'allowance, adjustments, taken and waiting'}</span>
+      </div>
+      {r.status === 'error' && !m ? <LoadError what="Leave balances" error={r.error} retry={() => void r.reload()} />
+        : !m ? <Loading label="Working out the balances" lines={1} />
+        : types.length === 0 ? <p className="block-empty">No leave type has a yearly allowance yet, so nothing is counted. Set the days for each type in <Link className="link" to="/settings/hr">HR rules</Link>; balances then appear here and on each phone.</p>
+        : (
+          <>
+            <Toolbar><SearchBox value={q} onChange={setQ} placeholder="Find a person" label="Find a person's balance" /></Toolbar>
+            {people.length === 0 ? <div className="list-empty"><Empty title="Nobody matches">Try another name.</Empty></div> : (
+              <div className="table-wrap">
+                <table className="table leave-balance-table">
+                  <thead><tr><th scope="col">Person</th>{types.map(t => <th key={t} scope="col" className="num">{leaveLabel(t).replace(/ leave$/, '')}</th>)}{may && <th scope="col"><span className="visually-hidden">Adjust</span></th>}</tr></thead>
+                  <tbody>
+                    {shown.map(p => (
+                      <tr key={p.id}>
+                        <th scope="row"><Link className="cell-link" to={`/team/${p.id}?tab=hr`}>{p.name}</Link><span className="cell-sub">{[p.code, p.designation].filter(Boolean).join(' · ')}</span></th>
+                        {types.map(t => {
+                          const b = of(p.id, t);
+                          if (!b) return <td key={t} className="num" />;
+                          return (
+                            <td key={t} className="num">
+                              {b.left < 0 ? <span className="warn-text">over by {fmtDays(-b.left)}</span> : <strong>{fmtDays(b.left)}</strong>}
+                              <span className="cell-sub">{balanceNote(b)}</span>
+                            </td>
+                          );
+                        })}
+                        {may && <td className="row-action"><button type="button" className="link" onClick={() => setAdjust({ id: p.id, name: p.name })}>Adjust</button></td>}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+            {more}
+            <p className="block-note">Yearly allowances and carry forward are set in <Link className="link" to="/settings/hr">HR rules</Link>. The phone shows each person their own balance and refuses a request that would cross it.</p>
+          </>
+        )}
+      {m && <AdjustLeaveDrawer open={Boolean(adjust)} person={adjust} year={year} types={LEAVE_TYPES.filter(t => t !== 'unpaid')} balances={m.balances}
+        onClose={() => setAdjust(null)} onDone={msg => { setAdjust(null); setNotice(msg); invalidate('team:leave-balances:', 'team:person:'); }} />}
+      {notice && <Notice onDone={() => setNotice('')}>{notice}</Notice>}
+    </section>
+  );
+}
+
+const fmtDays = (n: number) => (Number.isInteger(n) ? String(n) : n.toFixed(1));
+/** "of 15, 6 taken off, 2 waiting": the allowance, then what changed it. */
+const balanceNote = (b: LeaveBalance) => [
+  `of ${fmtDays(b.allowed)}`,
+  b.adjusted > 0 && `${fmtDays(b.adjusted)} added`,
+  b.adjusted < 0 && `${fmtDays(-b.adjusted)} taken off`,
+  b.waiting > 0 && `${fmtDays(b.waiting)} waiting`,
+].filter(Boolean).join(', ');
+
+function AdjustLeaveDrawer({ open, person, year, types, balances, onClose, onDone }: {
+  open: boolean; person: { id: string; name: string } | null; year: number; types: readonly string[]; balances: LeaveBalance[];
+  onClose: () => void; onDone: (m: string) => void;
+}) {
+  const [type, setType] = useState('casual');
+  const [way, setWay] = useState<'add' | 'take'>('add');
+  const [days, setDays] = useState('');
+  const [reason, setReason] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [problem, setProblem] = useState('');
+  const [attempt, setAttempt] = useState(0);
+  useEffect(() => { if (open) { setType('casual'); setWay('add'); setDays(''); setReason(''); setProblem(''); setAttempt(0); } }, [open]);
+  const n = Number(days.replace(',', '.'));
+  const b = balances.find(x => x.personId === person?.id && x.type === type);
+  const errors = {
+    days: !(n > 0) || n > 366 || Math.round(n * 2) !== n * 2 ? 'Write the days, in whole or half days.' : undefined,
+    reason: reason.trim().length < 5 ? 'Say why; it is kept with the balance and in the audit log.' : undefined,
+  };
+  const formRef = useFocusFirstError(errors, attempt);
+  const signed = way === 'add' ? n : -n;
+  const save = async () => {
+    setAttempt(a => a + 1);
+    if (!person || Object.values(errors).some(Boolean)) return;
+    setBusy(true); setProblem('');
+    try {
+      await adjustLeave({ personId: person.id, type, year, days: signed, reason });
+      onDone(`${person.name}'s ${leaveLabel(type).toLowerCase()} for ${year} is ${way === 'add' ? 'up' : 'down'} by ${count(n, 'day')}.`);
+    } catch (e) { setProblem(e instanceof Error ? e.message : String(e)); } finally { setBusy(false); }
+  };
+  return (
+    <Drawer open={open} onClose={onClose} title={`Adjust ${person?.name ?? ''}'s leave`} sub={`For ${year}. An opening balance when they joined mid-year, or a correction; the reason is kept.`}
+      footer={<><button type="button" className="btn btn-secondary" onClick={onClose}>Cancel</button><button type="button" className="btn btn-primary" disabled={busy} onClick={() => void save()}>{busy ? 'Saving…' : 'Save the adjustment'}</button></>}>
+      <form ref={formRef} className="form" noValidate onSubmit={e => { e.preventDefault(); void save(); }}>
+        <Field label="Leave type">{x => <select {...x} className="input" value={type} onChange={e => setType(e.target.value)}>{types.map(t => <option key={t} value={t}>{leaveLabel(t)}</option>)}</select>}</Field>
+        {b && <p className="form-note">Now {b.tracked ? `${fmtDays(b.left)} left, ${balanceNote(b)}` : 'not counted: this type has no yearly allowance'}{b.taken ? `, ${fmtDays(b.taken)} taken` : ''}.</p>}
+        <Segmented label="Add or take away" value={way} onChange={setWay} options={[{ value: 'add', label: 'Add days' }, { value: 'take', label: 'Take away days' }]} />
+        <Field label="Days" error={attempt ? errors.days : undefined}>{x => <input {...x} className="input" inputMode="decimal" value={days} placeholder="2" onChange={e => setDays(e.target.value)} />}</Field>
+        <Field label="Why" error={attempt ? errors.reason : undefined}>{x => <input {...x} className="input" value={reason} placeholder="For example: 6 casual days used before Mr Sales" onChange={e => setReason(e.target.value)} />}</Field>
+        {b && n > 0 && <p className="form-note">After this: {fmtDays(b.left + signed)} left, {balanceNote({ ...b, adjusted: b.adjusted + signed })}.</p>}
+        {problem && <p className="form-error" role="alert">It was not saved. {problem}</p>}
+      </form>
+    </Drawer>
   );
 }
 

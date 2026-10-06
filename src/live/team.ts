@@ -448,3 +448,19 @@ export async function loadTasks(): Promise<{ tasks: TaskRow[]; people: { id: str
 
 export const assignTask = async (personId: string, title: string, description: string, due: string | null, clientId: string | null) =>
   (await call('assign_task', { p_id: crypto.randomUUID(), p_assignee_id: personId, p_title: title, p_description: description || null, p_due_date: due, p_client_id: clientId })) as string;
+
+// ── leave balances ────────────────────────────────────────────────────
+
+export const LEAVE_TYPES = ['casual', 'sick', 'earned', 'compensatory', 'unpaid'] as const;
+export type LeaveBalance = { personId: string; type: string; allowed: number; adjusted: number; taken: number; waiting: number; left: number; tracked: boolean };
+
+/** Each person's balance by type for a year (migration 0111): policy plus adjustments, less taken and waiting. */
+export async function loadLeaveBalances(year: number, personId?: string): Promise<LeaveBalance[]> {
+  const rows = ((await call('leave_balances', { p_year: year, p_employee_id: personId ?? null })) ?? []) as { employee_id: string; type: string; allowed: number | string; adjusted: number | string; taken: number | string; waiting: number | string; remaining: number | string; tracked: boolean }[];
+  return rows.map(r => ({ personId: r.employee_id, type: r.type, allowed: Number(r.allowed), adjusted: Number(r.adjusted), taken: Number(r.taken), waiting: Number(r.waiting), left: Number(r.remaining), tracked: r.tracked }));
+}
+
+export const adjustLeave = (a: { personId: string; type: string; year: number; days: number; reason: string }) =>
+  call('adjust_leave_balance', { p_employee_id: a.personId, p_type: a.type, p_year: a.year, p_days: a.days, p_reason: a.reason.trim() });
+
+export const mayAdjustLeave = (role: string) => ['owner', 'admin', 'hr'].includes(role);

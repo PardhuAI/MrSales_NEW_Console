@@ -8,7 +8,7 @@ import {
 } from '../../live/pay';
 import { loadExpenseRules, saveExpenseRule, type ExpenseRule } from '../../live/settings';
 import { count, rupees } from '../../lib/format';
-import { Drawer, Field, Notice, Pill, Summary, useFocusFirstError } from '../../components/kit';
+import { Drawer, Field, Notice, Summary, useFocusFirstError } from '../../components/kit';
 import { Empty, Freshness, LoadError, Loading } from '../../components/States';
 import { Arrive } from '../../components/motion';
 import { useMe } from '../../live/session';
@@ -95,7 +95,7 @@ function View({ m, at, error, reload }: { m: Model; at: Date | null; error: stri
                   return (
                     <li key={s.id} className="row">
                       <div className="row-main">
-                        <p className="row-title">{s.name}{s.isDefault && <> <Pill>Default</Pill></>}</p>
+                        <p className="row-title">{s.name}{s.isDefault && <span className="row-title-note"> · the default</span>}</p>
                         <p className="row-sub">{s.designation}: basic {rupees(s.basic)}, gross {rupees(t.gross)}, net {rupees(t.net)} a month</p>
                       </div>
                       <span className="row-actions"><button type="button" className="link" onClick={() => setStructure(s)}>Edit</button></span>

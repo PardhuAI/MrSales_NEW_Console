@@ -176,6 +176,31 @@ export function payRpcs(audit: Audit): Record<string, Rpc> {
       audit(db, 'set a personal expense rule', 'Expense rule', String(e.name), null, f, trim(a.p_note));
       return null;
     },
+    leave_balances: (a, db) => {
+      const year = Number(a.p_year);
+      const types = ['casual', 'sick', 'earned', 'compensatory', 'unpaid'];
+      return db.rows('employees')
+        .filter(e => e.status === 'active' && (!a.p_employee_id || e.id === a.p_employee_id))
+        .flatMap(e => types.map(type => {
+          const lp = db.rows('leave_policies').find(p => p.type === type);
+          const allowed = lp ? Number(lp.annual_days ?? 0) + Number(lp.carry_forward_days ?? 0) : 0;
+          const adjusted = db.rows('leave_adjustments').filter(x => x.employee_id === e.id && x.type === type && x.year === year).reduce((s, x) => s + Number(x.days), 0);
+          const mine = db.rows('leave_requests').filter(l => l.employee_id === e.id && l.type === type && String(l.from_date).startsWith(String(year)));
+          const taken = mine.filter(l => l.status === 'approved').reduce((s, l) => s + Number(l.days), 0);
+          const waiting = mine.filter(l => l.status === 'pending').reduce((s, l) => s + Number(l.days), 0);
+          return { employee_id: e.id, type, allowed, adjusted, taken, waiting, remaining: allowed + adjusted - taken - waiting, tracked: allowed > 0 || adjusted !== 0 };
+        }));
+    },
+    adjust_leave_balance: (a, db) => {
+      const e = person(db, a.p_employee_id);
+      const days = Number(a.p_days);
+      if (!days) fail('say how many days to add or take away');
+      if (!trim(a.p_reason)) fail('a reason is required');
+      const id = crypto.randomUUID();
+      db.mutable('leave_adjustments').push({ id, org_id: ORG, employee_id: e.id, type: a.p_type, year: Number(a.p_year), days, reason: trim(a.p_reason), created_at: now() });
+      audit(db, 'adjusted a leave balance', 'Leave balance', String(e.name), null, { type: a.p_type, year: a.p_year, days }, trim(a.p_reason));
+      return id;
+    },
     save_travel_rates: (a, db) => {
       const e = person(db, a.p_employee_id);
       for (const r of (a.p_rates as { mode: string; local_rate: number; outstation_rate: number }[]) ?? []) {
@@ -216,4 +241,5 @@ export function seedPay(T: Record<string, Row[]>, created: string) {
     add('employee_salaries', { id: crypto.randomUUID(), employee_id: e.id, effective_from: from, basic, component_values: { [special]: manager ? 9000 : 4000, ...(i % 7 === 3 ? { [hra]: 50 } : {}) }, structure_id: manager ? sAsm : sMr, note: null, created_at: created });
   });
   T.employee_expense_rules ??= [];
+  T.leave_adjustments ??= [];
 }

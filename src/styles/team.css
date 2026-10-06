@@ -580,3 +580,34 @@ button.org-toggle:hover {
 .away-list {
   border-top: var(--hairline-w) solid var(--hairline);
 }
+
+/* ── leave left ─────────────────────────────────────────────────────── */
+.leave-left {
+  margin: var(--s-3) 0 var(--s-5);
+}
+
+.leave-left-row {
+  display: contents;
+}
+
+.leave-left dd .cell-sub {
+  display: block;
+}
+
+.leave-balances {
+  margin-top: var(--s-10);
+}
+
+.leave-balance-table td.num strong {
+  font-weight: var(--w-semibold);
+  font-variant-numeric: tabular-nums;
+}
+
+.leave-balances .block-head {
+  flex-wrap: wrap;
+  row-gap: var(--s-1);
+}
+
+.leave-balances .block-head h2 {
+  white-space: nowrap;
+}

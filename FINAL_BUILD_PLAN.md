@@ -84,4 +84,4 @@ the database too).
 ---
 
 ### Progress
-- [x] Phase 1 (console; phone payslip screen pending the APK) · [x] Phase 2 (travel rates are per person: the table has no role column, and the phone's daily allowance is flat, so per-role rates would change nothing) · [x] Phase 3 (console; ops invoice logo pending) · [ ] Phase 4 · [ ] Phase 5 · [ ] Phase 6 · [ ] Phase 7 · [ ] Phase 8
+- [x] Phase 1 (console and phone; payslip PDFs follow the pay rule, migration 0110) · [x] Phase 2 (travel rates are per person: the table has no role column, and the phone's daily allowance is flat, so per-role rates would change nothing) · [x] Phase 3 (the ops invoice, favicon and app mark already carry the current mark) · [x] Phase 4 (console, phone and database; migration 0111) · [ ] Phase 5 · [ ] Phase 6 · [ ] Phase 7 · [ ] Phase 8

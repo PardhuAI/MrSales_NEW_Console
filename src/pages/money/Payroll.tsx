@@ -170,7 +170,7 @@ function PayrollView({ month, rows, company }: { month: string; rows: PayslipRow
                         <td className="num">{raw.releasedAt && raw.releasedNet != null ? <><strong>{rupees(raw.releasedNet)}</strong>{raw.hasSalary && raw.releasedNet !== r.net && <span className="cell-sub">now works out {rupees(r.net)}</span>}</> : raw.hasSalary ? <strong>{rupees(r.net)}</strong> : ''}</td>
                         <td onClick={e => e.stopPropagation()}>
                           {raw.releasedAt ? <><Pill tone="good">Released {dayMonth(dayOf(raw.releasedAt))}</Pill>{raw.file && <button type="button" className="link pay-open" onClick={() => openPdf(raw.file!)}>PDF</button>}</>
-                            : raw.hasSalary ? (changed ? <Pill tone="accent">Ready, changed</Pill> : <Pill>Ready</Pill>)
+                            : raw.hasSalary ? <><Pill>Ready</Pill>{changed && <span className="cell-sub">corrected</span>}</>
                             : may ? <span className="pay-none"><Link className="link" to={`/team/${raw.employeeId}?tab=pay`}>Set salary</Link> · <button type="button" className="link" onClick={() => setUploading(raw)}>Upload a payslip</button></span>
                             : <Pill tone="warning">No salary</Pill>}
                         </td>
