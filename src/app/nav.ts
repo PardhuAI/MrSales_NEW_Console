@@ -255,6 +255,11 @@ export const SECTIONS: Section[] = [
         keywords: ['chat', 'message', 'conversation', 'talk', 'whatsapp', 'write to'],
       },
       {
+        path: '/share/announcements', label: 'Announcements', module: 'announcements',
+        about: 'Tell the whole field, a team, a role or a territory something, and see who has read it.',
+        keywords: ['announcement', 'notice', 'circular', 'broadcast', 'tell everyone', 'message all', 'pinned', 'read receipt'],
+      },
+      {
         path: '/share/sent', label: 'Sent notifications', module: 'notifications',
         about: 'Every message the phones received, and who it reached.',
         keywords: ['notifications', 'messages', 'alerts sent', 'push'],
@@ -336,6 +341,11 @@ export const SECTIONS: Section[] = [
 /** Pages reached from the account menu rather than the sidebar. */
 export const ACCOUNT_PAGES: Page[] = [
   {
+    path: '/account', label: 'Your account', module: 'help',
+    about: 'Your password, two-step sign-in, signed-in devices and what this login changed.',
+    keywords: ['password', 'change password', 'two-step', '2fa', 'mfa', 'authenticator', 'otp', 'security', 'sign out everywhere', 'profile', 'my account'],
+  },
+  {
     path: '/help', label: 'Help from Mr Sales', module: 'help',
     about: 'Ask the Mr Sales team for help, and follow your requests.',
     keywords: ['support', 'ticket', 'help', 'contact'],
@@ -352,6 +362,7 @@ export type Action = { label: string; path: string; module: string; keywords?: s
 
 export const NEW_ACTIONS: Action[] = [
   { label: 'Add a person', path: '/team/new', module: 'onboarding', keywords: ['employee', 'onboard', 'hire', 'joiner'] },
+  { label: 'Import people from a sheet', path: '/team/import', module: 'onboarding', keywords: ['import people', 'bulk add', 'upload employees', 'spreadsheet', 'excel', 'csv'] },
   { label: 'Add a client', path: '/clients/new', module: 'clients', keywords: ['doctor', 'chemist'] },
   { label: 'Assign a target', path: '/sales/targets/new', module: 'targets' },
   { label: 'Assign a task', path: '/team/tasks/new', module: 'tasks' },
@@ -359,6 +370,7 @@ export const NEW_ACTIONS: Action[] = [
   { label: 'Add a stockist', path: '/sales/stockists/new', module: 'stockists' },
   { label: 'Upload a resource', path: '/share/new', module: 'resources', keywords: ['visual aid', 'file'] },
   { label: 'Start a survey', path: '/share/surveys/new', module: 'surveys' },
+  { label: 'Write an announcement', path: '/share/announcements/new', module: 'announcements', keywords: ['notice', 'circular', 'broadcast', 'tell everyone'] },
   { label: 'Declare a holiday', path: '/settings/hr/holiday', module: 'hr' },
   { label: 'Invite an office user', path: '/settings/logins/invite', module: 'users', keywords: ['login', 'access'] },
 ];

@@ -110,7 +110,7 @@ function AttendanceGrid({ m }: { m: AttendanceModel }) {
 
 // ── leave ─────────────────────────────────────────────────────────────
 
-const LEAVE_STATUS: Record<string, { word: string; tone: 'good' | 'accent' | 'neutral' }> = { approved: { word: 'Approved', tone: 'good' }, pending: { word: 'Waiting for a decision', tone: 'accent' }, rejected: { word: 'Not approved', tone: 'neutral' }, cancelled: { word: 'Withdrawn', tone: 'neutral' } };
+const LEAVE_STATUS: Record<string, { word: string; tone: 'good'  | 'neutral' }> = { approved: { word: 'Approved', tone: 'good' }, pending: { word: 'Waiting for a decision', tone: 'neutral' }, rejected: { word: 'Not approved', tone: 'neutral' }, cancelled: { word: 'Withdrawn', tone: 'neutral' } };
 
 /** Leave: every request from the phone, with its decision, and who is away soon. */
 export function Leave() {
@@ -177,16 +177,16 @@ function LeaveView({ list, at, error, reload }: { list: LeaveRow[]; at: Date | n
         <Arrive>
           <div className="table-wrap">
             <table className="table">
-              <thead><tr><th scope="col">Person</th><th scope="col">Leave</th><th scope="col">Dates</th><th scope="col" className="num hide-narrow">Days</th><th scope="col">Status</th>{allowed('approvals') && <th scope="col"><span className="visually-hidden">Decide</span></th>}</tr></thead>
+              <thead><tr><th scope="col">Person</th><th scope="col" className="fold-phone">Leave</th><th scope="col" className="fold-phone">Dates</th><th scope="col" className="num hide-narrow">Days</th><th scope="col">Status</th>{allowed('approvals') && <th scope="col"><span className="visually-hidden">Decide</span></th>}</tr></thead>
               <tbody>
                 {shown.map(l => (
                   <tr key={l.id}>
-                    <th scope="row"><Link className="cell-link" to={`/team/${l.personId}`}>{l.person}</Link><span className="cell-sub">{l.reason}</span></th>
-                    <td className="leave-type">{leaveLabel(l.type)}</td>
-                    <td>{dayRange(l.from, l.to)}<span className="cell-sub">applied {ago(l.appliedAt)}</span></td>
+                    <th scope="row"><Link className="cell-link" to={`/team/${l.personId}`}>{l.person}</Link><span className="cell-sub show-phone">{leaveLabel(l.type)}, {dayRange(l.from, l.to)}</span><span className="cell-sub">{l.reason}</span></th>
+                    <td className="leave-type fold-phone">{leaveLabel(l.type)}</td>
+                    <td className="fold-phone">{dayRange(l.from, l.to)}<span className="cell-sub">applied {ago(l.appliedAt)}</span></td>
                     <td className="num hide-narrow">{l.days}</td>
                     <td><Pill tone={(LEAVE_STATUS[l.status] ?? { tone: 'neutral' }).tone}>{(LEAVE_STATUS[l.status] ?? { word: l.status }).word}</Pill>{l.decidedBy && <span className="cell-sub">by {l.decidedBy}{l.decisionReason ? `: “${l.decisionReason}”` : ''}</span>}</td>
-                    {allowed('approvals') && <td className="row-action">{l.status === 'pending' && <><button type="button" className="link" onClick={() => setAsk({ l, approve: false })}>Decline</button>{' '}<button type="button" className="link strong-link" onClick={() => setAsk({ l, approve: true })}>Approve</button></>}</td>}
+                    {allowed('approvals') && <td className="row-action">{l.status === 'pending' && <span className="row-actions"><button type="button" className="link" onClick={() => setAsk({ l, approve: false })}>Decline</button><button type="button" className="link strong-link" onClick={() => setAsk({ l, approve: true })}>Approve</button></span>}</td>}
                   </tr>
                 ))}
               </tbody>
@@ -360,7 +360,7 @@ function WhoIsAway({ list }: { list: LeaveRow[] }) {
                 <p className="row-title"><Link className="cell-link" to={`/team/${l.personId}`}>{l.person}</Link></p>
                 <p className="row-sub">{leaveLabel(l.type)}, {dayRange(l.from, l.to)}</p>
               </div>
-              <span className="row-meta">{l.status === 'approved' ? 'Away' : <Pill tone="accent">Waiting for a decision</Pill>}</span>
+              <span className="row-meta">{l.status === 'approved' ? 'Away' : <Pill>Waiting for a decision</Pill>}</span>
             </li>
           ))}
         </ul>

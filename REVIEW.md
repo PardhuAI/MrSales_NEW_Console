@@ -214,6 +214,114 @@ failed request; axe passes in light and dark. Fixed from the look:
 - The attendance grid's cells carried an aria-label on a plain span (axe); the reason is
   now visually hidden text.
 
+## Phases 5 and 6 (6 October 2026)
+
+Checked on the demo company only. The live run waits on migration 0112 being applied
+(see NEXT_WORK.md, "Left for the owner"); Your account needs no migration but has not
+been signed into live from this session.
+
+**Import people (Team, People, "Import from a sheet"; `/team/import`).**
+*Question:* I have 40 reps in a spreadsheet; how do I get them all in without typing each
+one? *Hero:* the check: one sentence ("2 rows need fixing; 1 of 3 rows are ready") over
+a table of every problem, by row and column, saying how to fix it. *Density:* working,
+in a wide drawer beside the roster. *States:* reading, checking, a file with no rows or no
+code column, problems (the add button stays disabled), clean, adding, done, sending
+logins with a progress line and any failures named; a role without the right is told who
+may import. *Avoided:* a stepper of numbered circles and a green "success" panel: the
+three steps are one quiet line of words, the verdict is plain text, no status colour
+where nothing is a status.
+
+**Your account (`/account`, first in the account menu).** *Question:* is my account safe,
+and can I change my password myself? *Hero:* the line under the title (who is signed in,
+and whether two-step sign-in is on), then the sections. *Density:* reading, set like the
+settings on a Mac: each part's name and purpose on the left, the thing itself on the
+right, separated by space and one hairline. *States:* two-step status loading, unreadable,
+off, enrolling (QR code, the key as text with copy, the code), on (with "since"), turning
+off (asks for a code); recent activity loading, error, empty. *Avoided:* a card per
+section and a "security score". The QR code sits on white in every appearance (a token,
+`--qr-ground`), because a camera reads it.
+
+`console-review`, both screens:
+
+| Check | Result |
+|---|---|
+| Hard rules | Accent only on buttons, links and focus; "On" is a good-toned pill beside the word, "Off" neutral; no dashes, sentence case, counts through `count()`. `check:rules` passes. |
+| Finish | One hero each; three type sizes at most in any area; problem rows right-align the row number in tabular figures. |
+| States | As above. Long names wrap; a 200-problem sheet is capped with "And n more". |
+| Roles | Import: owner, admin, HR (pay column for owner and HR only); IT reaching the address is told who may. Your account: every role. |
+| Accessibility | Every input labelled; errors in words; the drawer and the confirm trap focus and close on Escape; axe passes in light and dark (`npm run check`). |
+| Widths | 1440 and 390 light, 1280 dark, 1024 with the dark menu, looked at; no sideways scroll (`every-page.spec.ts`). |
+| Motion | Nothing new: the existing drawer and dialog surfaces, and Arrive on the activity list. |
+
+Fixed from the look: the step numbers were set in tabular figures and read "1 . Get the
+sheet"; the one-person case read "Send logins to the 1 new person" and now names them.
+
+The password rules are the ones the console already holds office passwords to (12
+characters, upper and lower case, a digit), stricter than the "at least 10" in
+NEXT_WORK.md, so a password chosen here passes the first-password screen too.
+
+## Phase 7: Announcements (6 October 2026)
+
+Checked on the demo company only; the live run waits on migration 0113.
+
+**Announcements (Share with field, `/share/announcements`).** *Question:* how do I tell
+the whole field, or one team, something important, and know who has read it? *Hero:* the
+list of what was sent, newest first: the title and its first line, who it went to
+("Everyone, 22 people"), and **read by 18 of 22** as a figure over a thin bar in ink.
+*Density:* working list; one announcement opens in a drawer beside it. *States:*
+loading, error with retry, nothing sent yet (what this page holds and how it fills),
+nothing matching a search, the roster unreadable while writing, nobody in the chosen
+audience, sending, reminding. *Avoided:* a card per announcement with a coloured ring
+and a green, amber or red read rate. A low read count is a fact to act on, not an alarm,
+so the bar is ink and the word "Pinned" is a neutral pill.
+
+Writing one: title and message with character counts (line breaks kept), who it goes to
+(Everyone, A team, A role, A territory, then which, each with its head count), an
+optional pin date, and beside it how the phone will show it. The send button names the
+count, and the confirm asks "Send to 4 people?". A manager can only write to their own
+team, and is shown that rather than a choice. In the drawer the people who have not read
+it come first, by name, with "Remind the 4 who have not read it"; the reminder confirms in
+place beside those names (`console-motion`, settle), not in a toast behind the drawer.
+
+`console-review`:
+
+| Check | Result |
+|---|---|
+| Hard rules | Accent only on buttons, links, the selected choice and focus; no status colour on read rates; sentence case, no dashes; counts through `count()`. `check:rules` passes. |
+| Finish | One hero (the read figure, right-aligned, tabular); the audience and date step back in muted small type. |
+| Roles | Owner, admin, HR: any audience. Management: their own team. IT and finance: the page says which permission is missing (`every-page.spec.ts`). |
+| Accessibility | "Who it goes to" has a visible label and is a radio group by arrow keys; the preview is a labelled region; drawer and confirm trap focus. axe in light and dark (`npm run check`). |
+| Widths and looks | 1440 light, 1280 dark, 1024 with the dark menu, 390 light: list, drawer and writing. No sideways scroll. |
+| Motion | Arrive on the list; the existing drawer and dialog surfaces. The bar does not animate. |
+
+Fixed from the look: at 390 the read figure was cut off, so "Sent to" now folds under the
+title on a phone; "1 is pinned" now reads "One is pinned"; the demo's read times
+ran past midnight and now cluster after sending, as real reads do.
+
+## Phase 8: the final pass (6 October 2026)
+
+On the demo company, by eye and by script, across the whole console:
+
+- **Accent on a status**, nine places: "Waiting for a decision" (orders, claims, tours,
+  leave), "Waiting" (a client's orders, a person's leave), "Unplanned" on a person's day,
+  "To pay" on invoices, and the help requests' "With Mr Sales" and "Being worked on". All
+  neutral now; `Pill` no longer has an accent tone, so the type check refuses one.
+- **Spaced commas.** This font sets a tabular comma as wide as a digit, so "₹17,000" read
+  "₹17 , 000". Found by a browser probe of every page and every tab of a person's record
+  for a comma-grouped number in tabular figures: the pay tab (hero, lines, gross), the
+  month tab, a person's sales, the prescription share and the Today trend line. Those use
+  ordinary figures now, as the Payroll and Salaries tables already did; two runs of the
+  probe find none.
+- **A hyphen for nothing** in Payroll and Salaries: the cells are empty, with "none" for
+  screen readers, and the row says "No salary" in words.
+- **Leave.** "Decline Approve" read as one phrase: spaced. At 390 the decision was off the
+  screen: the leave type and dates fold under the name, and the two actions stack with
+  Approve first.
+- **Pay privacy** proved by a test for admin, IT and management, with an owner control.
+- Not found: Title Case labels, identical card grids, icons on every row, dashes on screen
+  (`check:rules`). The accent in CSS was read rule by rule: focus, selection, links, the
+  current item and the one highlighted chart series, all within the rules.
+
 ## Still open
 
 - The invitation and password-reset emails, sent to a real inbox from the new console.

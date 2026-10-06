@@ -1,3 +1,5 @@
+import { fakeAuth } from './auth';
+
 /**
  * A small stand-in for the Supabase client, over tables held in memory.
  *
@@ -314,6 +316,7 @@ export class FakeDb {
 
 /** The subset of SupabaseClient the console calls, backed by a FakeDb. */
 export function fakeClient(db: FakeDb, user: { id: string; email: string }) {
+  const auth = fakeAuth(user);
   const later = <T>(f: () => T) => new Promise<T>(r => setTimeout(() => r(f()), 60));
   const bill = (path: string) => `data:image/svg+xml;utf8,${encodeURIComponent(
     `<svg xmlns="http://www.w3.org/2000/svg" width="600" height="800"><rect width="600" height="800" fill="#f5f5f7"/><text x="300" y="380" font-family="sans-serif" font-size="22" text-anchor="middle" fill="#6e6e73">Demo file</text><text x="300" y="420" font-family="sans-serif" font-size="14" text-anchor="middle" fill="#86868b">${path.split('/').pop()}</text></svg>`,
@@ -346,6 +349,7 @@ export function fakeClient(db: FakeDb, user: { id: string; email: string }) {
       }),
     },
     auth: {
+      ...auth,
       getUser: () => later(() => ({ data: { user }, error: null })),
       getSession: () => later(() => ({ data: { session: null }, error: null })),
     },

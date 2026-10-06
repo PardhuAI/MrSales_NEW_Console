@@ -69,6 +69,8 @@ export type SessionState =
   | { status: 'loading' }
   | { status: 'signedOut'; message?: string }
   | { status: 'recovery' }
+  /** Signed in with the password; the authenticator app's code is still owed. */
+  | { status: 'secondStep' }
   | { status: 'blocked'; message: string }
   | { status: 'signedIn'; me: Identity };
 
@@ -76,6 +78,8 @@ async function whoAmI(): Promise<SessionState> {
   const sb = db();
   const { data: auth } = await sb.auth.getUser();
   if (!auth.user) return { status: 'signedOut' };
+  const level = await sb.auth.mfa.getAuthenticatorAssuranceLevel();
+  if (!level.error && level.data?.nextLevel === 'aal2' && level.data.currentLevel !== 'aal2') return { status: 'secondStep' };
 
   const { data: accessRows, error: accessError } = await sb.rpc('my_org_access');
   if (accessError) throw new Error(`Could not read your organisation's access: ${accessError.message}`);
@@ -145,6 +149,8 @@ type Ctx = {
   setPassword: (password: string) => Promise<string | null>;
   /** Reads who is signed in again, after something about them changed. */
   refresh: () => Promise<void>;
+  /** Changes what is shown of the signed-in person after they changed it themselves. */
+  patchMe: (p: Partial<Identity>) => void;
   /** Demo only: see the console as another of the six roles. */
   viewAs: ((role: Role) => void) | null;
 };
@@ -202,6 +208,9 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     async sendReset(email) {
       const { error } = await db().auth.resetPasswordForEmail(email.trim(), { redirectTo: `${window.location.origin}/welcome` });
       return error ? error.message : null;
+    },
+    patchMe(p) {
+      setState(s => (s.status === 'signedIn' ? { status: 'signedIn', me: { ...s.me, ...p } } : s));
     },
     viewAs: isLive ? null : role => {
       try {

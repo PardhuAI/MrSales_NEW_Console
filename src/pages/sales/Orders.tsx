@@ -17,8 +17,8 @@ import { useCan } from '../../app/access';
  * the stockist has not fulfilled is a promise the rep already made.
  */
 
-export const ORDER_STATUS: Record<string, { word: string; tone: 'good' | 'warning' | 'neutral' | 'critical' | 'accent'; rank: number }> = {
-  pending: { word: 'Waiting for a decision', tone: 'accent', rank: 0 },
+export const ORDER_STATUS: Record<string, { word: string; tone: 'good' | 'warning' | 'neutral' | 'critical' ; rank: number }> = {
+  pending: { word: 'Waiting for a decision', tone: 'neutral', rank: 0 },
   approved: { word: 'Approved, not fulfilled', tone: 'warning', rank: 1 },
   fulfilled: { word: 'Fulfilled', tone: 'good', rank: 2 },
   rejected: { word: 'Rejected', tone: 'neutral', rank: 3 },

@@ -251,7 +251,7 @@ function VisitDetail({ v }: { v: Visit }) {
       <div className="pill-row">
         <Pill tone={(STATUS[v.status] ?? { tone: 'neutral' }).tone}>{(STATUS[v.status] ?? { word: v.status }).word}</Pill>
         {done && ver && <Pill tone={ver.tone}>{ver.word}</Pill>}
-        {v.unplanned && <Pill tone="accent">Unplanned</Pill>}
+        {v.unplanned && <Pill>Unplanned</Pill>}
       </div>
       {v.mocked && (
         <p className="drawer-note critical">

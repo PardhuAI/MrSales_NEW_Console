@@ -570,3 +570,33 @@ an equivalent in the new console before the switch.
 - [ ] `documents-and-coverage.spec.ts`: upload an HR document, coverage figures
 - [ ] `phone-login.spec.ts`: give a field person a phone login
 - [ ] `seam.spec.ts`: console and phone agree on the same records
+
+---
+
+## 11. New in the rebuild: Phases 5 to 7 (6 October 2026)
+
+Not in the old console; built from `NEXT_WORK.md`. Each works on the demo company and is
+covered by a test. None is ticked yet: each needs its migration applied to the live
+database first (`Mr_Sales_Console/supabase/migrations`, see "Left for the owner" in
+`NEXT_WORK.md`), then a run against Testbed Pharma.
+
+### Import people (Team, People, "Import from a sheet") · Data: `import_people` (0112)
+- [ ] Template download, CSV or Excel back · not live: 0112 not applied
+- [ ] Every problem by row and column, nothing written until all pass · not live: 0112 not applied
+- [ ] Adds new codes, updates existing ones, manager lines from the sheet, basic salary for owner and HR · not live: 0112 not applied
+- [ ] Refuses beyond the plan's seats, with the numbers · not live: 0112 not applied
+- [ ] Sends the new people's logins one by one afterwards · uses `set_field_login` and `field-password-reset`, both live; not run live from here
+
+### Your account (`/account`) · Data: Supabase Auth only, no migration
+- [ ] Who you are, and the name used in Messages (`set_my_chat_name`, live) · not signed in live from this session
+- [ ] Change the password, checked against the current one · not signed in live from this session
+- [ ] Two-step sign-in with an authenticator app, on and off, and the code at sign-in · needs MFA (TOTP) switched on in the Supabase project; not run live
+- [ ] Sign out every other device · not run live
+- [ ] The last 20 changes made by this login · not run live
+- Dropped on purpose: whether each office login has two-step sign-in on, on Logins and access. Supabase gives a login only its own factors, so the console cannot know another login's without a server function; it is left out rather than guessed.
+
+### Announcements (`/share/announcements`) · Data: `send_announcement`, `remind_announcement` (0113)
+- [ ] The sent list with who each went to and read by n of m · not live: 0113 not applied
+- [ ] Who has not read it, by name, and a reminder to them only · not live: 0113 not applied
+- [ ] Write to everyone, a team, a role or a territory, with a pin date and a phone preview; a manager to their own team only · not live: 0113 not applied
+- [ ] On the phone: a pinned announcement on Home, the list, read when opened · not built: needs the phone repository and Flutter (see `NEXT_WORK.md`)

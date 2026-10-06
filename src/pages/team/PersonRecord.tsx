@@ -287,7 +287,7 @@ function SalesTab({ r }: { r: Rec }) {
 
 // ── HR and pay ────────────────────────────────────────────────────────
 
-const LEAVE_STATUS: Record<string, { word: string; tone: 'good' | 'accent' | 'neutral' }> = { approved: { word: 'Approved', tone: 'good' }, pending: { word: 'Waiting', tone: 'accent' }, rejected: { word: 'Not approved', tone: 'neutral' } };
+const LEAVE_STATUS: Record<string, { word: string; tone: 'good'  | 'neutral' }> = { approved: { word: 'Approved', tone: 'good' }, pending: { word: 'Waiting', tone: 'neutral' }, rejected: { word: 'Not approved', tone: 'neutral' } };
 
 function HrTab({ p, r, onDone }: { p: Person; r: Rec; onDone: (m: string) => void }) {
   const me = useMe();
