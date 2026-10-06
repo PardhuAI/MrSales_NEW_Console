@@ -9,7 +9,7 @@ import { Arrive } from '../components/motion';
  * settings on a Mac. The old console spread these across eleven menu items.
  */
 const GROUPS: { title: string; paths: string[] }[] = [
-  { title: 'Your company', paths: ['/settings/rules', '/settings/geography', '/settings/roles'] },
+  { title: 'Your company', paths: ['/settings/company', '/settings/pay', '/settings/rules', '/settings/geography', '/settings/roles'] },
   { title: 'People and access', paths: ['/settings/logins', '/settings/hr', '/settings/ownership'] },
   { title: 'Records', paths: ['/settings/audit'] },
 ];

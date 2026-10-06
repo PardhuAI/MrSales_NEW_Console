@@ -80,7 +80,7 @@ test('switching a login off needs a reason', async ({ page }) => {
 test('HR uploads a document to a person, and it is listed with its expiry', async ({ page }) => {
   await as(page, 'hr', '/team');
   await page.getByRole('link', { name: 'Divya Sree' }).first().click();
-  await page.getByRole('tab', { name: 'HR and pay' }).click();
+  await page.getByRole('tab', { name: 'Leave and documents' }).click();
   await page.getByRole('button', { name: 'Add a document' }).click();
   await top(page).locator('input[type=file]').setInputFiles({ name: 'licence.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-1.4\n') });
   await top(page).getByLabel(/Title/).fill('Driving licence');

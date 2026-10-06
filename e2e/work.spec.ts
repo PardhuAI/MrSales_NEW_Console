@@ -53,17 +53,59 @@ test('an expense claim is rejected only with a reason, and approved as one decis
   await expect(notice(page)).toContainText('approved; they get one message');
 });
 
-test('a payslip needs a net pay, and is released with its PDF', async ({ page }) => {
+test('someone paid outside Mr Sales gets an uploaded payslip, which needs a net pay', async ({ page }) => {
   await as(page, 'owner', '/money/payroll');
   const row = page.getByRole('row', { name: /Farhan Siddiqui/ });
-  await row.getByRole('button', { name: 'Release' }).click();
+  await row.getByRole('button', { name: 'Upload a payslip' }).click();
   await page.getByRole('button', { name: 'Release the payslip' }).click();
   await expect(top(page)).toContainText('Write the net pay, in rupees.');
-  await page.getByLabel('Net pay').fill('₹18,400');
-  await page.getByLabel(/Payslip PDF/).setInputFiles(pdf);
+  await top(page).getByLabel('Net pay').fill('₹18,400');
+  await top(page).getByLabel(/Payslip PDF/).setInputFiles(pdf);
   await page.getByRole('button', { name: 'Release the payslip' }).click();
   await expect(row).toContainText('₹18,400');
-  await expect(row.getByRole('button', { name: 'Open the PDF' })).toBeVisible();
+  await expect(row.getByRole('button', { name: 'PDF' })).toBeVisible();
+});
+
+test('a payslip is worked out from the salary, corrected with a reason, and released to the phone', async ({ page }) => {
+  const errors = watchErrors(page);
+  await as(page, 'owner', '/money/payroll');
+  await page.getByRole('radio', { name: /^Ready/ }).click();
+  const row = page.locator('table tbody tr').first();
+  const name = (await row.locator('th .row-open').innerText()).trim();
+  await row.locator('th .row-open').click();
+  await expect(top(page)).toContainText('Earnings');
+  const lop = top(page).getByLabel('Loss-of-pay days');
+  await lop.fill('2');
+  await expect(top(page).getByText('Days paid')).toBeVisible();
+  await page.getByRole('button', { name: 'Generate and release', exact: true }).click();
+  await expect(top(page)).toContainText('Say why the loss of pay is different');
+  await top(page).getByLabel('Why it is different').fill('Two days at the training, no plan filed');
+  await page.getByRole('button', { name: 'Add a one-off line' }).click();
+  await top(page).getByLabel('What it is').fill('Festival bonus');
+  await top(page).getByLabel('Amount').fill('2000');
+  await expect(top(page).getByText('Festival bonus').first()).toBeVisible();
+  await page.getByRole('button', { name: 'Generate and release', exact: true }).click();
+  await expect(notice(page)).toContainText(`${name}'s payslip`);
+  await page.getByRole('radio', { name: /^Released/ }).click();
+  await expect(page.getByRole('row', { name: new RegExp(name) })).toContainText('Released');
+  expect(errors).toEqual([]);
+});
+
+test('a salary is set from the role structure and revised from a later date', async ({ page }) => {
+  await as(page, 'hr', '/money/salaries');
+  const row = page.getByRole('row', { name: /Farhan Siddiqui/ });
+  await row.getByRole('button', { name: 'Set salary' }).click();
+  await expect(top(page).getByLabel('Monthly basic')).not.toHaveValue('');
+  await top(page).getByLabel('Monthly basic').fill('20000');
+  await expect(top(page).locator('.pay-net')).toContainText('₹');
+  await page.getByRole('button', { name: 'Save the salary' }).click();
+  await expect(notice(page)).toContainText("Farhan Siddiqui's salary is set");
+  await expect(row).toContainText('₹20,000');
+  await row.getByRole('button', { name: 'Revise' }).click();
+  await top(page).getByLabel('Monthly basic').fill('22000');
+  await top(page).getByLabel('Why').fill('Confirmation after probation');
+  await page.getByRole('button', { name: 'Save the revision' }).click();
+  await expect(row).toContainText('Revised from');
 });
 
 test('a file is sent to the phones, replaced as version 2, taken off and deleted', async ({ page }) => {
@@ -125,32 +167,70 @@ test('company rules are read back before they are saved, and a bad radius is ref
   await expect(page.locator('.summary').first()).toContainText('₹400');
 });
 
-test('HR policy stores leave balances, salary structures and role expense rules', async ({ page }) => {
+test('HR rules keep the leave each type allows', async ({ page }) => {
   await as(page, 'owner', '/settings/hr');
-
   await page.getByRole('row', { name: /Casual/ }).getByRole('button', { name: 'Edit' }).click();
   await top(page).getByLabel('Days in a year').fill('14');
   await page.getByRole('button', { name: 'Save policy' }).click();
   await expect(page.getByRole('row', { name: /Casual/ })).toContainText('14');
+});
 
-  await page.getByRole('button', { name: 'Salary structure' }).click();
-  await top(page).getByLabel('Name').fill('MR review band');
-  await top(page).getByLabel('Role').selectOption({ label: 'Medical Representative' });
-  await top(page).getByLabel('Monthly gross').fill('42000');
-  await top(page).getByLabel('Basic pay').fill('21000');
-  await top(page).getByLabel('HRA').fill('8400');
-  await top(page).getByLabel('Allowances').fill('12600');
-  await top(page).getByLabel('Deductions').fill('3000');
-  await page.getByRole('button', { name: 'Save structure' }).click();
-  await expect(page.getByRole('listitem').filter({ hasText: 'MR review band' })).toContainText('₹39,000');
+test('pay setup keeps components, a structure for each role and role expense rules', async ({ page }) => {
+  await as(page, 'owner', '/settings/pay');
+  await page.getByRole('button', { name: 'Add a component' }).click();
+  await top(page).getByLabel('Name').fill('Basic');
+  await page.getByRole('button', { name: 'Save the component' }).click();
+  await expect(top(page)).toContainText('Basic is set for each person');
+  await top(page).getByLabel('Name').fill('Medical allowance');
+  await top(page).getByLabel(/Company figure/).fill('1250');
+  await page.getByRole('button', { name: 'Save the component' }).click();
+  await expect(page.getByRole('row', { name: /Medical allowance/ })).toContainText('₹1,250');
 
-  await page.getByRole('button', { name: 'Expense rule' }).click();
+  await page.getByRole('button', { name: 'Add a structure' }).click();
+  await top(page).getByLabel('Name').fill('RSM band');
+  await top(page).getByLabel('For the role').selectOption({ label: 'Regional Sales Manager' });
+  await top(page).getByLabel('Monthly basic').fill('50000');
+  await page.getByRole('button', { name: 'Save the structure' }).click();
+  await expect(page.getByRole('listitem').filter({ hasText: 'RSM band' })).toContainText('basic ₹50,000');
+
+  await page.getByRole('button', { name: "Add a role's rule" }).click();
   await top(page).getByLabel('Role').selectOption({ label: 'Medical Representative' });
   await top(page).getByLabel('Daily allowance').fill('425');
   await top(page).getByLabel('Bill needed above').fill('650');
   await top(page).getByLabel('Monthly ceiling').fill('14000');
-  await page.getByRole('button', { name: 'Save rule' }).click();
-  await expect(page.getByText('₹425 daily allowance, bill above ₹650, ₹14,000 monthly ceiling')).toBeVisible();
+  await page.getByRole('button', { name: 'Save the rule' }).click();
+  await expect(page.getByRole('row', { name: /Medical Representative/ })).toContainText('₹425');
+});
+
+test('finance gives a person their own expense rule, above the role rule', async ({ page }) => {
+  await as(page, 'finance', '/team');
+  await page.getByRole('link', { name: 'Anil Kumar Goud' }).first().click();
+  await page.getByRole('tab', { name: 'Pay and expenses' }).click();
+  await page.getByRole('button', { name: 'Give them their own rule' }).click();
+  await top(page).getByLabel('Daily allowance').fill('600');
+  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await expect(page.locator('.facts').filter({ hasText: 'Daily allowance' })).toContainText('₹600');
+  await expect(page.locator('.facts').filter({ hasText: 'Daily allowance' })).toContainText('their own');
+});
+
+test('the company details and logo are kept for payslips', async ({ page }) => {
+  await as(page, 'owner', '/settings/company');
+  await page.getByLabel('GSTIN').fill('36AABCC1234K1Z');
+  await page.getByRole('button', { name: 'Save the details' }).click();
+  await expect(page.getByText('A GSTIN is 15 characters')).toBeVisible();
+  await page.getByLabel('GSTIN').fill('36AABCC1234K1Z5');
+  await page.getByLabel('Registered address').fill('Plot 12, Hitech City Road, Hyderabad');
+  await page.getByRole('button', { name: 'Save the details' }).click();
+  await expect(notice(page)).toContainText('company details are saved');
+  const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 'base64');
+  await page.locator('#logo-file').setInputFiles({ name: 'logo.png', mimeType: 'image/png', buffer: png });
+  await expect(page.locator('.logo-frame img')).toBeVisible();
+});
+
+test('only the owner changes the company details', async ({ page }) => {
+  await as(page, 'admin', '/settings/company');
+  await expect(page.getByText('Only the owner changes these')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Save the details' })).toHaveCount(0);
 });
 
 test('only an owner or admin may change the company rules', async ({ page }) => {

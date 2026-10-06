@@ -150,7 +150,7 @@ export type PersonRecord = {
   leave: { id: string; type: string; from: string; to: string; days: number; status: string; reason: string }[];
   expenses: { month: string; days: number; amount: number; status: string }[];
   documents: { id: string; title: string; category: string; at: string; expires: string | null; path: string }[];
-  payslips: { year: number; month: number; net: number; at: string }[];
+  payslips: { year: number; month: number; net: number; gross: number | null; deductions: number | null; at: string; file: string | null }[];
   audit: { id: string; who: string; action: string; at: string; before: string | null; after: string | null; reason: string | null }[];
 };
 
@@ -174,7 +174,7 @@ export async function loadPersonRecord(id: string): Promise<PersonRecord> {
     sb.from('leave_requests').select('id, type, from_date, to_date, days, status, reason').eq('employee_id', id).order('from_date', { ascending: false }),
     readAll<{ work_date: string; amount: number; status: string }>((a, b) => sb.from('expenses').select('work_date, amount, status').eq('employee_id', id).gte('work_date', from).range(a, b)),
     sb.from('documents').select('id, title, category, released_at, expires_at, storage_path').eq('employee_id', id).order('released_at', { ascending: false }),
-    sb.from('payslips').select('period_year, period_month, net_pay, released_at').eq('employee_id', id).order('period_year', { ascending: false }).order('period_month', { ascending: false }),
+    sb.from('payslips').select('period_year, period_month, net_pay, gross, deductions, released_at, storage_path').eq('employee_id', id).order('period_year', { ascending: false }).order('period_month', { ascending: false }),
     sb.from('audit_log').select('id, actor_name, action, at, before_value, after_value, reason').eq('entity_id', id).order('at', { ascending: false }).limit(50),
     sb.from('clients').select('id, name, type, last_visit_at, total_visits').eq('owner_employee_id', id).order('name'),
     sb.from('org_settings').select('week_off_weekday').maybeSingle(),
@@ -249,7 +249,7 @@ export async function loadPersonRecord(id: string): Promise<PersonRecord> {
     leave: lv.map(l => ({ id: l.id, type: l.type, from: l.from_date, to: l.to_date, days: l.days, status: l.status, reason: l.reason })),
     expenses: [...expByMonth.entries()].sort((a, b) => b[0].localeCompare(a[0])).map(([k, x]) => ({ month: k, days: x.days, amount: x.amount, status: x.statuses.has('pending') ? 'waiting' : x.statuses.has('draft') && x.statuses.size === 1 ? 'draft, not sent' : x.statuses.has('rejected') ? 'partly rejected' : 'approved' })),
     documents: ((must(docs, 'documents') ?? []) as { id: string; title: string; category: string; released_at: string; expires_at: string | null; storage_path: string }[]).map(d => ({ id: d.id, title: d.title, category: d.category, at: d.released_at, expires: d.expires_at, path: d.storage_path })),
-    payslips: ((must(pay, 'payslips') ?? []) as { period_year: number; period_month: number; net_pay: number; released_at: string }[]).map(p => ({ year: p.period_year, month: p.period_month, net: Number(p.net_pay), at: p.released_at })),
+    payslips: ((must(pay, 'payslips') ?? []) as { period_year: number; period_month: number; net_pay: number; gross: number | null; deductions: number | null; released_at: string; storage_path: string | null }[]).map(p => ({ year: p.period_year, month: p.period_month, net: Number(p.net_pay), gross: p.gross == null ? null : Number(p.gross), deductions: p.deductions == null ? null : Number(p.deductions), at: p.released_at, file: p.storage_path || null })),
     audit: ((must(audit, 'the audit log') ?? []) as { id: string; actor_name: string; action: string; at: string; before_value: string | null; after_value: string | null; reason: string | null }[]).map(a => ({ id: a.id, who: a.actor_name, action: a.action, at: a.at, before: a.before_value, after: a.after_value, reason: a.reason })),
   };
 }

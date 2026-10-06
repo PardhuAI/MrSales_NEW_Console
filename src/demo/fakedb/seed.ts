@@ -1,4 +1,5 @@
 import type { Row, Tables } from './engine';
+import { seedPay } from './pay';
 
 /**
  * The demo company, as database rows in the live schema's own shape.
@@ -59,7 +60,6 @@ const hoursNow = (now: Date) => {
 
 export const DEMO_ORG = '0d3a1f00-demo-4000-8000-c1e0c0e00001';
 export const DEMO_USER = '0d3a1f00-demo-4000-8000-0000000000aa';
-
 export function seed(now = new Date()): Tables {
   s = 20261004;
   n = 0;
@@ -103,8 +103,6 @@ export function seed(now = new Date()): Tables {
   for (const [type, annual, carry, paid] of [['casual', 12, 3, true], ['sick', 8, 0, true], ['earned', 15, 5, true], ['compensatory', 6, 0, true], ['unpaid', 0, 0, false]] as const) {
     add('leave_policies', { id: uid('lpo'), type, annual_days: annual, carry_forward_days: carry, requires_approval: true, is_paid: paid, updated_at: created });
   }
-  add('salary_structures', { id: uid('sst'), designation_id: desMr.id, name: 'MR standard', monthly_gross: 34000, basic_pay: 17000, hra: 6800, allowances: 10200, deductions: 2500, net_pay: 31500, is_default: true, updated_at: created });
-  add('salary_structures', { id: uid('sst'), designation_id: desAsm.id, name: 'ASM standard', monthly_gross: 68000, basic_pay: 34000, hra: 13600, allowances: 20400, deductions: 5200, net_pay: 62800, is_default: false, updated_at: created });
   add('expense_rules', { id: uid('exr'), designation_id: null, daily_allowance: 350, receipt_threshold: 500, monthly_ceiling: null, updated_at: created });
   add('expense_rules', { id: uid('exr'), designation_id: desAsm.id, daily_allowance: 500, receipt_threshold: 750, monthly_ceiling: 18000, updated_at: created });
 
@@ -663,6 +661,7 @@ export function seed(now = new Date()): Tables {
 
   // Tables the console reads that hold nothing in this company yet.
   for (const t of ['travel_rates', 'chat_threads']) T[t] ??= [];
+  seedPay(T, created);
   void traveller;
   return T;
 }

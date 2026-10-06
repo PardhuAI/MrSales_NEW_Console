@@ -3,8 +3,8 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Plus } from '@phosphor-icons/react';
 import { invalidate, useResource } from '../../data/resource';
 import {
-  loadAudit, loadHolidays, loadRoles, loadRules, mayManageHolidays, saveExpenseRule, saveHoliday, saveLeavePolicy, saveRules, saveSalaryStructure,
-  type AuditRow, type ExpenseRule, type Holiday, type LeavePolicy, type Rules, type SalaryStructure,
+  loadAudit, loadHolidays, loadRules, mayManageHolidays, saveHoliday, saveLeavePolicy, saveRules,
+  type AuditRow, type Holiday, type LeavePolicy, type Rules,
 } from '../../live/settings';
 import { leaveLabel } from '../../live/team';
 import { IST_TODAY, ago, dayMonth, dayOf, timeOf, weekdayOf } from '../../lib/days';
@@ -134,16 +134,12 @@ function HrView({ data, at, error, reload }: { data: Awaited<ReturnType<typeof l
   const loc = useLocation();
   const nav = useNavigate();
   const mayHoliday = mayManageHolidays(me.role);
-  const mayLeave = data.policyReady && ['owner', 'admin', 'hr'].includes(me.role);
-  const mayPay = data.policyReady && ['owner', 'hr', 'finance'].includes(me.role);
-  const mayExpense = data.policyReady && ['owner', 'admin', 'finance'].includes(me.role);
+  const mayLeave = ['owner', 'admin', 'hr'].includes(me.role);
   const today = IST_TODAY();
   const years = [...new Set([today.slice(0, 4), String(Number(today.slice(0, 4)) + 1), ...data.holidays.map(h => h.date.slice(0, 4))])].sort().reverse();
   const [year, setYear] = useState(today.slice(0, 4));
   const [edit, setEdit] = useState<Holiday | 'new' | null>(loc.pathname.endsWith('/holiday') ? 'new' : null);
   const [leave, setLeave] = useState<LeavePolicy | null>(null);
-  const [salary, setSalary] = useState<SalaryStructure | 'new' | null>(null);
-  const [expense, setExpense] = useState<ExpenseRule | 'new' | null>(null);
   const [notice, setNotice] = useState('');
   const list = data.holidays.filter(h => h.date.startsWith(year));
   const nextOne = data.holidays.find(h => h.date >= today);
@@ -154,11 +150,8 @@ function HrView({ data, at, error, reload }: { data: Awaited<ReturnType<typeof l
       <Summary aside={<Freshness at={at} error={error} reload={reload} label="Read the HR rules again" />}>
         <strong>{count(list.length, 'holiday')} in {year}.</strong> {nextOne ? `The next is ${nextOne.name}, ${WEEKDAYS[weekdayOf(nextOne.date)]} ${dayMonth(nextOne.date)}.` : 'None are left this year.'}
       </Summary>
-      {!data.policyReady && <p className="form-note rules-readonly"><strong>Database migration pending.</strong> The console is ready, but this Supabase project does not have the HR policy tables yet. Apply <code>0104_hr_pay_expense_policies.sql</code>, then reload this page. {data.policyError}</p>}
       <Toolbar>
         {mayHoliday && <button type="button" className="btn btn-primary btn-small" onClick={() => setEdit('new')}><Plus size={14} weight="bold" aria-hidden="true" /> Declare a holiday</button>}
-        {mayPay && <button type="button" className="btn btn-secondary btn-small" onClick={() => setSalary('new')}><Plus size={14} weight="bold" aria-hidden="true" /> Salary structure</button>}
-        {mayExpense && <button type="button" className="btn btn-secondary btn-small" onClick={() => setExpense('new')}><Plus size={14} weight="bold" aria-hidden="true" /> Expense rule</button>}
         <Filter label="Year" value={year} onChange={setYear} options={years.map(y => ({ value: y, label: y }))} />
       </Toolbar>
       <Arrive className="hr-layout">
@@ -185,24 +178,10 @@ function HrView({ data, at, error, reload }: { data: Awaited<ReturnType<typeof l
             </table>
           </div>
         </section>
-        <section>
-          <h2 className="fig-title">Salary structures</h2>
-          {data.salary.length === 0 ? <p className="block-empty">No salary structure is saved yet. Payslips can still be released one by one from Payroll.</p> : (
-            <ul className="rows hr-list">{data.salary.map(s => <li key={s.id} className="row"><div className="row-main"><p className="row-title">{s.name}{s.default ? ' · default' : ''}</p><p className="row-sub">{s.designation}: gross {rupees(s.gross)}, net {rupees(s.net)}</p></div>{mayPay && <span className="row-actions"><button type="button" className="link" onClick={() => setSalary(s)}>Edit</button></span>}</li>)}</ul>
-          )}
-        </section>
-        <section>
-          <h2 className="fig-title">Expense rules</h2>
-          {data.expenseRules.length === 0 ? <p className="block-empty">The company rule is still used for everyone.</p> : (
-            <ul className="rows hr-list">{data.expenseRules.map(r => <li key={r.id} className="row"><div className="row-main"><p className="row-title">{r.designation}</p><p className="row-sub">{r.designationId ? <>{rupees(r.allowance)} daily allowance, bill above {rupees(r.billAbove)}{r.ceiling ? `, ${rupees(r.ceiling)} monthly ceiling` : ''}</> : r.ceiling ? `${rupees(r.ceiling)} monthly ceiling for everyone` : 'No monthly ceiling'}</p></div>{mayExpense && <span className="row-actions"><button type="button" className="link" onClick={() => setExpense(r)}>Edit</button></span>}</li>)}</ul>
-          )}
-          <p className="block-note">The company-wide allowance and bill threshold are in <Link className="link" to="/settings/rules">Company rules</Link>. A role's rule replaces them for people in that role, on the phone and in Approvals.</p>
-        </section>
+        <p className="block-note hr-pay-note">Salary components, role structures and each role's expense allowance are in <Link className="link" to="/settings/pay">Pay and expenses</Link>.</p>
       </Arrive>
       <HolidayDrawer open={edit != null} holiday={edit === 'new' ? null : edit} taken={data.holidays} onClose={close} onDone={m => { close(); setNotice(m); invalidate('settings:holidays', 'team:attendance', 'money:', 'field:'); }} />
       <LeavePolicyDrawer open={Boolean(leave)} policy={leave} onClose={() => setLeave(null)} onDone={m => { setLeave(null); setNotice(m); invalidate('settings:holidays', 'team:leave', 'team:attendance'); }} />
-      <SalaryDrawer open={salary != null} structure={salary === 'new' ? null : salary} onClose={() => setSalary(null)} onDone={m => { setSalary(null); setNotice(m); invalidate('settings:holidays', 'money:payroll'); }} />
-      <ExpenseRuleDrawer open={expense != null} rule={expense === 'new' ? null : expense} onClose={() => setExpense(null)} onDone={m => { setExpense(null); setNotice(m); invalidate('settings:holidays', 'settings:rules', 'money:'); }} />
       {notice && <Notice onDone={() => setNotice('')}>{notice}</Notice>}
     </div>
   );
@@ -279,115 +258,6 @@ function LeavePolicyDrawer({ open, policy, onClose, onDone }: { open: boolean; p
         </div>
         <label className="check-line"><input type="checkbox" checked={f.approval} onChange={e => setF(v => ({ ...v, approval: e.target.checked }))} /> Approval is needed</label>
         <label className="check-line"><input type="checkbox" checked={f.paid} onChange={e => setF(v => ({ ...v, paid: e.target.checked }))} /> Counts as paid leave</label>
-        {problem && <p className="form-error" role="alert">It was not saved. {problem}</p>}
-      </form>
-    </Drawer>
-  );
-}
-
-function SalaryDrawer({ open, structure, onClose, onDone }: { open: boolean; structure: SalaryStructure | null; onClose: () => void; onDone: (m: string) => void }) {
-  const roles = useResource('settings:roles', loadRoles);
-  const [f, setF] = useState({ designationId: '', name: '', gross: '', basic: '', hra: '', allowances: '', deductions: '', default: false });
-  const [busy, setBusy] = useState(false);
-  const [problem, setProblem] = useState('');
-  const [attempt, setAttempt] = useState(0);
-  useEffect(() => {
-    if (!open) return;
-    setF({ designationId: structure?.designationId ?? '', name: structure?.name ?? '', gross: String(structure?.gross ?? ''), basic: String(structure?.basic ?? ''), hra: String(structure?.hra ?? ''), allowances: String(structure?.allowances ?? ''), deductions: String(structure?.deductions ?? ''), default: structure?.default ?? !structure });
-    setProblem('');
-    setAttempt(0);
-  }, [open, structure]);
-  const num = (v: string) => Number(v.replace(/[₹,\s]/g, ''));
-  const net = num(f.gross) - num(f.deductions);
-  const errors = { name: f.name.trim().length < 2 ? 'Name the structure.' : undefined, gross: !(num(f.gross) > 0) ? 'Write the monthly gross pay.' : undefined };
-  const formRef = useFocusFirstError(errors, attempt);
-  const save = async () => {
-    setAttempt(a => a + 1);
-    if (Object.values(errors).some(Boolean)) return;
-    setBusy(true);
-    setProblem('');
-    try {
-      await saveSalaryStructure({ id: structure?.id, designationId: f.designationId || null, name: f.name.trim(), gross: num(f.gross), basic: num(f.basic), hra: num(f.hra), allowances: num(f.allowances), deductions: num(f.deductions), net, default: f.default });
-      onDone(`${f.name.trim()} salary structure is saved.`);
-    } catch (e) {
-      setProblem(e instanceof Error ? e.message : String(e));
-    } finally {
-      setBusy(false);
-    }
-  };
-  return (
-    <Drawer open={open} onClose={onClose} title={structure ? `Edit ${structure.name}` : 'Salary structure'} sub="Payroll can use these figures when preparing payslips." wide
-      footer={<><button type="button" className="btn btn-secondary" onClick={onClose}>Cancel</button><button type="button" className="btn btn-primary" disabled={busy} onClick={() => void save()}>{busy ? 'Saving…' : 'Save structure'}</button></>}>
-      <form ref={formRef} className="form" noValidate onSubmit={e => { e.preventDefault(); void save(); }}>
-        <Field label="Name" error={attempt ? errors.name : undefined}>{x => <input {...x} className="input" value={f.name} placeholder="MR standard" onChange={e => setF(v => ({ ...v, name: e.target.value }))} />}</Field>
-        <Field label="Role" optional>{x => <select {...x} className="input" value={f.designationId} onChange={e => setF(v => ({ ...v, designationId: e.target.value }))}><option value="">Company default</option>{(roles.data ?? []).map(r => <option key={r.id} value={r.id}>{r.name}</option>)}</select>}</Field>
-        <div className="form-row">
-          <Field label="Monthly gross" error={attempt ? errors.gross : undefined}>{x => <input {...x} className="input" inputMode="numeric" value={f.gross} onChange={e => setF(v => ({ ...v, gross: e.target.value }))} />}</Field>
-          <Field label="Deductions">{x => <input {...x} className="input" inputMode="numeric" value={f.deductions} onChange={e => setF(v => ({ ...v, deductions: e.target.value }))} />}</Field>
-        </div>
-        <div className="form-row">
-          <Field label="Basic pay">{x => <input {...x} className="input" inputMode="numeric" value={f.basic} onChange={e => setF(v => ({ ...v, basic: e.target.value }))} />}</Field>
-          <Field label="HRA">{x => <input {...x} className="input" inputMode="numeric" value={f.hra} onChange={e => setF(v => ({ ...v, hra: e.target.value }))} />}</Field>
-          <Field label="Allowances">{x => <input {...x} className="input" inputMode="numeric" value={f.allowances} onChange={e => setF(v => ({ ...v, allowances: e.target.value }))} />}</Field>
-        </div>
-        <label className="check-line"><input type="checkbox" checked={f.default} onChange={e => setF(v => ({ ...v, default: e.target.checked }))} /> Use as the default structure</label>
-        <p className="form-note">Net pay preview: <strong>{rupees(Math.max(0, net))}</strong></p>
-        {problem && <p className="form-error" role="alert">It was not saved. {problem}</p>}
-      </form>
-    </Drawer>
-  );
-}
-
-function ExpenseRuleDrawer({ open, rule, onClose, onDone }: { open: boolean; rule: ExpenseRule | null; onClose: () => void; onDone: (m: string) => void }) {
-  const roles = useResource('settings:roles', loadRoles);
-  const [f, setF] = useState({ designationId: '', allowance: '', billAbove: '', ceiling: '' });
-  const [busy, setBusy] = useState(false);
-  const [problem, setProblem] = useState('');
-  const [attempt, setAttempt] = useState(0);
-  useEffect(() => {
-    if (!open) return;
-    setF({ designationId: rule?.designationId ?? '', allowance: String(rule?.allowance ?? ''), billAbove: String(rule?.billAbove ?? ''), ceiling: rule?.ceiling == null ? '' : String(rule.ceiling) });
-    setProblem('');
-    setAttempt(0);
-  }, [open, rule]);
-  const num = (v: string) => Number(v.replace(/[₹,\s]/g, ''));
-  // The company row carries only a monthly ceiling: the company's allowance and
-  // bill threshold have one home, Company rules, so they are never in two places.
-  const company = !f.designationId;
-  const errors = {
-    allowance: !company && (!(num(f.allowance) >= 0) || f.allowance.trim() === '') ? 'Write the daily allowance.' : undefined,
-    billAbove: !company && (!(num(f.billAbove) >= 0) || f.billAbove.trim() === '') ? 'Write the bill threshold.' : undefined,
-    ceiling: company && !f.ceiling.trim() ? 'Write the monthly ceiling for everyone.' : f.ceiling.trim() && !(num(f.ceiling) >= 0) ? 'Write a monthly ceiling, or leave it blank.' : undefined,
-  };
-  const formRef = useFocusFirstError(errors, attempt);
-  const save = async () => {
-    setAttempt(a => a + 1);
-    if (Object.values(errors).some(Boolean)) return;
-    setBusy(true);
-    setProblem('');
-    try {
-      await saveExpenseRule({ id: rule?.id, designationId: f.designationId || null, allowance: company ? 0 : num(f.allowance), billAbove: company ? 0 : num(f.billAbove), ceiling: f.ceiling.trim() ? num(f.ceiling) : null });
-      onDone('Expense rule is saved.');
-    } catch (e) {
-      setProblem(e instanceof Error ? e.message : String(e));
-    } finally {
-      setBusy(false);
-    }
-  };
-  return (
-    <Drawer open={open} onClose={onClose} title={rule ? `Edit ${rule.designation}` : 'Expense rule'} sub="A role's rule replaces the company allowance and bill threshold for people in that role, on the phone and in Approvals." wide
-      footer={<><button type="button" className="btn btn-secondary" onClick={onClose}>Cancel</button><button type="button" className="btn btn-primary" disabled={busy} onClick={() => void save()}>{busy ? 'Saving…' : 'Save rule'}</button></>}>
-      <form ref={formRef} className="form" noValidate onSubmit={e => { e.preventDefault(); void save(); }}>
-        <Field label="Role" optional>{x => <select {...x} className="input" value={f.designationId} onChange={e => setF(v => ({ ...v, designationId: e.target.value }))}><option value="">Company default</option>{(roles.data ?? []).map(r => <option key={r.id} value={r.id}>{r.name}</option>)}</select>}</Field>
-        {company ? (
-          <p className="form-note">For everyone, only a monthly ceiling is set here. The company's daily allowance and bill threshold are in <Link className="link" to="/settings/rules">Company rules</Link>.</p>
-        ) : (
-          <div className="form-row">
-            <Field label="Daily allowance" error={attempt ? errors.allowance : undefined}>{x => <input {...x} className="input" inputMode="numeric" value={f.allowance} onChange={e => setF(v => ({ ...v, allowance: e.target.value }))} />}</Field>
-            <Field label="Bill needed above" error={attempt ? errors.billAbove : undefined}>{x => <input {...x} className="input" inputMode="numeric" value={f.billAbove} onChange={e => setF(v => ({ ...v, billAbove: e.target.value }))} />}</Field>
-          </div>
-        )}
-        <Field label="Monthly ceiling" optional={!company} help="A month's claims above this are refused on the phone." error={attempt ? errors.ceiling : undefined}>{x => <input {...x} className="input" inputMode="numeric" value={f.ceiling} onChange={e => setF(v => ({ ...v, ceiling: e.target.value }))} />}</Field>
         {problem && <p className="form-error" role="alert">It was not saved. {problem}</p>}
       </form>
     </Drawer>

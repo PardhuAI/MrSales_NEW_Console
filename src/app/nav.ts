@@ -226,8 +226,13 @@ export const SECTIONS: Section[] = [
       },
       {
         path: '/money/payroll', label: 'Payroll', module: 'payroll',
-        about: 'Payslips for the month, released and downloaded.',
-        keywords: ['salary', 'payslip', 'pay', 'lop', 'loss of pay'],
+        about: 'The month for everyone: loss of pay, one-off lines, and payslips released to the phone.',
+        keywords: ['payslip', 'pay', 'lop', 'loss of pay', 'release payslips', 'bonus'],
+      },
+      {
+        path: '/money/salaries', label: 'Salaries', module: 'payroll',
+        about: 'What each person is paid, split into basic and components, with every revision.',
+        keywords: ['salary', 'ctc', 'basic', 'hra', 'increment', 'revision', 'split', 'salary structure'],
       },
     ],
   },
@@ -276,8 +281,18 @@ export const SECTIONS: Section[] = [
     pages: [
       {
         path: '/settings', label: 'All settings', module: 'config',
-        about: 'Company rules, geography, roles, logins and the audit log, in one place.',
+        about: 'Company, pay and expenses, rules, geography, roles, logins and the audit log, in one place.',
         keywords: ['settings', 'configuration', 'setup', 'preferences'],
+      },
+      {
+        path: '/settings/company', label: 'Company', module: 'config',
+        about: 'Name, address, GSTIN, PAN and logo, as printed on payslips.',
+        keywords: ['company profile', 'gst', 'gstin', 'pan', 'address', 'logo', 'letterhead'],
+      },
+      {
+        path: '/settings/pay', label: 'Pay and expenses', module: 'paysetup',
+        about: 'Salary components, a starting salary for each role, and each role\'s expense allowance.',
+        keywords: ['salary structure', 'components', 'hra', 'pf', 'professional tax', 'role allowance', 'expense rule', 'ceiling', 'da by role'],
       },
       {
         path: '/settings/rules', label: 'Company rules', module: 'config',
@@ -301,8 +316,8 @@ export const SECTIONS: Section[] = [
       },
       {
         path: '/settings/hr', label: 'HR rules', module: 'hr',
-        about: 'Leave types, holidays, salary structure and expense rules.',
-        keywords: ['holidays', 'leave types', 'salary structure', 'policy'],
+        about: 'Holidays, and the leave each type allows in a year.',
+        keywords: ['holidays', 'leave types', 'leave policy', 'annual leave', 'carry forward'],
       },
       {
         path: '/settings/ownership', label: 'Field ownership', module: 'ownership',

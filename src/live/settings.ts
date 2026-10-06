@@ -176,73 +176,46 @@ export const inviteOffice = (email: string, role: OfficeRole, employeeId: string
 
 export type Holiday = { id: string; date: string; name: string };
 export type LeavePolicy = { type: string; annual: number; carry: number; approval: boolean; paid: boolean; updatedAt: string | null };
-export type SalaryStructure = { id: string; designationId: string | null; designation: string; name: string; gross: number; basic: number; hra: number; allowances: number; deductions: number; net: number; default: boolean; updatedAt: string | null };
 export type ExpenseRule = { id: string; designationId: string | null; designation: string; allowance: number; billAbove: number; ceiling: number | null; updatedAt: string | null };
 export type HrRulesModel = {
   holidays: Holiday[];
   leaveTypes: { type: string; requests: number }[];
   leavePolicies: LeavePolicy[];
-  salary: SalaryStructure[];
-  expenseRules: ExpenseRule[];
-  policyReady: boolean;
-  policyError: string;
 };
 
 export async function loadHolidays(): Promise<HrRulesModel> {
   const sb = db();
-  const [h, l] = await Promise.all([
+  const [h, l, lp] = await Promise.all([
     sb.from('holidays').select('id, holiday_date, name').order('holiday_date'),
     readAll<{ type: string }>((a, b) => sb.from('leave_requests').select('type').range(a, b)),
+    readAll<{ type: string; annual_days: number | string | null; carry_forward_days: number | string | null; requires_approval: boolean | null; is_paid: boolean | null; updated_at: string | null }>((a, b) =>
+      sb.from('leave_policies').select('type, annual_days, carry_forward_days, requires_approval, is_paid, updated_at').range(a, b)),
   ]);
   if (h.error) throw new Error(`Could not read the holidays: ${h.error.message}`);
-  let policyReady = true;
-  let policyError = '';
-  let lp: { type: string; annual_days: number | string | null; carry_forward_days: number | string | null; requires_approval: boolean | null; is_paid: boolean | null; updated_at: string | null }[] = [];
-  let sal: { id: string; designation_id: string | null; name: string; monthly_gross: number | string; basic_pay: number | string; hra: number | string; allowances: number | string; deductions: number | string; net_pay: number | string; is_default: boolean | null; updated_at: string | null; designations: { name: string } | { name: string }[] | null }[] = [];
-  let er: { id: string; designation_id: string | null; daily_allowance: number | string; receipt_threshold: number | string; monthly_ceiling: number | string | null; updated_at: string | null; designations: { name: string } | { name: string }[] | null }[] = [];
-  try {
-    [lp, sal, er] = await Promise.all([
-      readAll<typeof lp[number]>((a, b) => sb.from('leave_policies').select('type, annual_days, carry_forward_days, requires_approval, is_paid, updated_at').range(a, b)),
-      readAll<typeof sal[number]>((a, b) =>
-        sb.from('salary_structures').select('id, designation_id, name, monthly_gross, basic_pay, hra, allowances, deductions, net_pay, is_default, updated_at, designations(name)').order('is_default', { ascending: false }).order('name').range(a, b)),
-      readAll<typeof er[number]>((a, b) =>
-        sb.from('expense_rules').select('id, designation_id, daily_allowance, receipt_threshold, monthly_ceiling, updated_at, designations(name)').order('designation_id', { nullsFirst: true }).range(a, b)),
-    ]);
-  } catch (e) {
-    const message = e instanceof Error ? e.message : String(e);
-    if (!/schema cache|could not find the table|leave_policies|salary_structures|expense_rules/i.test(message)) throw e;
-    policyReady = false;
-    policyError = sentence(message);
-  }
   const counts = new Map<string, number>();
   for (const r of l) counts.set(r.type, (counts.get(r.type) ?? 0) + 1);
   return {
     holidays: (h.data ?? []).map(r => ({ id: r.id as string, date: r.holiday_date as string, name: r.name as string })),
     leaveTypes: [...counts].map(([type, requests]) => ({ type, requests })).sort((a, b) => b.requests - a.requests),
     leavePolicies: lp.map(r => ({ type: r.type, annual: Number(r.annual_days ?? 0), carry: Number(r.carry_forward_days ?? 0), approval: r.requires_approval !== false, paid: r.is_paid !== false, updatedAt: r.updated_at })),
-    salary: sal.map(r => {
-      const d = Array.isArray(r.designations) ? r.designations[0] : r.designations;
-      return {
-      id: r.id, designationId: r.designation_id, designation: d?.name ?? (r.designation_id ? 'This role' : 'Company default'), name: r.name,
-      gross: Number(r.monthly_gross), basic: Number(r.basic_pay), hra: Number(r.hra), allowances: Number(r.allowances), deductions: Number(r.deductions), net: Number(r.net_pay),
-      default: r.is_default === true, updatedAt: r.updated_at,
-    }; }),
-    expenseRules: er.map(r => {
-      const d = Array.isArray(r.designations) ? r.designations[0] : r.designations;
-      return {
-      id: r.id, designationId: r.designation_id, designation: d?.name ?? (r.designation_id ? 'This role' : 'Company default'),
-      allowance: Number(r.daily_allowance), billAbove: Number(r.receipt_threshold), ceiling: r.monthly_ceiling == null ? null : Number(r.monthly_ceiling), updatedAt: r.updated_at,
-    }; }),
-    policyReady,
-    policyError,
   };
+}
+
+/** Each role's daily allowance, bill threshold and ceiling; the company row carries only a ceiling. */
+export async function loadExpenseRules(): Promise<ExpenseRule[]> {
+  const er = await readAll<{ id: string; designation_id: string | null; daily_allowance: number | string; receipt_threshold: number | string; monthly_ceiling: number | string | null; updated_at: string | null; designations: { name: string } | { name: string }[] | null }>((a, b) =>
+    db().from('expense_rules').select('id, designation_id, daily_allowance, receipt_threshold, monthly_ceiling, updated_at, designations(name)').order('designation_id', { nullsFirst: true }).range(a, b));
+  return er.map(r => {
+    const d = Array.isArray(r.designations) ? r.designations[0] : r.designations;
+    return {
+      id: r.id, designationId: r.designation_id, designation: d?.name ?? (r.designation_id ? 'This role' : 'Everyone'),
+      allowance: Number(r.daily_allowance), billAbove: Number(r.receipt_threshold), ceiling: r.monthly_ceiling == null ? null : Number(r.monthly_ceiling), updatedAt: r.updated_at,
+    };
+  });
 }
 
 export const saveHoliday = (date: string, name: string) => call('upsert_holiday', { p_date: date, p_name: name.trim() });
 export const saveLeavePolicy = (p: LeavePolicy) => call('save_leave_policy', { p_type: p.type, p_annual_days: p.annual, p_carry_forward_days: p.carry, p_requires_approval: p.approval, p_is_paid: p.paid });
-export const saveSalaryStructure = (s: Omit<SalaryStructure, 'id' | 'designation' | 'updatedAt'> & { id?: string | null }) => call('save_salary_structure', {
-  p_id: s.id ?? null, p_designation_id: s.designationId, p_name: s.name, p_monthly_gross: s.gross, p_basic_pay: s.basic, p_hra: s.hra, p_allowances: s.allowances, p_deductions: s.deductions, p_is_default: s.default,
-});
 export const saveExpenseRule = (r: Omit<ExpenseRule, 'id' | 'designation' | 'updatedAt'> & { id?: string | null }) => call('save_expense_rule', {
   p_id: r.id ?? null, p_designation_id: r.designationId, p_daily_allowance: r.allowance, p_receipt_threshold: r.billAbove, p_monthly_ceiling: r.ceiling,
 });

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { ArrowLeft } from '@phosphor-icons/react';
 import { invalidate, useResource } from '../../data/resource';
 import {
@@ -20,6 +20,7 @@ import { mayManagePeople } from './People';
 import { monthName } from '../../live/sales';
 import { typeLabel } from '../../live/clients';
 import { VERDICT } from '../../live/field';
+import { PAY_TAB_ROLES, PayTab } from './PersonPay';
 
 /**
  * One person: who they are, how their month is going, and everything on
@@ -27,7 +28,7 @@ import { VERDICT } from '../../live/field';
  * manager, handing over their clients and marking them as left start here.
  */
 
-type Tab = 'month' | 'field' | 'sales' | 'hr' | 'changes';
+type Tab = 'month' | 'field' | 'sales' | 'hr' | 'pay' | 'changes';
 
 export function PersonRecordPage() {
   const { id = '' } = useParams();
@@ -45,7 +46,8 @@ export function PersonRecordPage() {
 function View({ p, m, r }: { p: Person; m: RosterModel; r: Rec }) {
   const me = useMe();
   const allowed = useCan();
-  const [tab, setTab] = useState<Tab>('month');
+  const [search] = useSearchParams();
+  const [tab, setTab] = useState<Tab>(() => (search.get('tab') === 'pay' && PAY_TAB_ROLES.includes(me.role) ? 'pay' : search.get('tab') === 'hr' ? 'hr' : 'month'));
   const [act, setAct] = useState<null | 'edit' | 'manager' | 'handover' | 'left' | 'reopen'>(null);
   const [notice, setNotice] = useState('');
   const may = mayManagePeople(me.role);
@@ -54,7 +56,8 @@ function View({ p, m, r }: { p: Person; m: RosterModel; r: Rec }) {
     { id: 'month', label: 'The month' },
     { id: 'field', label: 'Field work' },
     ...(allowed('sales') || allowed('orders') ? [{ id: 'sales' as Tab, label: 'Sales and orders' }] : []),
-    { id: 'hr', label: 'HR and pay' },
+    { id: 'hr', label: 'Leave and documents' },
+    ...(PAY_TAB_ROLES.includes(me.role) ? [{ id: 'pay' as Tab, label: 'Pay and expenses' }] : []),
     { id: 'changes', label: 'Changes' },
   ];
   const refs = useRef<(HTMLButtonElement | null)[]>([]);
@@ -118,6 +121,7 @@ function View({ p, m, r }: { p: Person; m: RosterModel; r: Rec }) {
         {tab === 'field' && <FieldTab p={p} r={r} />}
         {tab === 'sales' && <SalesTab r={r} />}
         {tab === 'hr' && <HrTab p={p} r={r} onDone={done} />}
+        {tab === 'pay' && <PayTab p={p} r={r} />}
         {tab === 'changes' && <ChangesTab r={r} />}
       </div>
 
@@ -287,7 +291,6 @@ const LEAVE_STATUS: Record<string, { word: string; tone: 'good' | 'accent' | 'ne
 function HrTab({ p, r, onDone }: { p: Person; r: Rec; onDone: (m: string) => void }) {
   const me = useMe();
   const mayDocs = ['owner', 'admin', 'hr'].includes(me.role);
-  const seesSalary = ['owner', 'hr', 'finance'].includes(me.role);
   const [upload, setUpload] = useState(false);
   const [removing, setRemoving] = useState<Rec['documents'][number] | null>(null);
   const [opening, setOpening] = useState('');
@@ -330,16 +333,6 @@ function HrTab({ p, r, onDone }: { p: Person; r: Rec; onDone: (m: string) => voi
             </ul>
           )}
         </section>
-        {seesSalary && (
-          <section className="block sub-block">
-            <div className="block-head"><h3 className="section-title">Payslips</h3><span className="block-meta">seen by owner, HR and finance only</span></div>
-            {r.payslips.length === 0 ? <p className="block-empty">No payslip has been released for them.</p> : (
-              <ul className="rows">
-                {r.payslips.map(s => <li key={`${s.year}-${s.month}`} className="row"><div className="row-main"><p className="row-title">{new Date(s.year, s.month - 1, 1).toLocaleDateString('en-IN', { month: 'long', year: 'numeric' })}</p><p className="row-sub">released {dayMonth(dayOf(s.at))}</p></div><span className="row-figure">{rupees(s.net)} net</span></li>)}
-              </ul>
-            )}
-          </section>
-        )}
       </div>
       <section className="block">
         <div className="block-head">

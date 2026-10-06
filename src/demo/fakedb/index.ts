@@ -1,6 +1,7 @@
 import { FakeDb, fakeClient, type Row, type Rpc, type View } from './engine';
 import { DEMO_ORG, DEMO_USER, dayKey, seed, shift, travelFor } from './seed';
 import { clientRpcs, officeRpcs, salesRpcs, settingsRpcs, teamRpcs } from './rpcs';
+import { payRpcs } from './pay';
 
 /**
  * The demo database: the seeded company, the views the console reads, and the
@@ -104,7 +105,7 @@ const rpcs: Record<string, Rpc> = {
   },
 };
 
-Object.assign(rpcs, clientRpcs(audit), salesRpcs(audit), teamRpcs(audit), officeRpcs(audit), settingsRpcs(audit));
+Object.assign(rpcs, clientRpcs(audit), salesRpcs(audit), teamRpcs(audit), officeRpcs(audit), settingsRpcs(audit), payRpcs(audit));
 
 /** More functions register here as screens are rebuilt (see each live/*.ts). */
 export const registerRpc = (name: string, f: Rpc) => {

@@ -73,6 +73,9 @@ const Leave = page(() => import('./pages/team/PeopleOps'), 'Leave');
 const Tasks = page(() => import('./pages/team/PeopleOps'), 'Tasks');
 const Claims = page(() => import('./pages/money/Claims'), 'Claims');
 const Payroll = page(() => import('./pages/money/Payroll'), 'Payroll');
+const Salaries = page(() => import('./pages/money/Salaries'), 'Salaries');
+const PaySetup = page(() => import('./pages/settings/PaySetup'), 'PaySetup');
+const CompanyPage = page(() => import('./pages/settings/Company'), 'Company');
 const Resources = page(() => import('./pages/share/Share'), 'Resources');
 const SentNotifications = page(() => import('./pages/share/Share'), 'SentNotifications');
 const Surveys = page(() => import('./pages/share/Share'), 'Surveys');
@@ -118,12 +121,15 @@ const BUILT: Record<string, JSX.Element> = {
   '/team/tasks': <Tasks />,
   '/money': <Claims />,
   '/money/payroll': <Payroll />,
+  '/money/salaries': <Salaries />,
   '/share': <Resources />,
   '/share/surveys': <Surveys />,
   '/share/messages': <Messages />,
   '/share/sent': <SentNotifications />,
   '/reports': <Reports />,
   '/reports/downloads': <Downloads />,
+  '/settings/company': <CompanyPage />,
+  '/settings/pay': <PaySetup />,
   '/settings/rules': <CompanyRules />,
   '/settings/geography': <Geography />,
   '/settings/roles': <Roles />,

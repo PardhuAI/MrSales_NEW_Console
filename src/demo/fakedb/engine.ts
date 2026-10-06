@@ -39,7 +39,7 @@ export const FKS: [t: string, col: string, ref: string][] = [
   ['territory_assignments', 'territory_id', 'territories'], ['tour_plan_days', 'area_id', 'areas'],
   ['tour_plan_days', 'employee_id', 'employees'], ['tour_plan_days', 'month_id', 'tour_plan_months'],
   ['tour_plan_months', 'decided_by', 'employees'], ['tour_plan_months', 'employee_id', 'employees'],
-  ['travel_rates', 'employee_id', 'employees'],
+  ['travel_rates', 'employee_id', 'employees'], ['employee_expense_rules', 'employee_id', 'employees'], ['employee_salaries', 'employee_id', 'employees'],
   // views, joined the way PostgREST infers them
   ['report_visit_detail', 'employee_id', 'employees'], ['report_visit_detail', 'client_id', 'clients'],
   ['attendance_days', 'employee_id', 'employees'], ['current_reporting', 'employee_id', 'employees'],

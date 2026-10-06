@@ -57,7 +57,7 @@ behaviour can be checked against it. The "Data" column names the function in
 - [ ] Menu shows only the modules the role may open (hidden, never disabled)
 - [ ] A page opened without permission explains which permission is missing (not a blank page)
 - [ ] Scope: Management sees its team only; the rest see the company
-- [ ] Salary visible only to Owner, HR and Finance (`canSeeSalary`)
+- [x] Salary visible only to Owner, HR and Finance (`canSeeSalary`), enforced in the database since 0106
 - [ ] Modules switched off in the organisation's plan are hidden (`disabledModules`)
 - [ ] Role access matrix kept exactly:
   - Owner: everything
@@ -364,9 +364,22 @@ behaviour can be checked against it. The "Data" column names the function in
 - [ ] Claim detail: every day, worked, no intimation, receipts, status
 
 ### Payroll (`/payroll`) · Old: `pages/Bridge.tsx` `Payroll` · Data: `pullPayslips`, `releasePayslip`
-- [ ] Payslips, released, net paid, loss of pay for a month
-- [ ] Release a payslip, release all open
-- [ ] Download
+> **2026-10-06: pay is built properly** (migrations 0106 to 0109; `src/live/pay.ts`,
+> `src/pages/money/{Payroll,Salaries,SalaryDrawer}.tsx`, `src/pages/settings/{PaySetup,Company}.tsx`,
+> `src/pages/team/PersonPay.tsx`). The database works out each month (`payroll_for`): the salary in
+> force, loss of pay from attendance (days with nothing declared, unpaid leave, days before
+> joining), earnings pro-rated, PF on the basic paid. HR corrects loss of pay with a reason, adds
+> one-off lines, and **Generate and release** draws the PDF (company name, address, GSTIN, PAN,
+> logo; every line; net in words), stores it where the phone reads payslips, and notifies the
+> person. Someone paid outside Mr Sales still gets an uploaded PDF. Pay is seen by owner, HR and
+> finance only, enforced in the database (admin is refused). Checked live on Testbed as HR, finance
+> and admin; demo and e2e tests cover every flow.
+- [x] Payslips, released, net paid, loss of pay for a month
+- [x] Release a payslip, release all open
+- [x] Download
+- [x] Salaries: each person's salary split into basic and components, dated revisions with history
+- [x] A person's own expense rule over their role's and the company's (0109), and their travel rates
+- [x] Company details and logo printed on payslips (`/settings/company`)
 
 ### Assigned tasks (`/tasks`) · Old: `pages/Bridge.tsx` `AssignedTasks` · Data: `pullTasks`, `assignTask`
 - [ ] Open, not started, past their date, completed
@@ -379,9 +392,9 @@ behaviour can be checked against it. The "Data" column names the function in
 - [ ] Tabs: Roles, Leave, Salary, Holidays, Expenses
 - [ ] Roles: mobile roles, depth of the tree, web roles, nobody above them
 - [ ] Leave types
-- [ ] Standard salary structure: basic, gross, deductions, net
+- [x] Standard salary structure: basic, gross, deductions, net (now components and a structure per role, in Pay and expenses)
 - [ ] Holidays: fixed, optional, falling on a Sunday; add or edit a holiday · Data: `pullHolidays`, `upsertHoliday`
-- [ ] Expense rules
+- [x] Expense rules (per role in Pay and expenses; per person on their record)
 
 ---
 
@@ -529,10 +542,10 @@ Shown in the old console as "not built yet" or missing altogether.
 - [ ] Fake-location attempts list and warning (the phone app has it since 2026-10-03; the console does not)
 - [ ] Place names instead of coordinates on a person's day (the app has `PlaceNames`)
 - [ ] Saved joiner drafts cannot be reopened
-- [ ] Leave policies are not editable
-- [ ] Salary structures are not built
-- [ ] Expense rules are not editable
-- [ ] Payslip files are not generated
+- [x] Leave policies are not editable (built 2026-10-06)
+- [x] Salary structures are not built (built 2026-10-06)
+- [x] Expense rules are not editable (built 2026-10-06)
+- [x] Payslip files are not generated (built 2026-10-06)
 - [ ] Some reports are marked "v1" (adherence, product sales, attendance, leave, client, order)
 
 ---
