@@ -298,6 +298,30 @@ Fixed from the look: at 390 the read figure was cut off, so "Sent to" now folds 
 title on a phone; "1 is pinned" now reads "One is pinned"; the demo's read times
 ran past midnight and now cluster after sending, as real reads do.
 
+## Phase 8: the final pass (6 October 2026)
+
+On the demo company, by eye and by script, across the whole console:
+
+- **Accent on a status**, nine places: "Waiting for a decision" (orders, claims, tours,
+  leave), "Waiting" (a client's orders, a person's leave), "Unplanned" on a person's day,
+  "To pay" on invoices, and the help requests' "With Mr Sales" and "Being worked on". All
+  neutral now; `Pill` no longer has an accent tone, so the type check refuses one.
+- **Spaced commas.** This font sets a tabular comma as wide as a digit, so "₹17,000" read
+  "₹17 , 000". Found by a browser probe of every page and every tab of a person's record
+  for a comma-grouped number in tabular figures: the pay tab (hero, lines, gross), the
+  month tab, a person's sales, the prescription share and the Today trend line. Those use
+  ordinary figures now, as the Payroll and Salaries tables already did; two runs of the
+  probe find none.
+- **A hyphen for nothing** in Payroll and Salaries: the cells are empty, with "none" for
+  screen readers, and the row says "No salary" in words.
+- **Leave.** "Decline Approve" read as one phrase: spaced. At 390 the decision was off the
+  screen: the leave type and dates fold under the name, and the two actions stack with
+  Approve first.
+- **Pay privacy** proved by a test for admin, IT and management, with an owner control.
+- Not found: Title Case labels, identical card grids, icons on every row, dashes on screen
+  (`check:rules`). The accent in CSS was read rule by rule: focus, selection, links, the
+  current item and the one highlighted chart series, all within the rules.
+
 ## Still open
 
 - The invitation and password-reset emails, sent to a real inbox from the new console.

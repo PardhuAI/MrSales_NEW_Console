@@ -72,8 +72,8 @@ function View({ m, at, error, reload }: { m: SalariesModel; at: Date | null; err
                   return (
                     <tr key={p.id}>
                       <th scope="row"><Link className="cell-link" to={`/team/${p.id}?tab=pay`}>{p.name}</Link><span className="cell-sub">{[p.code, p.designation, p.hq].filter(Boolean).join(' · ')}</span></th>
-                      <td className="num">{p.current ? rupees(p.current.basic) : <span className="cell-quiet">-</span>}</td>
-                      <td className="num hide-narrow">{n ? rupees(n.gross) : <span className="cell-quiet">-</span>}</td>
+                      <td className="num">{p.current ? rupees(p.current.basic) : <span className="visually-hidden">none</span>}</td>
+                      <td className="num hide-narrow">{n ? rupees(n.gross) : <span className="visually-hidden">none</span>}</td>
                       <td className="num">{n ? <strong>{rupees(n.net)}</strong> : <Pill tone="warning">No salary</Pill>}</td>
                       <td className="hide-narrow">{p.current ? dayMonth(p.current.from) : ''}{p.next && <span className="cell-sub">Revised from {dayMonth(p.next.from)}</span>}</td>
                       <td className="row-action"><button type="button" className="link" onClick={() => setEditing(p)}>{p.current ? 'Revise' : 'Set salary'}</button></td>

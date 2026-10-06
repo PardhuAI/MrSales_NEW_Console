@@ -295,12 +295,101 @@ and how (demo, tests, live), what is not done and why, and what the owner must d
 
 ## Left for the owner
 
-- Build one APK when Phases 5 to 8 are finished (phone changes since 20261005: payslip
-  lines and PDF, leave balances, expense rule from the database, and whatever Phase 7
-  adds).
-- (Cloud session: add here anything that needs the owner: a migration to apply, a
-  Supabase setting such as MFA, a live check with a password.)
+In order. Nothing below has been done to the live database or the phone.
+
+1. **Move the two migrations into the backend repository.** They are in
+   `handoff/migrations/` on this branch (`0112_import_people.sql`, `0113_announcements.sql`),
+   with the lines to add to `supabase/checks/26_definer_review.sql` in `handoff/README.md`.
+   The cloud session could not commit to `Mr_Sales_Console` (its edits there were blocked),
+   so they were written and tested here instead. With both files and those lines, the
+   backend's own suite (`supabase/checks/run-local.sh`) passes: 393 checks, "no problems
+   found", each migration applied twice. That run used Postgres 16; CI uses 17.
+2. **Apply 0112 and 0113 to the live project** (`xdbhmxdaelqsazoferre`), then try both in
+   Testbed Pharma: import a two-row sheet, send an announcement to a team. Until then
+   **this branch must not be merged to `main`**: People's "Import from a sheet" and the
+   Announcements page call functions the live database does not have yet.
+3. **Switch on two-step sign-in (TOTP) in Supabase**: Authentication, Multi-factor. Until it
+   is on, "Turn on two-step sign-in" says it is not switched on for Mr Sales yet.
+4. **Sign in live and run Your account once**: change a password, turn two-step sign-in on
+   and off. The cloud session has no live password and did not do this.
+5. **Phone, for Phase 7** (`Mr_Sales_Field_App`, not built: this container has no Flutter,
+   and the session could not change that repository): a pinned announcement as one quiet
+   card at the top of Home (title, first line, "Read"), opening it calls
+   `mark_announcement_read`; an Announcements list from `my_announcements()` under the
+   notifications or HR menu; `announcement` added wherever notification kinds are listed.
+   Then `flutter analyze lib` and `flutter test`.
+6. **Build one APK** when 5 is done. Phone changes since APK 20261005: payslip lines and the
+   PDF, leave balances on the Leave screen and the apply form, the expense rule read from
+   the database, and the announcements of step 5.
+7. **Merge this branch** (`claude/loving-brown-nuf6dn`) to `main` once 1 and 2 are done;
+   pushing `main` deploys app.mrsales.in.
 
 ## Report
 
-(Written by the session that finishes Phase 8.)
+Written 6 October 2026 by the cloud session that worked through Phases 5 to 8.
+
+**What was built**
+
+- *Phase 5, import people.* Team, People, "Import from a sheet" (also in New and search). A
+  wide drawer in three steps: download the template, pick the filled CSV or Excel file, read
+  every problem by row and column with how to fix it ("Row 3, Reports to: No employee has
+  the code ASM-04. Add them above row 3 or fix the code."), and add everyone at once only
+  when every row passes. The file can be fixed and picked again in place. Afterwards the
+  new people are listed, and their logins are sent one by one through the existing invite,
+  with a progress line. Database: `import_people` and `sheet_date` (0112): required
+  columns, duplicate codes, unknown role or territory, a manager who is missing, further
+  down the sheet, not a manager or makes a loop, dates in three forms (and Excel's day
+  numbers), mobiles, emails, pay from owner and HR only, seats, one audit row.
+- *Phase 6, your account.* `/account`, first in the account menu, for every role: who you
+  are and the name used in Messages; change the password (checked by signing in again, held
+  to the office password rules: 12 characters, upper and lower case, a digit, which is
+  stricter than the 10 asked for, so it matches the first-password screen); two-step
+  sign-in with an authenticator app (QR code, the key as text, a code to turn it on and
+  another to turn it off), and the code asked at sign-in on the same sign-in page; sign out
+  every other device; the last 20 changes made by this login. Left out on purpose: whether
+  each office login has two-step sign-in on (Supabase shows a login only its own factors).
+- *Phase 7, announcements.* Share with field, Announcements: the list of what was sent
+  with "read by 18 of 22" over a thin ink bar; one opens with the names of those who have
+  not read it and a reminder to them only; writing one to everyone, a team, a role or a
+  territory, with a pin date, a phone preview, and a confirm that names the count. A
+  manager writes to their own team only. Database (0113): the two tables with row security,
+  `send_announcement`, `remind_announcement`, and `my_announcements` and
+  `mark_announcement_read` for the phone. The phone side is not built (see above).
+- *Phase 8, the final pass.* Accent was used on statuses in nine places ("Waiting for a
+  decision", "Waiting", "Unplanned", "To pay", the two help-request statuses). All are
+  neutral now, and `Pill` no longer accepts an accent tone. Rupee amounts in tabular figures
+  read "₹17 , 000" (this font sets a tabular comma as wide as a digit) on a person's record,
+  pay tab and month, the prescription share and the Today trend line. A browser probe of
+  every page now finds none. Payroll and Salaries showed a hyphen for an empty value; those
+  cells are empty now, with "none" for screen readers. On Leave, "Decline Approve" read as
+  one phrase, and on a phone the decision was off-screen; the actions are spaced, and on a
+  phone the leave type and dates fold under the name and the two actions stack. A new test
+  proves pay never reaches admin, IT or management (Payroll, Salaries, every tab of a
+  person's record, Pay and expenses, the import template), with an owner control so the
+  check cannot pass empty.
+
+**How it was checked**
+
+- `npm run check` before every commit: the rules script, the typecheck, and every
+  Playwright test on the demo company, including every page for all six roles, no sideways
+  scroll at 390, and axe in light and dark. 55 tests, all passing at the last commit.
+- Each new screen in the browser at 1440, 1280, 1024 and 390, in Light, Light with a dark
+  menu, and Dark; `console-review` on each, recorded with its five-line plan in `REVIEW.md`.
+  The Phase 1 to 4 screens (Payroll, Salaries, Pay and expenses, Company, Leave, a
+  person's pay tab) were looked at the same way and fixed as above.
+- Both migrations on a local Postgres with the backend's own fixtures and suite (393 checks
+  pass), plus 21 checks of my own run as admin, owner, manager, finance and another
+  company, inside a rolled-back transaction. That run found and fixed two faults before
+  anyone met them: the two announcement policies read each other and recursed for ever,
+  and a seat refusal said "Remove 1 rows".
+- **Not checked live.** Nothing here was run against Testbed Pharma or applied to the live
+  database, and nothing in `FEATURE_CHECKLIST.md` section 11 is ticked for that reason.
+
+**Not done, and why**
+
+- Applying 0112 and 0113 live, and committing them to `Mr_Sales_Console`: edits to that
+  repository were blocked in this session (owner steps 1 and 2).
+- The phone part of Phase 7, `flutter analyze` and `flutter test`: no Flutter in this
+  container, and the phone repository could not be changed from here (owner step 5).
+- CI on the backend and phone repositories was not run, because nothing was pushed to them.
+  This branch is pushed; it was not merged to `main`.

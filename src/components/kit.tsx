@@ -67,8 +67,12 @@ export function DateInput({ label, value, onChange, max, min }: { label: string;
 
 // ── status ───────────────────────────────────────────────────────────
 
-/** A state, always as a word; the colour only repeats what the word says. */
-export function Pill({ tone = 'neutral', children }: { tone?: 'good' | 'warning' | 'critical' | 'neutral' | 'accent'; children: ReactNode }) {
+/**
+ * A state, always as a word; the colour only repeats what the word says.
+ * There is no accent tone: the accent is for actions, links, the selection and
+ * focus, never a status (CLAUDE.md). Waiting is neutral.
+ */
+export function Pill({ tone = 'neutral', children }: { tone?: 'good' | 'warning' | 'critical' | 'neutral'; children: ReactNode }) {
   return <span className={`pill ${tone === 'neutral' ? 'info' : tone}`}>{children}</span>;
 }
 

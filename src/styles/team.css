@@ -127,7 +127,7 @@
 .figs dd {
   font-size: var(--t-section);
   font-weight: var(--w-semibold);
-  font-variant-numeric: tabular-nums;
+  font-variant-numeric: proportional-nums;
   letter-spacing: var(--track-figure);
 }
 
@@ -719,5 +719,14 @@ button.org-toggle:hover {
   .import-columns div {
     grid-template-columns: minmax(0, 1fr);
     gap: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  /* Two row actions stack on a phone, the decision first, so neither is cut off. */
+  .row-action .row-actions {
+    flex-direction: column-reverse;
+    align-items: flex-end;
+    gap: var(--s-2);
   }
 }

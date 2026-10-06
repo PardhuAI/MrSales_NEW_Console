@@ -77,7 +77,7 @@
 
 .row-figure {
   font-weight: var(--w-semibold);
-  font-variant-numeric: tabular-nums;
+  font-variant-numeric: proportional-nums;
   white-space: nowrap;
 }
 
@@ -606,11 +606,6 @@ select.input {
   color: var(--on-bad);
 }
 
-.pill.accent {
-  background: var(--accent-soft);
-  color: var(--accent);
-}
-
 @media (max-width: 600px) {
   .toolbar .field-search {
     width: 100%;
@@ -848,4 +843,20 @@ select.input {
 
 .past-due .link {
   margin-left: var(--s-1);
+}
+
+/* On a phone, secondary columns fold into a line under the row's name, so
+   the status and the action stay in view without scrolling the table. */
+.show-phone {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .fold-phone {
+    display: none;
+  }
+
+  .cell-sub.show-phone {
+    display: block;
+  }
 }

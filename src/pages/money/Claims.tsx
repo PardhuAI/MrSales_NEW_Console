@@ -15,8 +15,8 @@ import { Empty, Freshness, LoadError, Loading } from '../../components/States';
 import { Arrive } from '../../components/motion';
 import { useCan } from '../../app/access';
 
-export const CLAIM_STATUS: Record<ClaimStatus, { word: string; tone: 'good' | 'accent' | 'neutral' | 'critical' }> = {
-  pending: { word: 'Waiting for a decision', tone: 'accent' },
+export const CLAIM_STATUS: Record<ClaimStatus, { word: string; tone: 'good'  | 'neutral' | 'critical' }> = {
+  pending: { word: 'Waiting for a decision', tone: 'neutral' },
   approved: { word: 'Approved', tone: 'good' },
   rejected: { word: 'Rejected', tone: 'critical' },
   draft: { word: 'Not sent yet', tone: 'neutral' },

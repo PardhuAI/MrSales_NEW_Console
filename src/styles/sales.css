@@ -149,7 +149,7 @@
   text-align: right;
   font-size: var(--t-sm);
   font-weight: var(--w-semibold);
-  font-variant-numeric: tabular-nums;
+  font-variant-numeric: proportional-nums;
 }
 
 /* targets */
@@ -186,7 +186,7 @@
 }
 
 .facts.totals dd {
-  font-variant-numeric: tabular-nums;
+  font-variant-numeric: proportional-nums;
 }
 
 @media (max-width: 700px) {

@@ -119,7 +119,9 @@
 .pay-sum strong,
 .pay-net-line strong,
 .pay-lines strong {
-  font-variant-numeric: tabular-nums;
+  /* Ordinary figures: this font sets a tabular comma as wide as a digit, so
+     "₹17,000" read "₹17 , 000". Right alignment keeps the column. */
+  font-variant-numeric: proportional-nums;
   font-weight: var(--w-semibold);
 }
 
@@ -230,7 +232,7 @@
   font-size: var(--t-figure);
   font-weight: var(--w-semibold);
   letter-spacing: var(--track-figure);
-  font-variant-numeric: tabular-nums;
+  font-variant-numeric: proportional-nums;
 }
 
 .pay-hero .cell-sub {

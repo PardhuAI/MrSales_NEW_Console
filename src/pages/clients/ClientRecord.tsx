@@ -35,8 +35,8 @@ const STATUS_WORD: Record<string, { word: string; tone: 'good' | 'warning' | 'ne
   completed: { word: 'Done', tone: 'good' }, missed: { word: 'Missed', tone: 'warning' }, inProgress: { word: 'Started', tone: 'warning' },
   planned: { word: 'Planned', tone: 'neutral' }, upcoming: { word: 'Planned', tone: 'neutral' },
 };
-const ORDER_WORD: Record<string, { word: string; tone: 'good' | 'warning' | 'neutral' | 'critical' | 'accent' }> = {
-  pending: { word: 'Waiting', tone: 'accent' }, approved: { word: 'Approved', tone: 'good' }, fulfilled: { word: 'Fulfilled', tone: 'good' },
+const ORDER_WORD: Record<string, { word: string; tone: 'good' | 'warning' | 'neutral' | 'critical'  }> = {
+  pending: { word: 'Waiting', tone: 'neutral' }, approved: { word: 'Approved', tone: 'good' }, fulfilled: { word: 'Fulfilled', tone: 'good' },
   rejected: { word: 'Rejected', tone: 'warning' }, cancelled: { word: 'Cancelled', tone: 'neutral' }, draft: { word: 'Draft', tone: 'neutral' },
 };
 

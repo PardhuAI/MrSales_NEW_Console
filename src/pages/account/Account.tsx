@@ -14,8 +14,8 @@ const msg = (e: unknown) => (e instanceof Error ? e.message : String(e));
 
 // ── help from Mr Sales ────────────────────────────────────────────────
 
-const STATUS: Record<string, { word: string; tone: 'good' | 'warning' | 'accent' | 'neutral' }> = {
-  open: { word: 'With Mr Sales', tone: 'accent' }, in_progress: { word: 'Being worked on', tone: 'accent' },
+const STATUS: Record<string, { word: string; tone: 'good' | 'warning'  | 'neutral' }> = {
+  open: { word: 'With Mr Sales', tone: 'neutral' }, in_progress: { word: 'Being worked on', tone: 'neutral' },
   waiting_customer: { word: 'Waiting for you', tone: 'warning' }, resolved: { word: 'Resolved', tone: 'good' }, closed: { word: 'Closed', tone: 'neutral' },
 };
 
@@ -158,8 +158,8 @@ function ThreadDrawer({ t, onClose, onReplied }: { t: Ticket | null; onClose: ()
 
 // ── plan and billing ──────────────────────────────────────────────────
 
-const INVOICE: Record<string, { word: string; tone: 'good' | 'accent' | 'critical' | 'neutral' }> = {
-  paid: { word: 'Paid', tone: 'good' }, issued: { word: 'To pay', tone: 'accent' }, overdue: { word: 'Overdue', tone: 'critical' }, cancelled: { word: 'Cancelled', tone: 'neutral' },
+const INVOICE: Record<string, { word: string; tone: 'good'  | 'critical' | 'neutral' }> = {
+  paid: { word: 'Paid', tone: 'good' }, issued: { word: 'To pay', tone: 'neutral' }, overdue: { word: 'Overdue', tone: 'critical' }, cancelled: { word: 'Cancelled', tone: 'neutral' },
 };
 const PLAN: Record<string, string> = { starter: 'Starter', growth: 'Growth', scale: 'Scale', enterprise: 'Enterprise', trial: 'Trial' };
 

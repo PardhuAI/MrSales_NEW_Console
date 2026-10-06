@@ -160,7 +160,8 @@ export function peopleRpcs(
       const seats = Number(db.rows('org_entitlements')[0]?.seat_limit ?? 0);
       const used = employees.filter(e => e.status === 'active').length;
       if (seats && create && used + create > seats) {
-        err(0, 'Seats', `Your plan has ${seats} seats and ${used} are in use, so ${create} more people do not fit. Remove ${used + create - seats} rows, mark people who have left, or ask Mr Sales for more seats.`);
+        const over = used + create - seats;
+        err(0, 'Seats', `Your plan has ${seats} seats and ${used} are in use, so ${create} more ${create === 1 ? 'person does' : 'people do'} not fit. Remove ${over} ${over === 1 ? 'row' : 'rows'}, mark people who have left, or ask Mr Sales for more seats.`);
       }
 
       if (errors.length || !a.p_commit) {

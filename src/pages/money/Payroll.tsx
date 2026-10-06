@@ -164,7 +164,7 @@ function PayrollView({ month, rows, company }: { month: string; rows: PayslipRow
                           {raw.hasSalary ? <button type="button" className="link row-open" onClick={e => { e.stopPropagation(); setOpen(raw.employeeId); }}>{raw.name}</button> : <Link className="cell-link" to={`/team/${raw.employeeId}?tab=pay`}>{raw.name}</Link>}
                           <span className="cell-sub">{[raw.code, raw.designation, raw.hq].filter(Boolean).join(' · ')}</span>
                         </th>
-                        <td className="num">{raw.hasSalary ? <>{r.paidDays} of {r.daysInMonth}{r.lopDays > 0 && <span className="cell-sub">{r.lopDays} loss of pay</span>}</> : <span className="cell-quiet">-</span>}</td>
+                        <td className="num">{raw.hasSalary ? <>{r.paidDays} of {r.daysInMonth}{r.lopDays > 0 && <span className="cell-sub">{r.lopDays} loss of pay</span>}</> : <span className="visually-hidden">none</span>}</td>
                         <td className="num hide-narrow">{raw.hasSalary ? rupees(r.gross) : ''}</td>
                         <td className="num hide-narrow">{raw.hasSalary ? rupees(r.deductions) : ''}</td>
                         <td className="num">{raw.releasedAt && raw.releasedNet != null ? <><strong>{rupees(raw.releasedNet)}</strong>{raw.hasSalary && raw.releasedNet !== r.net && <span className="cell-sub">now works out {rupees(r.net)}</span>}</> : raw.hasSalary ? <strong>{rupees(r.net)}</strong> : ''}</td>

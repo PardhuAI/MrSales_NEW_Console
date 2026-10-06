@@ -123,8 +123,8 @@ function DayPlanTable({ m, goTo }: { m: DayPlansModel; goTo: (d: string) => void
 
 // ── tour plans ────────────────────────────────────────────────────────
 
-const TOUR_STATUS: Record<TourRow['status'], { word: string; tone: 'good' | 'warning' | 'critical' | 'neutral' | 'accent'; rank: number }> = {
-  pending: { word: 'Waiting for a decision', tone: 'accent', rank: 0 },
+const TOUR_STATUS: Record<TourRow['status'], { word: string; tone: 'good' | 'warning' | 'critical' | 'neutral' ; rank: number }> = {
+  pending: { word: 'Waiting for a decision', tone: 'neutral', rank: 0 },
   draft: { word: 'Being planned', tone: 'neutral', rank: 1 },
   none: { word: 'Not started', tone: 'warning', rank: 2 },
   rejected: { word: 'Sent back', tone: 'warning', rank: 3 },
