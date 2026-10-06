@@ -295,34 +295,36 @@ and how (demo, tests, live), what is not done and why, and what the owner must d
 
 ## Left for the owner
 
-In order. Nothing below has been done to the live database or the phone.
+Updated 6 October 2026, evening, after the cloud session's branch was finished locally.
 
-1. **Move the two migrations into the backend repository.** They are in
-   `handoff/migrations/` on this branch (`0112_import_people.sql`, `0113_announcements.sql`),
-   with the lines to add to `supabase/checks/26_definer_review.sql` in `handoff/README.md`.
-   The cloud session could not commit to `Mr_Sales_Console` (its edits there were blocked),
-   so they were written and tested here instead. With both files and those lines, the
-   backend's own suite (`supabase/checks/run-local.sh`) passes: 393 checks, "no problems
-   found", each migration applied twice. That run used Postgres 16; CI uses 17.
-2. **Apply 0112 and 0113 to the live project** (`xdbhmxdaelqsazoferre`), then try both in
-   Testbed Pharma: import a two-row sheet, send an announcement to a team. Until then
-   **this branch must not be merged to `main`**: People's "Import from a sheet" and the
-   Announcements page call functions the live database does not have yet.
-3. **Switch on two-step sign-in (TOTP) in Supabase**: Authentication, Multi-factor. Until it
-   is on, "Turn on two-step sign-in" says it is not switched on for Mr Sales yet.
-4. **Sign in live and run Your account once**: change a password, turn two-step sign-in on
-   and off. The cloud session has no live password and did not do this.
-5. **Phone, for Phase 7** (`Mr_Sales_Field_App`, not built: this container has no Flutter,
-   and the session could not change that repository): a pinned announcement as one quiet
-   card at the top of Home (title, first line, "Read"), opening it calls
-   `mark_announcement_read`; an Announcements list from `my_announcements()` under the
-   notifications or HR menu; `announcement` added wherever notification kinds are listed.
-   Then `flutter analyze lib` and `flutter test`.
-6. **Build one APK** when 5 is done. Phone changes since APK 20261005: payslip lines and the
-   PDF, leave balances on the Leave screen and the apply form, the expense rule read from
-   the database, and the announcements of step 5.
-7. **Merge this branch** (`claude/loving-brown-nuf6dn`) to `main` once 1 and 2 are done;
-   pushing `main` deploys app.mrsales.in.
+Done:
+- ~~Move 0112 and 0113 into the backend repository~~: committed to `Mr_Sales_Console` main
+  with the review lines. The backend suite passes on Postgres 17. One change was made: the
+  import no longer counts every active person against the plan's seats (Add a person does
+  not either); seats are checked when logins are sent.
+- ~~Apply 0112 and 0113 live~~: applied, and tried on Testbed Pharma inside rolled-back
+  transactions. A sheet with problems lists all seven by row and column; a clean sheet adds
+  the person and their salary; an announcement to everyone reached 18 people; a rep sees and
+  reads only their own; a manager writing to another team and finance importing are refused.
+- ~~Phone, Phase 7~~: announcements list under More, the message on its own screen (opening
+  it marks it read), and a pinned one as a quiet card at the top of Home. Analyzer clean,
+  all tests pass, pushed.
+- ~~Build one APK~~: `Field_Force_App/dist/MrSales-20261006-arm64.apk` (and
+  `-old-phones.apk` for 32-bit phones). Contains everything since 20261005: payslip lines
+  and the PDF, leave balances, the expense rule from the database, announcements.
+- ~~Merge `claude/loving-brown-nuf6dn`~~: merged to main and deployed.
+
+Still yours:
+1. **Switch on two-step sign-in (TOTP) in Supabase**: Authentication, Multi-factor (or Sign In
+   / Providers, MFA, depending on the dashboard version). Until it is on, "Turn on two-step
+   sign-in" on Your account says it is not switched on yet.
+2. **Sign in at app.mrsales.in and try Your account once**: change your password, then turn
+   two-step sign-in on and off with an authenticator app.
+3. **Install the APK** on a phone and look at Leave, Payslips, and Home after sending yourself
+   an announcement from Share with field, Announcements.
+4. Two branches on GitHub in `MrSales_NEW_Console` are finished with:
+   `claude/loving-brown-nuf6dn` (merged) and `claude/pensive-newton-fdx31b` (no commits).
+   Delete them when you like; nothing depends on them.
 
 ## Report
 
