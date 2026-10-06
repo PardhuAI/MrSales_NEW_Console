@@ -150,6 +150,7 @@ const DETAIL: { path: string; module: string; element: JSX.Element }[] = [
   { path: '/sales/products/new', module: 'products', element: <Products /> },
   { path: '/sales/stockists/new', module: 'stockists', element: <Stockists /> },
   { path: '/team/new', module: 'onboarding', element: <AddPerson /> },
+  { path: '/team/import', module: 'onboarding', element: <People /> },
   { path: '/team/tasks/new', module: 'tasks', element: <Tasks /> },
   { path: '/team/managers/:id', module: 'people', element: <ManagerPage /> },
   { path: '/team/:id', module: 'people', element: <PersonRecordPage /> },

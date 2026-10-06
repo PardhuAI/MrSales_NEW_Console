@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Faders, Plus } from '@phosphor-icons/react';
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { Faders, Plus, UploadSimple } from '@phosphor-icons/react';
 import { useResource } from '../../data/resource';
 import { loadRoster, type Person, type RosterModel } from '../../live/team';
 import { IST_TODAY, dayMonth } from '../../lib/days';
@@ -12,6 +12,7 @@ import { Arrive } from '../../components/motion';
 import { useMe } from '../../live/session';
 import { useCan } from '../../app/access';
 import { readDraft } from './AddPerson';
+import { ImportPeople } from './ImportPeople';
 
 /**
  * People: everyone on the roster. Find a person and open their record; add
@@ -45,12 +46,16 @@ function View({ m, at, error, reload }: { m: RosterModel; at: Date | null; error
   const [joined, setJoined] = useState('all');
   const [login, setLogin] = useState('all');
   const draft = readDraft();
+  const { pathname } = useLocation();
+  const [params, setParams] = useSearchParams();
+  const only = useMemo(() => new Set((params.get('only') ?? '').split(',').filter(Boolean)), [params]);
   const today = IST_TODAY();
   const active = m.people.filter(p => p.status === 'active');
   const managers = active.filter(p => p.reports > 0).sort((a, b) => a.name.localeCompare(b.name));
   const rows = useMemo(() => {
     const n = q.trim().toLowerCase();
     const since = joined === 'month' ? `${today.slice(0, 7)}-01` : joined === 'quarter' ? `${new Date(Date.now() - 92 * 864e5).toISOString().slice(0, 10)}` : joined === 'year' ? `${today.slice(0, 4)}-01-01` : '';
+    if (only.size) return m.people.filter(p => only.has(p.id)).sort((a, b) => a.name.localeCompare(b.name));
     return m.people
       .filter(p => status === 'all' || (status === 'active' ? p.status === 'active' : p.status !== 'active'))
       .filter(p => !n || `${p.name} ${p.code} ${p.hq} ${p.email ?? ''} ${p.mobile ?? ''}`.toLowerCase().includes(n))
@@ -60,7 +65,7 @@ function View({ m, at, error, reload }: { m: RosterModel; at: Date | null; error
       .filter(p => !since || p.joinedAt >= since)
       .filter(p => login === 'all' || p.login === login)
       .sort((a, b) => a.name.localeCompare(b.name));
-  }, [m, q, status, role, manager, territory, joined, login, today]);
+  }, [m, q, status, role, manager, territory, joined, login, today, only]);
   const { shown, more: showMore } = useShowMore(rows, 60);
   const field = active.filter(p => p.role === 'MR').length;
   const mgrs = active.filter(p => p.role === 'ASM').length;
@@ -80,8 +85,13 @@ function View({ m, at, error, reload }: { m: RosterModel; at: Date | null; error
       </Summary>
       <Toolbar>
         {mayManagePeople(me.role) && <Link className="btn btn-primary btn-small" to="/team/new"><Plus size={14} weight="bold" aria-hidden="true" /> Add a person</Link>}
+        {mayManagePeople(me.role) && <Link className="btn btn-secondary btn-small" to="/team/import"><UploadSimple size={14} aria-hidden="true" /> Import from a sheet</Link>}
         {draft && mayManagePeople(me.role) && <Link className="link" to="/team/new">Finish adding {draft.name || 'the joiner you started'}</Link>}
       </Toolbar>
+      {mayManagePeople(me.role) && <ImportPeople open={pathname === '/team/import'} onClose={() => nav('/team')} />}
+      {only.size > 0 && (
+        <p className="table-filter-note">Showing the {count(only.size, 'person', 'people')} just imported. <button type="button" className="link" onClick={() => setParams({})}>Show everyone</button></p>
+      )}
       <Toolbar>
         <SearchBox value={q} onChange={setQ} placeholder="Name, employee code, HQ, email or mobile" label="Find a person" />
         <Segmented label="Status" value={status} onChange={setStatus} options={[{ value: 'active', label: 'Working here', count: active.length }, { value: 'left', label: 'Left', count: m.people.length - active.length }, { value: 'all', label: 'Everyone' }]} />

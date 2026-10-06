@@ -611,3 +611,113 @@ button.org-toggle:hover {
 .leave-balances .block-head h2 {
   white-space: nowrap;
 }
+
+/* ── importing people from a sheet ───────────────────────────────────── */
+/* The three steps as one quiet line of words: the current one in ink, the
+   rest muted. No numbered circles, no progress bar. */
+.import-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-1) var(--s-5);
+  margin: 0 0 var(--s-6);
+  padding: 0 0 var(--s-3);
+  border-bottom: var(--hairline-w) solid var(--hairline);
+  font-size: var(--t-sm);
+  color: var(--faint);
+  list-style: none;
+  counter-reset: step;
+}
+
+.import-steps li {
+  counter-increment: step;
+}
+
+.import-steps li::before {
+  content: counter(step) '.\00a0';
+}
+
+.import-steps li.past {
+  color: var(--muted);
+}
+
+.import-steps li.on {
+  color: var(--ink);
+  font-weight: var(--w-semibold);
+}
+
+.import-part {
+  display: grid;
+  gap: var(--s-3);
+}
+
+.import-part + .import-part {
+  padding-top: var(--s-6);
+  border-top: var(--hairline-w) solid var(--hairline);
+}
+
+.import-columns {
+  display: grid;
+  gap: var(--s-2);
+  margin: var(--s-2) 0;
+  font-size: var(--t-sm);
+  line-height: var(--lh-body);
+}
+
+.import-columns div {
+  display: grid;
+  grid-template-columns: 11rem minmax(0, 1fr);
+  gap: var(--s-4);
+}
+
+.import-columns dt {
+  color: var(--muted);
+}
+
+.import-columns dd {
+  margin: 0;
+}
+
+.import-verdict {
+  font-size: var(--t-body);
+  line-height: var(--lh-body);
+  max-width: 62ch;
+}
+
+.import-problems {
+  max-height: 420px;
+  overflow: auto;
+}
+
+.import-problems td.num {
+  width: 4rem;
+}
+
+.import-problems th[scope='row'] {
+  white-space: nowrap;
+  font-weight: var(--w-medium);
+}
+
+.import-done {
+  display: grid;
+  gap: var(--s-4);
+}
+
+.import-done-title {
+  font-size: var(--t-title);
+  font-weight: var(--w-semibold);
+  letter-spacing: var(--track-title);
+  line-height: var(--lh-tight);
+}
+
+.table-filter-note {
+  margin: 0 0 var(--s-3);
+  font-size: var(--t-sm);
+  color: var(--muted);
+}
+
+@media (max-width: 600px) {
+  .import-columns div {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+}

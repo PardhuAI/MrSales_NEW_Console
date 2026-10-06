@@ -2,6 +2,7 @@ import { FakeDb, fakeClient, type Row, type Rpc, type View } from './engine';
 import { DEMO_ORG, DEMO_USER, dayKey, seed, shift, travelFor } from './seed';
 import { clientRpcs, officeRpcs, salesRpcs, settingsRpcs, teamRpcs } from './rpcs';
 import { payRpcs } from './pay';
+import { peopleRpcs } from './people';
 
 /**
  * The demo database: the seeded company, the views the console reads, and the
@@ -11,6 +12,15 @@ import { payRpcs } from './pay';
  */
 
 const ME = 'Pardhu Karnati';
+
+/** The role the demo is viewed as (the account menu's picker), for the functions that check it. */
+const demoRole = () => {
+  try {
+    return sessionStorage.getItem('mrsales.demoRole') || 'owner';
+  } catch {
+    return 'owner';
+  }
+};
 const now = () => new Date().toISOString();
 
 const views: Record<string, View> = {
@@ -105,7 +115,7 @@ const rpcs: Record<string, Rpc> = {
   },
 };
 
-Object.assign(rpcs, clientRpcs(audit), salesRpcs(audit), teamRpcs(audit), officeRpcs(audit), settingsRpcs(audit), payRpcs(audit));
+Object.assign(rpcs, clientRpcs(audit), salesRpcs(audit), teamRpcs(audit), officeRpcs(audit), settingsRpcs(audit), payRpcs(audit), peopleRpcs(audit, demoRole));
 
 /** More functions register here as screens are rebuilt (see each live/*.ts). */
 export const registerRpc = (name: string, f: Rpc) => {

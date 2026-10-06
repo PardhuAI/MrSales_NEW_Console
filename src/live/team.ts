@@ -464,3 +464,17 @@ export const adjustLeave = (a: { personId: string; type: string; year: number; d
   call('adjust_leave_balance', { p_employee_id: a.personId, p_type: a.type, p_year: a.year, p_days: a.days, p_reason: a.reason.trim() });
 
 export const mayAdjustLeave = (role: string) => ['owner', 'admin', 'hr'].includes(role);
+
+// ── importing people from a sheet ─────────────────────────────────────
+
+/** What import_people (0112) says it would do, or did, with a sheet of people. */
+export type PeopleReport = {
+  sheet: 'people'; total: number; create: number; update: number; rejected: number; committed: boolean;
+  errors: { row: number; field: string; message: string }[];
+  /** The people the commit added, in sheet order, for sending their logins. */
+  created: { id: string; code: string }[];
+};
+
+/** Dry run with commit false; all or nothing with commit true. Never creates logins. */
+export const importPeople = async (rows: Record<string, string>[], commit: boolean) =>
+  (await call('import_people', { p_rows: rows, p_commit: commit })) as PeopleReport;

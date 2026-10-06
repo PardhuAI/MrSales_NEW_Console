@@ -352,6 +352,7 @@ export type Action = { label: string; path: string; module: string; keywords?: s
 
 export const NEW_ACTIONS: Action[] = [
   { label: 'Add a person', path: '/team/new', module: 'onboarding', keywords: ['employee', 'onboard', 'hire', 'joiner'] },
+  { label: 'Import people from a sheet', path: '/team/import', module: 'onboarding', keywords: ['import people', 'bulk add', 'upload employees', 'spreadsheet', 'excel', 'csv'] },
   { label: 'Add a client', path: '/clients/new', module: 'clients', keywords: ['doctor', 'chemist'] },
   { label: 'Assign a target', path: '/sales/targets/new', module: 'targets' },
   { label: 'Assign a task', path: '/team/tasks/new', module: 'tasks' },
