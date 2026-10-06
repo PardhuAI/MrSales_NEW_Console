@@ -134,7 +134,7 @@ export const setSurveyOpen = async (id: string, open: boolean) => { await call('
 
 export const NOTIFICATION_KIND: Record<string, string> = {
   approval: 'Decisions', task: 'Tasks', document: 'Files and documents', message: 'Messages', device: 'Phone and login',
-  location: 'Location', client: 'Clients', target: 'Targets', info: 'Notices', complaint: 'Complaints',
+  location: 'Location', client: 'Clients', target: 'Targets', info: 'Notices', complaint: 'Complaints', announcement: 'Announcements',
 };
 
 /** One event as people think of it: the same message to many phones at once is one line. */
@@ -155,4 +155,60 @@ export async function loadSent(days: number): Promise<Sent[]> {
     s.to.push({ id: r.employee_id, name: people.get(r.employee_id)?.name ?? 'Someone no longer here', read: r.is_read });
   }
   return [...out.values()];
+}
+
+// ── announcements ─────────────────────────────────────────────────────
+
+export type AudienceKind = 'everyone' | 'team' | 'role' | 'territory';
+export type Announcement = {
+  id: string; title: string; body: string; kind: AudienceKind; audienceId: string | null; audience: string;
+  pinnedUntil: string | null; by: string; byMe: boolean; at: string;
+  to: { id: string; name: string; readAt: string | null; remindedAt: string | null }[];
+};
+
+/** What was sent, newest first, each with who it was addressed to and who has opened it (0113). */
+export async function loadAnnouncements(): Promise<Announcement[]> {
+  const sb = db();
+  const [people, me, list, reads] = await Promise.all([
+    loadEmployees(),
+    sb.auth.getUser(),
+    readAll<{ id: string; title: string; body: string; audience_kind: AudienceKind; audience_id: string | null; audience_name: string; pinned_until: string | null; created_by: string | null; created_by_name: string | null; created_at: string }>((a, b) =>
+      sb.from('announcements').select('id, title, body, audience_kind, audience_id, audience_name, pinned_until, created_by, created_by_name, created_at')
+        .order('created_at', { ascending: false }).range(a, b)),
+    readAll<{ announcement_id: string; employee_id: string; read_at: string | null; reminded_at: string | null }>((a, b) =>
+      sb.from('announcement_reads').select('announcement_id, employee_id, read_at, reminded_at').range(a, b)),
+  ]);
+  const uid = me.data.user?.id ?? null;
+  const byAnnouncement = new Map<string, typeof reads>();
+  for (const r of reads) (byAnnouncement.get(r.announcement_id) ?? byAnnouncement.set(r.announcement_id, []).get(r.announcement_id)!).push(r);
+  return list.map(a => ({
+    id: a.id, title: a.title, body: a.body, kind: a.audience_kind, audienceId: a.audience_id, audience: a.audience_name,
+    pinnedUntil: a.pinned_until, by: a.created_by_name ?? '', byMe: Boolean(uid && a.created_by === uid), at: a.created_at,
+    to: (byAnnouncement.get(a.id) ?? []).map(r => ({ id: r.employee_id, name: people.get(r.employee_id)?.name ?? 'Someone no longer here', readAt: r.read_at, remindedAt: r.reminded_at })),
+  }));
+}
+
+export const sendAnnouncement = async (p: { title: string; body: string; kind: AudienceKind; audienceId: string | null; pinnedUntil: string | null }) =>
+  (await call('send_announcement', { p_title: p.title, p_body: p.body, p_audience: p.kind, p_audience_id: p.audienceId, p_pinned_until: p.pinnedUntil })) as { id: string; count: number };
+
+/** One more notification, to those who have not opened it only. Answers how many. */
+export const remindAnnouncement = async (id: string) => (await call('remind_announcement', { p_id: id })) as number;
+
+/** Who an audience is today, from the roster: the same rule as announcement_audience (0113), for the count before sending. */
+export function audienceFrom<P extends { id: string; status: string; managerId: string | null; designationId: string | null; territoryId: string | null }>(
+  people: P[], kind: AudienceKind, id: string | null,
+): P[] {
+  const active = people.filter(p => p.status === 'active');
+  if (kind === 'everyone') return active;
+  if (!id) return [];
+  if (kind === 'role') return active.filter(p => p.designationId === id);
+  if (kind === 'territory') return active.filter(p => p.territoryId === id);
+  const out: P[] = [];
+  let level = active.filter(p => p.managerId === id);
+  for (let depth = 0; level.length && depth < 12; depth++) {
+    out.push(...level);
+    const ids = new Set(level.map(p => p.id));
+    level = active.filter(p => p.managerId !== null && ids.has(p.managerId) && !out.includes(p));
+  }
+  return out;
 }

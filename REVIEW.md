@@ -260,6 +260,44 @@ The password rules are the ones the console already holds office passwords to (1
 characters, upper and lower case, a digit), stricter than the "at least 10" in
 NEXT_WORK.md, so a password chosen here passes the first-password screen too.
 
+## Phase 7: Announcements (6 October 2026)
+
+Checked on the demo company only; the live run waits on migration 0113.
+
+**Announcements (Share with field, `/share/announcements`).** *Question:* how do I tell
+the whole field, or one team, something important, and know who has read it? *Hero:* the
+list of what was sent, newest first: the title and its first line, who it went to
+("Everyone, 22 people"), and **read by 18 of 22** as a figure over a thin bar in ink.
+*Density:* working list; one announcement opens in a drawer beside it. *States:*
+loading, error with retry, nothing sent yet (what this page holds and how it fills),
+nothing matching a search, the roster unreadable while writing, nobody in the chosen
+audience, sending, reminding. *Avoided:* a card per announcement with a coloured ring
+and a green, amber or red read rate. A low read count is a fact to act on, not an alarm,
+so the bar is ink and the word "Pinned" is a neutral pill.
+
+Writing one: title and message with character counts (line breaks kept), who it goes to
+(Everyone, A team, A role, A territory, then which, each with its head count), an
+optional pin date, and beside it how the phone will show it. The send button names the
+count, and the confirm asks "Send to 4 people?". A manager can only write to their own
+team, and is shown that rather than a choice. In the drawer the people who have not read
+it come first, by name, with "Remind the 4 who have not read it"; the reminder confirms in
+place beside those names (`console-motion`, settle), not in a toast behind the drawer.
+
+`console-review`:
+
+| Check | Result |
+|---|---|
+| Hard rules | Accent only on buttons, links, the selected choice and focus; no status colour on read rates; sentence case, no dashes; counts through `count()`. `check:rules` passes. |
+| Finish | One hero (the read figure, right-aligned, tabular); the audience and date step back in muted small type. |
+| Roles | Owner, admin, HR: any audience. Management: their own team. IT and finance: the page says which permission is missing (`every-page.spec.ts`). |
+| Accessibility | "Who it goes to" has a visible label and is a radio group by arrow keys; the preview is a labelled region; drawer and confirm trap focus. axe in light and dark (`npm run check`). |
+| Widths and looks | 1440 light, 1280 dark, 1024 with the dark menu, 390 light: list, drawer and writing. No sideways scroll. |
+| Motion | Arrive on the list; the existing drawer and dialog surfaces. The bar does not animate. |
+
+Fixed from the look: at 390 the read figure was cut off, so "Sent to" now folds under the
+title on a phone; "1 is pinned" now reads "One is pinned"; the demo's read times
+ran past midnight and now cluster after sending, as real reads do.
+
 ## Still open
 
 - The invitation and password-reset emails, sent to a real inbox from the new console.

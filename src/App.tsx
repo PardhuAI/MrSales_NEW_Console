@@ -90,6 +90,7 @@ const Logins = page(() => import('./pages/settings/Setup'), 'Logins');
 const Roles = page(() => import('./pages/settings/Setup'), 'Roles');
 const BillingPage = page(() => import('./pages/account/Account'), 'BillingPage');
 const Help = page(() => import('./pages/account/Account'), 'Help');
+const Announcements = page(() => import('./pages/share/Announcements'), 'Announcements');
 const YourAccount = page(() => import('./pages/account/YourAccount'), 'YourAccount');
 
 
@@ -126,6 +127,7 @@ const BUILT: Record<string, JSX.Element> = {
   '/share': <Resources />,
   '/share/surveys': <Surveys />,
   '/share/messages': <Messages />,
+  '/share/announcements': <Announcements />,
   '/share/sent': <SentNotifications />,
   '/reports': <Reports />,
   '/reports/downloads': <Downloads />,
@@ -159,6 +161,7 @@ const DETAIL: { path: string; module: string; element: JSX.Element }[] = [
   { path: '/settings/hr/holiday', module: 'hr', element: <HrRules /> },
   { path: '/share/new', module: 'resources', element: <Resources /> },
   { path: '/share/surveys/new', module: 'surveys', element: <Surveys /> },
+  { path: '/share/announcements/new', module: 'announcements', element: <Announcements /> },
   { path: '/settings/logins/invite', module: 'users', element: <Logins /> },
 ];
 

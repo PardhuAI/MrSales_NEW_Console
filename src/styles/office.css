@@ -386,3 +386,163 @@
     gap: var(--s-1);
   }
 }
+
+/* ── announcements ───────────────────────────────────────────────────── */
+/* Read by: the figure, and under it a thin bar in ink on the control grey.
+   Ink, not a status colour: a low read count is a fact, not an alarm. */
+.ann-read {
+  display: inline-grid;
+  justify-items: end;
+  gap: 6px;
+  min-width: 6.5rem;
+}
+
+.ann-read-figure {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.ann-bar {
+  display: block;
+  width: 6.5rem;
+  height: 3px;
+  border-radius: var(--r-pill);
+  background: var(--track);
+  overflow: hidden;
+}
+
+.ann-bar-fill {
+  display: block;
+  height: 100%;
+  background: var(--ink);
+  transform-origin: left center;
+}
+
+.ann-table th[scope='row'] {
+  max-width: 34rem;
+}
+
+.ann-first-line {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.ann-body {
+  white-space: pre-line;
+  max-width: 62ch;
+}
+
+.ann-remind {
+  margin: var(--s-2) 0 var(--s-3);
+}
+
+.ann-to {
+  line-height: var(--lh-body);
+}
+
+.ann-date {
+  max-width: 14rem;
+}
+
+/* Writing: the form, and beside it how the phone will show it. */
+.ann-write {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 15rem;
+  gap: var(--s-8);
+  align-items: start;
+}
+
+.ann-preview {
+  position: sticky;
+  top: 0;
+  display: grid;
+  gap: var(--s-2);
+}
+
+.ann-preview-label {
+  font-size: var(--t-xs);
+  letter-spacing: var(--track-label);
+  color: var(--muted);
+}
+
+.ann-phone {
+  display: grid;
+  gap: var(--s-1);
+  padding: var(--s-4);
+  border: var(--hairline-w) solid var(--hairline);
+  border-radius: var(--r-panel);
+  background: var(--ground);
+}
+
+.ann-phone-pin {
+  font-size: var(--t-xs);
+  color: var(--muted);
+}
+
+.ann-phone-title {
+  font-weight: var(--w-semibold);
+  line-height: var(--lh-snug);
+  overflow-wrap: anywhere;
+}
+
+.ann-phone-body {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  white-space: pre-line;
+  font-size: var(--t-sm);
+  color: var(--muted);
+  line-height: var(--lh-body);
+  overflow-wrap: anywhere;
+}
+
+.ann-phone-read {
+  margin-top: var(--s-2);
+  font-size: var(--t-sm);
+  font-weight: var(--w-medium);
+  color: var(--accent);
+}
+
+@media (max-width: 760px) {
+  .ann-write {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .ann-preview {
+    position: static;
+  }
+}
+
+.ann-remind-done {
+  margin: var(--s-2) 0 var(--s-3);
+  font-size: var(--t-sm);
+  color: var(--muted);
+}
+
+/* On a phone, who it went to folds under the title, so the read figure stays in view. */
+.ann-to-narrow {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .ann-col-to {
+    display: none;
+  }
+
+  .ann-to-narrow {
+    display: block;
+  }
+
+  .ann-bar,
+  .ann-read {
+    width: auto;
+    min-width: 4.5rem;
+  }
+
+  .ann-bar {
+    width: 4.5rem;
+  }
+}

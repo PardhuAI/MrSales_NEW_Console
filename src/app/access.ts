@@ -3,7 +3,8 @@ import { useMe } from '../live/session';
 /**
  * Who may open what. The matrix is the old console's, unchanged
  * (Mr_Sales_Web/src/data/store.ts GRANTS), plus chat for every role: the old
- * console had no messages, and the database decides who may write to whom.
+ * console had no messages, and the database decides who may write to whom;
+ * and announcements (6 October 2026) for owner, admin, HR and management.
  * The database enforces the same rules; this only decides what is shown.
  */
 export type Role = 'owner' | 'admin' | 'hr' | 'it' | 'finance' | 'management';
@@ -14,10 +15,10 @@ const GRANTS: Record<Role, string[]> = {
     'products', 'stockists', 'people', 'org', 'geo', 'roles', 'resources', 'surveys', 'complaints',
     'tours', 'rcpa', 'coverage', 'stock', 'onboarding', 'hr', 'tasks',
     'notifications', 'ownership', 'reports', 'exports', 'config', 'paysetup', 'users',
-    'approvals', 'leave', 'expenses', 'attendance', 'audit', 'help', 'billing', 'chat'],
+    'approvals', 'leave', 'expenses', 'attendance', 'audit', 'help', 'billing', 'chat', 'announcements'],
   hr: ['dashboard', 'attention', 'people', 'org', 'roles', 'attendance', 'leave',
     'documents', 'tours', 'hr', 'onboarding', 'payroll', 'paysetup', 'ownership',
-    'reports', 'exports', 'config', 'approvals', 'help', 'chat'],
+    'reports', 'exports', 'config', 'approvals', 'help', 'chat', 'announcements'],
   it: ['dashboard', 'people', 'org', 'users', 'roles', 'audit', 'health',
     'config', 'onboarding', 'help', 'chat'],
   finance: ['dashboard', 'attention', 'expenses', 'approvals', 'sales', 'orders',
@@ -25,7 +26,7 @@ const GRANTS: Record<Role, string[]> = {
   management: ['dashboard', 'attention', 'field', 'clients', 'sales', 'orders', 'targets',
     'people', 'resources', 'surveys', 'complaints', 'tours', 'rcpa',
     'coverage', 'stock', 'stockists', 'tasks', 'notifications', 'reports', 'exports',
-    'expenses', 'help', 'chat'],
+    'expenses', 'help', 'chat', 'announcements'],
 };
 
 export const ROLE_LABEL: Record<Role, string> = {

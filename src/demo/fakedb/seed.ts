@@ -1,5 +1,6 @@
 import type { Row, Tables } from './engine';
 import { seedPay } from './pay';
+import { seedAnnouncements } from './announcements';
 
 /**
  * The demo company, as database rows in the live schema's own shape.
@@ -662,6 +663,7 @@ export function seed(now = new Date()): Tables {
   // Tables the console reads that hold nothing in this company yet.
   for (const t of ['travel_rates', 'chat_threads']) T[t] ??= [];
   seedPay(T, created);
+  seedAnnouncements(T, now);
   void traveller;
   return T;
 }

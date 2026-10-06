@@ -255,6 +255,11 @@ export const SECTIONS: Section[] = [
         keywords: ['chat', 'message', 'conversation', 'talk', 'whatsapp', 'write to'],
       },
       {
+        path: '/share/announcements', label: 'Announcements', module: 'announcements',
+        about: 'Tell the whole field, a team, a role or a territory something, and see who has read it.',
+        keywords: ['announcement', 'notice', 'circular', 'broadcast', 'tell everyone', 'message all', 'pinned', 'read receipt'],
+      },
+      {
         path: '/share/sent', label: 'Sent notifications', module: 'notifications',
         about: 'Every message the phones received, and who it reached.',
         keywords: ['notifications', 'messages', 'alerts sent', 'push'],
@@ -365,6 +370,7 @@ export const NEW_ACTIONS: Action[] = [
   { label: 'Add a stockist', path: '/sales/stockists/new', module: 'stockists' },
   { label: 'Upload a resource', path: '/share/new', module: 'resources', keywords: ['visual aid', 'file'] },
   { label: 'Start a survey', path: '/share/surveys/new', module: 'surveys' },
+  { label: 'Write an announcement', path: '/share/announcements/new', module: 'announcements', keywords: ['notice', 'circular', 'broadcast', 'tell everyone'] },
   { label: 'Declare a holiday', path: '/settings/hr/holiday', module: 'hr' },
   { label: 'Invite an office user', path: '/settings/logins/invite', module: 'users', keywords: ['login', 'access'] },
 ];
