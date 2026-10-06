@@ -214,6 +214,52 @@ failed request; axe passes in light and dark. Fixed from the look:
 - The attendance grid's cells carried an aria-label on a plain span (axe); the reason is
   now visually hidden text.
 
+## Phases 5 and 6 (6 October 2026)
+
+Checked on the demo company only. The live run waits on migration 0112 being applied
+(see NEXT_WORK.md, "Left for the owner"); Your account needs no migration but has not
+been signed into live from this session.
+
+**Import people (Team, People, "Import from a sheet"; `/team/import`).**
+*Question:* I have 40 reps in a spreadsheet; how do I get them all in without typing each
+one? *Hero:* the check: one sentence ("2 rows need fixing; 1 of 3 rows are ready") over
+a table of every problem, by row and column, saying how to fix it. *Density:* working,
+in a wide drawer beside the roster. *States:* reading, checking, a file with no rows or no
+code column, problems (the add button stays disabled), clean, adding, done, sending
+logins with a progress line and any failures named; a role without the right is told who
+may import. *Avoided:* a stepper of numbered circles and a green "success" panel: the
+three steps are one quiet line of words, the verdict is plain text, no status colour
+where nothing is a status.
+
+**Your account (`/account`, first in the account menu).** *Question:* is my account safe,
+and can I change my password myself? *Hero:* the line under the title (who is signed in,
+and whether two-step sign-in is on), then the sections. *Density:* reading, set like the
+settings on a Mac: each part's name and purpose on the left, the thing itself on the
+right, separated by space and one hairline. *States:* two-step status loading, unreadable,
+off, enrolling (QR code, the key as text with copy, the code), on (with "since"), turning
+off (asks for a code); recent activity loading, error, empty. *Avoided:* a card per
+section and a "security score". The QR code sits on white in every appearance (a token,
+`--qr-ground`), because a camera reads it.
+
+`console-review`, both screens:
+
+| Check | Result |
+|---|---|
+| Hard rules | Accent only on buttons, links and focus; "On" is a good-toned pill beside the word, "Off" neutral; no dashes, sentence case, counts through `count()`. `check:rules` passes. |
+| Finish | One hero each; three type sizes at most in any area; problem rows right-align the row number in tabular figures. |
+| States | As above. Long names wrap; a 200-problem sheet is capped with "And n more". |
+| Roles | Import: owner, admin, HR (pay column for owner and HR only); IT reaching the address is told who may. Your account: every role. |
+| Accessibility | Every input labelled; errors in words; the drawer and the confirm trap focus and close on Escape; axe passes in light and dark (`npm run check`). |
+| Widths | 1440 and 390 light, 1280 dark, 1024 with the dark menu, looked at; no sideways scroll (`every-page.spec.ts`). |
+| Motion | Nothing new: the existing drawer and dialog surfaces, and Arrive on the activity list. |
+
+Fixed from the look: the step numbers were set in tabular figures and read "1 . Get the
+sheet"; the one-person case read "Send logins to the 1 new person" and now names them.
+
+The password rules are the ones the console already holds office passwords to (12
+characters, upper and lower case, a digit), stricter than the "at least 10" in
+NEXT_WORK.md, so a password chosen here passes the first-password screen too.
+
 ## Still open
 
 - The invitation and password-reset emails, sent to a real inbox from the new console.

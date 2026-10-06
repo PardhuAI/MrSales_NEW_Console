@@ -336,6 +336,11 @@ export const SECTIONS: Section[] = [
 /** Pages reached from the account menu rather than the sidebar. */
 export const ACCOUNT_PAGES: Page[] = [
   {
+    path: '/account', label: 'Your account', module: 'help',
+    about: 'Your password, two-step sign-in, signed-in devices and what this login changed.',
+    keywords: ['password', 'change password', 'two-step', '2fa', 'mfa', 'authenticator', 'otp', 'security', 'sign out everywhere', 'profile', 'my account'],
+  },
+  {
     path: '/help', label: 'Help from Mr Sales', module: 'help',
     about: 'Ask the Mr Sales team for help, and follow your requests.',
     keywords: ['support', 'ticket', 'help', 'contact'],

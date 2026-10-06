@@ -92,6 +92,8 @@
   /* The dim behind a drawer, dialog or menu, and text on the danger colour. */
   --scrim: rgb(0 0 0 / 0.26);
   --on-bad: #ffffff;
+  /* A QR code is read by a camera: always dark on white, in every appearance. */
+  --qr-ground: #ffffff;
 
   /* The menu, light. */
   --nav-bg: var(--ground);

@@ -1,5 +1,6 @@
 import { useState, type FormEvent, type ReactNode } from 'react';
 import { useSession } from '../live/session';
+import { PASSWORD_RULES, secondStep } from '../live/account';
 
 /**
  * Getting into the console: signing in, a forgotten password, choosing a new
@@ -128,13 +129,8 @@ export function SignIn({ message }: { message?: string }) {
   );
 }
 
-/** The rules "Invite an office user" holds an office password to, as in the old console. */
-const RULES: { label: string; met: (p: string) => boolean }[] = [
-  { label: 'At least 12 characters', met: p => p.length >= 12 },
-  { label: 'Upper and lower case letters', met: p => /[a-z]/.test(p) && /[A-Z]/.test(p) },
-  { label: 'At least one digit', met: p => /\d/.test(p) },
-  { label: 'Does not start with password, welcome or mrsales', met: p => p.length > 0 && !/^(password|welcome|mrsales)/i.test(p) },
-];
+/** The rules an office password is held to, as in the old console. */
+const RULES = PASSWORD_RULES;
 
 export function ChoosePassword() {
   const { setPassword, signOut } = useSession();
@@ -186,6 +182,48 @@ export function ChoosePassword() {
       <button type="button" className="link auth-switch" onClick={() => void signOut()}>
         Sign out
       </button>
+    </Frame>
+  );
+}
+
+/**
+ * The second step at sign-in: the login has an authenticator app and this
+ * session has not given its code yet. The same calm page as signing in.
+ */
+export function SecondStep() {
+  const { refresh, signOut } = useSession();
+  const [code, setCode] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+
+  const submit = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!/^\d{6}$/.test(code.trim())) return setError('Type the six digits your authenticator app shows for Mr Sales.');
+    setBusy(true);
+    setError('');
+    try {
+      await secondStep(code.trim());
+      await refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+      setBusy(false);
+    }
+  };
+
+  return (
+    <Frame>
+      <h1 className="auth-title">Enter the code from your phone</h1>
+      <p className="auth-text">Your login has two-step sign-in on. Open your authenticator app and type the six-digit code it shows for Mr Sales.</p>
+      <form className="auth-form" onSubmit={submit} noValidate>
+        <label className="field">
+          <span className="field-label">Six-digit code</span>
+          <input className="input code-input" inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={code}
+            onChange={e => setCode(e.target.value.replace(/\D/g, ''))} autoFocus />
+        </label>
+        {error && <p className="auth-error" role="alert">{error}</p>}
+        <button className="btn btn-primary auth-submit" type="submit" disabled={busy}>{busy ? 'Checking…' : 'Continue'}</button>
+      </form>
+      <button type="button" className="link auth-switch" onClick={() => void signOut()}>Sign in with another login</button>
     </Frame>
   );
 }

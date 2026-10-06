@@ -7,7 +7,7 @@ import { SectionLayout } from './components/SectionLayout';
 import { Coming, NotFound } from './pages/Coming';
 import { ThemeProvider } from './app/theme';
 import { SessionProvider, useSession } from './live/session';
-import { Blocked, ChoosePassword, Loading, SignIn } from './pages/SignIn';
+import { Blocked, ChoosePassword, SecondStep, Loading, SignIn } from './pages/SignIn';
 import { ACCOUNT_PAGES, NEW_ACTIONS, SECTIONS, pageOf } from './app/nav';
 import { useCan } from './app/access';
 
@@ -90,6 +90,7 @@ const Logins = page(() => import('./pages/settings/Setup'), 'Logins');
 const Roles = page(() => import('./pages/settings/Setup'), 'Roles');
 const BillingPage = page(() => import('./pages/account/Account'), 'BillingPage');
 const Help = page(() => import('./pages/account/Account'), 'Help');
+const YourAccount = page(() => import('./pages/account/YourAccount'), 'YourAccount');
 
 
 /** Pages that are rebuilt; every other page in nav.ts shows <Coming />. */
@@ -137,6 +138,7 @@ const BUILT: Record<string, JSX.Element> = {
   '/settings/hr': <HrRules />,
   '/settings/ownership': <Ownership />,
   '/settings/audit': <AuditLog />,
+  '/account': <YourAccount />,
   '/help': <Help />,
   '/billing': <BillingPage />,
 };
@@ -201,6 +203,8 @@ function Gate() {
       return <SignIn message={state.message} />;
     case 'recovery':
       return <ChoosePassword />;
+    case 'secondStep':
+      return <SecondStep />;
     case 'blocked':
       return <Blocked message={state.message} />;
     case 'signedIn':

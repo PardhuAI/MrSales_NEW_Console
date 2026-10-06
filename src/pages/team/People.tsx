@@ -89,6 +89,9 @@ function View({ m, at, error, reload }: { m: RosterModel; at: Date | null; error
         {draft && mayManagePeople(me.role) && <Link className="link" to="/team/new">Finish adding {draft.name || 'the joiner you started'}</Link>}
       </Toolbar>
       {mayManagePeople(me.role) && <ImportPeople open={pathname === '/team/import'} onClose={() => nav('/team')} />}
+      {pathname === '/team/import' && !mayManagePeople(me.role) && (
+        <p className="table-filter-note" role="status">Importing people is for owner, admin and HR logins. Ask one of them to import the sheet, or to change your access.</p>
+      )}
       {only.size > 0 && (
         <p className="table-filter-note">Showing the {count(only.size, 'person', 'people')} just imported. <button type="button" className="link" onClick={() => setParams({})}>Show everyone</button></p>
       )}

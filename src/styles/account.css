@@ -1,0 +1,187 @@
+/* Your account: sections set like the settings on a Mac. The name of each
+   part and what it is for on the left, the thing itself on the right,
+   separated by space and one hairline. No cards. */
+
+.account {
+  max-width: 980px;
+}
+
+.acct-part {
+  display: grid;
+  grid-template-columns: minmax(0, 17rem) minmax(0, 1fr);
+  gap: var(--s-4) var(--s-10);
+  padding: var(--s-8) 0;
+  border-top: var(--hairline-w) solid var(--hairline);
+}
+
+.acct-part:first-of-type {
+  border-top: 0;
+  padding-top: var(--s-4);
+}
+
+.acct-part-about {
+  margin-top: var(--s-2);
+  color: var(--muted);
+  font-size: var(--t-sm);
+  line-height: var(--lh-body);
+}
+
+.acct-part-body {
+  display: grid;
+  gap: var(--s-4);
+  align-content: start;
+  min-width: 0;
+}
+
+.acct-facts {
+  display: grid;
+  gap: var(--s-3);
+  margin: 0;
+}
+
+.acct-facts div {
+  display: grid;
+  grid-template-columns: 10rem minmax(0, 1fr);
+  gap: var(--s-4);
+  align-items: baseline;
+}
+
+.acct-facts dt {
+  color: var(--muted);
+  font-size: var(--t-sm);
+}
+
+.acct-facts dd {
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.acct-inline {
+  margin-left: var(--s-2);
+  font-size: var(--t-sm);
+}
+
+.acct-inline-form {
+  display: grid;
+  gap: var(--s-3);
+  max-width: 26rem;
+}
+
+.acct-form {
+  max-width: 26rem;
+}
+
+.acct-rules {
+  margin-top: calc(var(--s-2) * -1);
+}
+
+.acct-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+}
+
+.acct-status {
+  display: grid;
+  gap: var(--s-4);
+}
+
+.acct-status-text {
+  color: var(--muted);
+  line-height: var(--lh-body);
+  max-width: 60ch;
+}
+
+.code-input {
+  max-width: 10rem;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.2em;
+}
+
+.acct-enrol {
+  display: grid;
+  gap: var(--s-4);
+  max-width: 34rem;
+}
+
+.acct-enrol-steps {
+  display: grid;
+  gap: var(--s-2);
+  margin: 0;
+  padding-left: var(--s-5);
+  line-height: var(--lh-body);
+}
+
+.acct-qr {
+  display: block;
+  width: 176px;
+  height: 176px;
+  padding: var(--s-2);
+  border: var(--hairline-w) solid var(--hairline);
+  border-radius: var(--r-control);
+  background: var(--qr-ground);
+}
+
+.acct-secret-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-3);
+  margin-top: var(--s-1);
+}
+
+.acct-key {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: var(--t-sm);
+  letter-spacing: 0.04em;
+  overflow-wrap: anywhere;
+}
+
+.acct-activity {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.acct-activity li {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--s-4);
+  padding: var(--s-3) 0;
+  border-bottom: var(--hairline-w) solid var(--hairline);
+}
+
+.acct-activity li:last-child {
+  border-bottom: 0;
+}
+
+.acct-activity-what {
+  min-width: 0;
+}
+
+.acct-activity-when {
+  flex: none;
+  color: var(--muted);
+  font-size: var(--t-sm);
+  white-space: nowrap;
+}
+
+.acct-more {
+  margin-top: var(--s-3);
+  font-size: var(--t-sm);
+}
+
+@media (max-width: 860px) {
+  .acct-part {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--s-3);
+    padding: var(--s-6) 0;
+  }
+
+  .acct-facts div {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+}

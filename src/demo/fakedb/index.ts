@@ -105,6 +105,12 @@ const rpcs: Record<string, Rpc> = {
   decide_order: (a, db) => decide('orders', 'order', [a.p_id as string], Boolean(a.p_approve), a.p_reason, db),
   decide_tour: (a, db) => decide('tour_plan_months', 'tour', [a.p_id as string], Boolean(a.p_approve), a.p_reason, db),
   decide_leave: (a, db) => decide('leave_requests', 'leave', [a.p_leave_id as string], Boolean(a.p_approve), a.p_reason, db),
+  set_my_chat_name: (a, db) => {
+    const name = String(a.p_name ?? '').trim();
+    if (name.length < 2) throw new Error('write the name your team knows you by');
+    audit(db, 'chose a name for messages', 'Login', name);
+    return null;
+  },
   dismiss_setup_step: (a, db) => {
     const s = db.rows('org_settings')[0];
     const list = new Set((s.setup_dismissed as string[]) ?? []);
@@ -126,4 +132,6 @@ export const DEMO_ME = ME;
 
 let instance: FakeDb | null = null;
 export const demoDb = () => (instance ??= new FakeDb(seed(), views, rpcs));
-export const demoClient = () => fakeClient(demoDb(), { id: DEMO_USER, email: 'demo@mrsales.in' });
+// One client for the visit, so the demo login's password and two-step state hold between calls.
+let client: ReturnType<typeof fakeClient> | null = null;
+export const demoClient = () => (client ??= fakeClient(demoDb(), { id: DEMO_USER, email: 'demo@mrsales.in' }));
