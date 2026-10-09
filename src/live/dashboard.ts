@@ -56,6 +56,8 @@ type Call = {
   id: string; employee: string; client: string; clientId: string | null;
   day: string; at: number; status: 'done' | 'missed' | 'started' | 'planned';
   verdict: string | null; mocked: boolean;
+  /** When it happened, for comparing with a fake-location review. */
+  ts: number;
 };
 
 const statusOf = (s: string): Call['status'] =>
@@ -86,7 +88,7 @@ export async function loadLiveDashboard(orgName: string): Promise<DashboardModel
 
   const head = { count: 'exact' as const, head: true };
   const [
-    employees, settings, holidays, activities, fakes, travel, leaves,
+    employees, settings, holidays, activities, fakes, reviews, travel, leaves,
     clientsTotal, clientsNoPlace, clientsNoOwner, clientsNew, sales, targets,
   ] = await Promise.all([
     loadEmployees(),
@@ -102,6 +104,7 @@ export async function loadLiveDashboard(orgName: string): Promise<DashboardModel
       .select('employee_id, created_at, purpose, fake_distance_m, real_distance_m, real_seen_at, clients(name)')
       .gte('created_at', startOf(shift(today, -7)))
       .order('created_at', { ascending: false }),
+    sb.from('fake_location_reviews').select('employee_id, reviewed_through'),
     sb.rpc('travel_exceptions', { p_since: shift(today, -14) }),
     sb.from('leave_requests').select('employee_id, from_date, to_date').eq('status', 'approved').gte('to_date', shift(today, -10)),
     sb.from('clients').select('id', head),
@@ -148,6 +151,7 @@ export async function loadLiveDashboard(orgName: string): Promise<DashboardModel
       status: statusOf(a.status),
       verdict: a.geo_verdict,
       mocked: Boolean(a.geo_mocked) || a.geo_verdict === 'suspect',
+      ts: when.getTime(),
     };
   });
   const byDay = new Map<string, Call[]>();
@@ -232,8 +236,15 @@ export async function loadLiveDashboard(orgName: string): Promise<DashboardModel
   const fakeRows = (fakes.data ?? []) as unknown as {
     employee_id: string; created_at: string; purpose: string | null; real_distance_m: number | null; clients: { name: string } | null;
   }[];
+  // A manager's review draws a line under a person: only what came after it warns.
+  const reviewedThrough = new Map<string, number>();
+  for (const r of (reviews.data ?? []) as { employee_id: string; reviewed_through: string }[]) {
+    const t = new Date(r.reviewed_through).getTime();
+    if (t > (reviewedThrough.get(r.employee_id) ?? 0)) reviewedThrough.set(r.employee_id, t);
+  }
+  const unreviewed = (employee: string, t: number) => t > (reviewedThrough.get(employee) ?? 0);
   const fakeBy = new Map<string, typeof fakeRows>();
-  for (const f of fakeRows) fakeBy.set(f.employee_id, [...(fakeBy.get(f.employee_id) ?? []), f]);
+  for (const f of fakeRows.filter(x => unreviewed(x.employee_id, new Date(x.created_at).getTime()))) fakeBy.set(f.employee_id, [...(fakeBy.get(f.employee_id) ?? []), f]);
   for (const [id, list] of fakeBy) {
     const last = list[0];
     const who = person(id)?.name ?? 'Someone';
@@ -248,9 +259,9 @@ export async function loadLiveDashboard(orgName: string): Promise<DashboardModel
     });
   }
   const mockedBy = new Map<string, number>();
-  for (const c of calls) if (c.mocked && c.day >= shift(today, -14) && !fakeBy.has(c.employee)) mockedBy.set(c.employee, (mockedBy.get(c.employee) ?? 0) + 1);
+  for (const c of calls) if (c.mocked && unreviewed(c.employee, c.ts) && c.day >= shift(today, -14) && !fakeBy.has(c.employee)) mockedBy.set(c.employee, (mockedBy.get(c.employee) ?? 0) + 1);
   for (const [id, n] of mockedBy) {
-    const latest = calls.filter(c => c.employee === id && c.mocked).map(c => c.day).sort().pop() ?? today;
+    const latest = calls.filter(c => c.employee === id && c.mocked && unreviewed(c.employee, c.ts)).map(c => c.day).sort().pop() ?? today;
     attention.push({
       id: `mock-${id}`, severity: 'critical',
       title: `${person(id)?.name ?? 'Someone'}'s phone reported a fake location on ${plural(n, 'visit')}`,

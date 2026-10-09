@@ -3,10 +3,13 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { ArrowLeft, ArrowsOut } from '@phosphor-icons/react';
 import { DayStrip } from '../../components/DayStrip';
 import { useResource } from '../../data/resource';
-import { loadDayRecord, photoUrls, VERDICT, workTypeLabel, type DayRecord, type Visit } from '../../live/field';
+import { loadDayRecord, photoUrls, reviewFakeLocations, VERDICT, workTypeLabel, type DayRecord, type Visit } from '../../live/field';
+import { invalidate } from '../../data/resource';
+import { dashboardStore } from '../../data/dashboard';
+import { useMe } from '../../live/session';
 import { IST_TODAY, dayMonth, longDay, timeOf } from '../../lib/days';
 import { count, rupees } from '../../lib/format';
-import { Drawer, Pill } from '../../components/kit';
+import { Confirm, Drawer, Notice, Pill } from '../../components/kit';
 import { Empty, Freshness, LoadError, Loading } from '../../components/States';
 import { Arrive } from '../../components/motion';
 import { useCan } from '../../app/access';
@@ -69,6 +72,27 @@ function DayView({ d, at, error, reload }: { d: DayRecord; at: Date | null; erro
   const started = d.visits.filter(v => v.status === 'inProgress');
   const outside = d.visits.filter(v => v.verdict === 'outOfRange').length;
   const fake = d.visits.filter(v => v.mocked).length;
+  // A review draws a line: what happened at or before it is dealt with.
+  const me = useMe();
+  const after = (t: string) => !d.review || t > d.review.at;
+  const openBlocked = d.blocked.filter(b => after(b.at));
+  const openFake = d.visits.filter(v => v.mocked && after(v.at)).length;
+  const mayReview = ['owner', 'admin', 'hr', 'management'].includes(me.role);
+  const [asking, setAsking] = useState(false);
+  const [reviewing, setReviewing] = useState(false);
+  const [reviewProblem, setReviewProblem] = useState('');
+  const [reviewNotice, setReviewNotice] = useState('');
+  const review = async (note: string) => {
+    setReviewing(true); setReviewProblem('');
+    try {
+      const n = await reviewFakeLocations(p.id, note);
+      setAsking(false);
+      setReviewNotice(`${p.name}'s fake-location ${n === 1 ? 'warning is' : 'warnings are'} marked reviewed. A new attempt will warn again.`);
+      invalidate('field:', 'home:');
+      void dashboardStore.load();
+      reload();
+    } catch (e) { setReviewProblem(e instanceof Error ? e.message : String(e)); } finally { setReviewing(false); }
+  };
   const noLoc = d.visits.filter(v => (v.status === 'completed' || v.status === 'inProgress') && (!v.verdict || v.verdict === 'unavailable')).length;
   const times = [...done, ...started].map(v => v.at).sort();
   const today = IST_TODAY();
@@ -97,16 +121,31 @@ function DayView({ d, at, error, reload }: { d: DayRecord; at: Date | null; erro
         </p>
       </Arrive>
 
-      {(fake > 0 || d.blocked.length > 0) && (
+      {(openFake > 0 || openBlocked.length > 0) && (
         <Arrive className="alert critical" index={1}>
           <Pill tone="critical">Fake location</Pill>
           <p>
-            {d.blocked.length > 0 && <>The phone detected a fake location app {d.blocked.length === 1 ? 'once' : `${d.blocked.length} times`} and blocked the visit{d.blocked[0].client ? ` at ${d.blocked[0].client}` : ''}, at {timeOf(d.blocked[0].at)}.{d.blocked[0].realDistance != null ? ` The last genuine position was ${metres(d.blocked[0].realDistance)} from the client.` : ''} </>}
-            {fake > 0 && <>{count(fake, 'visit was', 'visits were')} logged while the phone reported a simulated position. </>}
+            {openBlocked.length > 0 && <>The phone detected a fake location app {openBlocked.length === 1 ? 'once' : `${openBlocked.length} times`} and blocked the visit{openBlocked[0].client ? ` at ${openBlocked[0].client}` : ''}, at {timeOf(openBlocked[0].at)}.{openBlocked[0].realDistance != null ? ` The last genuine position was ${metres(openBlocked[0].realDistance)} from the client.` : ''} </>}
+            {openFake > 0 && <>{count(openFake, 'visit was', 'visits were')} logged while the phone reported a simulated position. </>}
             Worth a conversation before a conclusion.
+            {mayReview && <> <button type="button" className="link" onClick={() => setAsking(true)}>Mark as reviewed</button></>}
           </p>
         </Arrive>
       )}
+      {d.review && (fake > openFake || d.blocked.length > openBlocked.length) && (
+        <Arrive className="alert" index={1}>
+          <Pill>Reviewed</Pill>
+          <p>
+            Fake-location warnings up to {dayMonth(d.review.at.slice(0, 10))}, {timeOf(d.review.at)} were reviewed by {d.review.by}{d.review.note ? `: “${d.review.note}”` : '.'} They stay on this day as a record.
+          </p>
+        </Arrive>
+      )}
+      <Confirm open={asking} title={`Mark ${p.name}'s warnings as reviewed?`} confirmLabel="Mark as reviewed" busy={reviewing} error={reviewProblem}
+        reason={{ label: 'Note', required: false, placeholder: 'For example: spoke to them; a location app was left on.' }}
+        onCancel={() => setAsking(false)} onConfirm={note => void review(note)}>
+        <p>Every fake-location warning for {p.name} so far stops showing on Today, Needs attention and their phone's page for their manager. A new attempt will warn again. Nothing is deleted.</p>
+      </Confirm>
+      {reviewNotice && <Notice onDone={() => setReviewNotice('')}>{reviewNotice}</Notice>}
 
       <Arrive className="plan-band" index={1}>
         {d.plan ? (

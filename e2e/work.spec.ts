@@ -251,6 +251,21 @@ test('leave balances show what is left, and HR adjusts one with a reason', async
   await expect(row).toContainText('6 taken off');
 });
 
+test('a reviewed fake-location warning leaves Needs attention and stays on the day as a record', async ({ page }) => {
+  await as(page, 'owner', '/attention');
+  const alert = page.getByText('Sai Kiran Reddy tried to use a fake location');
+  await expect(alert).toBeVisible();
+  await page.getByRole('link', { name: 'Open their day' }).first().click();
+  await page.getByRole('button', { name: 'Mark as reviewed' }).click();
+  await top(page).getByPlaceholder(/spoke to them/).fill('Spoke to him; a location app was left on.');
+  await top(page).getByRole('button', { name: 'Mark as reviewed' }).click();
+  await expect(page.getByText(/were reviewed by .*a location app was left on/)).toBeVisible();
+  // In-app navigation: a reload would start the demo company afresh.
+  await page.evaluate(() => { history.pushState({}, '', '/attention'); dispatchEvent(new PopStateEvent('popstate')); });
+  await expect(page.getByRole('heading').first()).toBeVisible();
+  await expect(page.getByText('Sai Kiran Reddy tried to use a fake location')).toHaveCount(0);
+});
+
 test('only an owner or admin may change the company rules', async ({ page }) => {
   await as(page, 'finance', '/settings/rules');
   await expect(page.getByText('Only an owner or admin changes these rules.')).toBeVisible();

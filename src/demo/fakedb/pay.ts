@@ -201,6 +201,15 @@ export function payRpcs(audit: Audit): Record<string, Rpc> {
       audit(db, 'adjusted a leave balance', 'Leave balance', String(e.name), null, { type: a.p_type, year: a.p_year, days }, trim(a.p_reason));
       return id;
     },
+    review_fake_locations: (a, db) => {
+      const e = person(db, a.p_employee_id);
+      const since = Math.max(0, ...db.rows('fake_location_reviews').filter(r => r.employee_id === e.id).map(r => Date.parse(String(r.reviewed_through))));
+      const n = db.rows('fake_location_attempts').filter(f => f.employee_id === e.id && Date.parse(String(f.created_at)) > since).length
+        + db.rows('activities').filter(x => x.employee_id === e.id && (x.geo_mocked || x.geo_verdict === 'suspect') && Date.parse(String(x.actual_start ?? x.created_at)) > since).length;
+      db.mutable('fake_location_reviews').push({ id: crypto.randomUUID(), org_id: ORG, employee_id: e.id, reviewed_through: now(), reviewer_name: 'Pardhu Karnati', note: trim(a.p_note), created_at: now() });
+      audit(db, 'reviewed fake-location warnings', 'Employee', String(e.name), null, { warnings: n }, trim(a.p_note));
+      return n;
+    },
     save_travel_rates: (a, db) => {
       const e = person(db, a.p_employee_id);
       for (const r of (a.p_rates as { mode: string; local_rate: number; outstation_rate: number }[]) ?? []) {
@@ -242,4 +251,5 @@ export function seedPay(T: Record<string, Row[]>, created: string) {
   });
   T.employee_expense_rules ??= [];
   T.leave_adjustments ??= [];
+  T.fake_location_reviews ??= [];
 }

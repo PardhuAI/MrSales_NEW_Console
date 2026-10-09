@@ -198,6 +198,8 @@ export type DayRecord = {
   plan: { at: string; workType: string; area: string; cluster: string; address: string | null; remarks: string | null; lat: number | null; lng: number | null } | null;
   visits: Visit[];
   blocked: { at: string; client: string | null; realDistance: number | null }[];
+  /** The person's latest fake-location review: warnings at or before it are dealt with. */
+  review: { at: string; by: string; note: string | null } | null;
   onLeave: string | null;
   /** Neighbouring days that have something recorded, for previous and next. */
   prev: string | null;
@@ -217,7 +219,7 @@ type ActRow = {
 
 export async function loadDayRecord(employeeId: string, date: string): Promise<DayRecord> {
   const sb = db();
-  const [employees, rules, acts, plan, fakes, leave, around, products] = await Promise.all([
+  const [employees, rules, acts, plan, fakes, leave, around, products, review] = await Promise.all([
     loadEmployees(),
     companyRules(),
     sb.from('activities')
@@ -232,6 +234,8 @@ export async function loadDayRecord(employeeId: string, date: string): Promise<D
     sb.from('leave_requests').select('type').eq('employee_id', employeeId).eq('status', 'approved').lte('from_date', date).gte('to_date', date).limit(1),
     sb.from('day_plans').select('work_date').eq('employee_id', employeeId).gte('work_date', shiftDay(date, -30)).lte('work_date', shiftDay(date, 30)),
     sb.from('products').select('id, name'),
+    sb.from('fake_location_reviews').select('reviewed_through, reviewer_name, note').eq('employee_id', employeeId)
+      .order('reviewed_through', { ascending: false }).limit(1).maybeSingle(),
   ]);
   const rows = must(acts, 'the visits') as unknown as ActRow[];
   const p = must(plan, 'the day plan') as unknown as { declared_at: string; work_type: string; cluster_name: string | null; captured_address: string | null; captured_lat: number | null; captured_lng: number | null; remarks: string | null; areas: { name: string } | null; clusters: { name: string } | null } | null;
@@ -275,6 +279,11 @@ export async function loadDayRecord(employeeId: string, date: string): Promise<D
     visits,
     blocked: ((must(fakes, 'blocked fake locations') ?? []) as unknown as { created_at: string; real_distance_m: number | null; clients: { name: string } | null }[])
       .map(f => ({ at: f.created_at, client: f.clients?.name ?? null, realDistance: f.real_distance_m })),
+    review: review.data ? {
+      at: (review.data as { reviewed_through: string }).reviewed_through,
+      by: (review.data as { reviewer_name: string | null }).reviewer_name ?? 'Someone',
+      note: (review.data as { note: string | null }).note,
+    } : null,
     onLeave: lv[0]?.type ?? null,
     prev: [...days].reverse().find(d => d < date) ?? null,
     next: days.find(d => d > date && d <= IST_TODAY()) ?? null,
@@ -477,4 +486,11 @@ export async function loadCoverage(weeks = 6): Promise<CoverageModel> {
   }).filter(o => o.inDays <= 30).sort((a, b) => a.inDays - b.inDays);
 
   return { weeks: all, rows, occasions, callsPlotted: rows.reduce((s, r) => s + r.total, 0) };
+}
+
+/** Marks everything so far reviewed for one person (their manager or the office); returns how many it cleared. */
+export async function reviewFakeLocations(employeeId: string, note: string): Promise<number> {
+  const { data, error } = await db().rpc('review_fake_locations', { p_employee_id: employeeId, p_note: note.trim() || null });
+  if (error) throw new Error(error.message.replace(/^./, x => x.toUpperCase()));
+  return Number(data ?? 0);
 }
