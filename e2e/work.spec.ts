@@ -55,6 +55,9 @@ test('an expense claim is rejected only with a reason, and approved as one decis
 
 test('someone paid outside Mr Sales gets an uploaded payslip, which needs a net pay', async ({ page }) => {
   await as(page, 'owner', '/money/payroll');
+  // The current month: the demo's joining dates move with today, so whether a
+  // newcomer is on last month's roster depends on the date the test runs.
+  await page.getByRole('radiogroup', { name: 'Payroll for' }).getByRole('radio').last().click();
   const row = page.getByRole('row', { name: /Farhan Siddiqui/ });
   await row.getByRole('button', { name: 'Upload a payslip' }).click();
   await page.getByRole('button', { name: 'Release the payslip' }).click();

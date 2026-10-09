@@ -666,3 +666,9 @@
     display: none;
   }
 }
+.incident-notices { display: grid; gap: var(--s-2); margin-bottom: var(--s-4); }
+/* A service notice from Mr Sales: a quiet line, the state said in coloured words only. */
+.incident-notice { display: flex; align-items: baseline; gap: var(--s-3); padding: var(--s-3) var(--s-4); border: var(--hairline-w) solid var(--hairline); border-radius: var(--r-control); background: var(--raised); color: var(--ink); font-size: var(--t-sm); }
+.incident-notice strong { flex: 0 0 auto; color: var(--warn); font-weight: var(--w-semibold); }
+.incident-notice.resolved strong { color: var(--good); }
+@media (max-width: 600px) { .incident-notice { display: grid; gap: var(--s-1); } }

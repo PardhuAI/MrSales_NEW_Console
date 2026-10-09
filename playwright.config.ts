@@ -17,7 +17,7 @@ import { defineConfig } from '@playwright/test';
 // The machine's own Chromium when there is one, rather than downloading another.
 const CHROMIUM = '/opt/pw-browsers/chromium';
 
-const PORT = 8921;
+const PORT = Number(process.env.E2E_PORT ?? 8921);
 
 export default defineConfig({
   testDir: './e2e',

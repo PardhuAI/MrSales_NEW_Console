@@ -9,6 +9,7 @@ import { THEMES, useTheme } from '../app/theme';
 import { requestCount, useApprovals } from '../data/approvals';
 import { useUnreadMessages } from '../live/chat';
 import { CommandPalette } from './CommandPalette';
+import { IncidentNotices } from './IncidentNotices';
 
 /** A section as this person sees it: only the pages their role opens. */
 /** The sections as this person sees them: only the pages their role and plan open. */
@@ -187,6 +188,7 @@ export function Shell({ children }: { children: ReactNode }) {
               <Link className="link" to="/billing">See the invoice</Link>
             </p>
           )}
+          <IncidentNotices />
           {children}
         </main>
       </div>
