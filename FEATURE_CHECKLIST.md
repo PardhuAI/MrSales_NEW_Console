@@ -564,7 +564,12 @@ an equivalent in the new console before the switch.
 > company rules (read back, refused radius, read-only for finance). They do not yet run against
 > Testbed Pharma, and `seam.spec.ts` (console and phone agree) needs the phone, so neither box is
 > ticked.
-- [ ] `every-page.spec.ts`: every route opens for every role it is granted to
+> **2026-10-10: the live suite exists** (`e2e-live/`, `npx playwright test -c
+> playwright.live.config.ts`). It signs in to Testbed Pharma through the real form as admin,
+> HR, IT, finance and management (the testbed has no owner login), opens all 59 menu pages,
+> and passes: every granted page reads live data with no error, every other page says it is
+> not open to the role. Sessions are signed out and deleted after the run.
+- [x] `every-page.spec.ts`: every route opens for every role it is granted to (live, 10 October; five roles, owner covered on demo data only)
 - [ ] `roles.spec.ts`: the permission matrix
 - [ ] `employee.spec.ts`: add an employee end to end
 - [ ] `documents-and-coverage.spec.ts`: upload an HR document, coverage figures
