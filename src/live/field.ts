@@ -176,6 +176,10 @@ export type Visit = {
   lat: number | null;
   lng: number | null;
   capturedAt: string | null;
+  /** When the visit reached the server; far after [capturedAt] means it was kept offline and sent later. */
+  receivedAt: string | null;
+  /** The phone's time for it was in the future or weeks old (0117). */
+  timeSuspect: boolean;
   outOfRangeReason: string | null;
   feedback: string | null;
   remarks: string | null;
@@ -197,7 +201,8 @@ export type DayRecord = {
   holidayName: string | null;
   plan: { at: string; workType: string; area: string; cluster: string; address: string | null; remarks: string | null; lat: number | null; lng: number | null } | null;
   visits: Visit[];
-  blocked: { at: string; client: string | null; realDistance: number | null }[];
+  /** Blocked fake locations, and (purpose device) a fake-GPS app or root found as the app opened. */
+  blocked: { at: string; client: string | null; realDistance: number | null; device: string | null }[];
   /** The person's latest fake-location review: warnings at or before it are dealt with. */
   review: { at: string; by: string; note: string | null } | null;
   onLeave: string | null;
@@ -210,6 +215,7 @@ type ActRow = {
   id: string; status: string; scheduled_start: string; actual_start: string | null; actual_end: string | null; purpose: string | null;
   is_unplanned: boolean | null; geo_verdict: string | null; geo_claimed_verdict: string | null; geo_mocked: boolean | null; geo_distance_m: number | null;
   geo_radius_m: number | null; geo_accuracy_m: number | null; geo_lat: number | null; geo_lng: number | null; geo_captured_at: string | null;
+  geo_received_at: string | null; geo_time_suspect: boolean | null;
   out_of_range_reason: string | null; feedback: string | null; remarks: string | null; pop: string | null; inputs_given: string | null;
   pob_amount: number | null; expected_next_visit: string | null; rcpa_score: number | null; photo_paths: string[] | null; day_plan_id: string | null;
   clients: { id: string; name: string; type: string; lat: number | null; lng: number | null; areas: { name: string } | null } | null;
@@ -223,13 +229,13 @@ export async function loadDayRecord(employeeId: string, date: string): Promise<D
     loadEmployees(),
     companyRules(),
     sb.from('activities')
-      .select('id, status, scheduled_start, actual_start, actual_end, purpose, is_unplanned, geo_verdict, geo_claimed_verdict, geo_mocked, geo_distance_m, geo_radius_m, geo_accuracy_m, geo_lat, geo_lng, geo_captured_at, out_of_range_reason, feedback, remarks, pop, inputs_given, pob_amount, expected_next_visit, rcpa_score, photo_paths, day_plan_id, clients(id, name, type, lat, lng, areas(name)), activity_rcpa_entries(product_name, own_quantity, competitor_name, competitor_quantity), activity_products(product_id)')
+      .select('id, status, scheduled_start, actual_start, actual_end, purpose, is_unplanned, geo_verdict, geo_claimed_verdict, geo_mocked, geo_distance_m, geo_radius_m, geo_accuracy_m, geo_lat, geo_lng, geo_captured_at, geo_received_at, geo_time_suspect, out_of_range_reason, feedback, remarks, pop, inputs_given, pob_amount, expected_next_visit, rcpa_score, photo_paths, day_plan_id, clients(id, name, type, lat, lng, areas(name)), activity_rcpa_entries(product_name, own_quantity, competitor_name, competitor_quantity), activity_products(product_id)')
       .eq('employee_id', employeeId)
       .gte('scheduled_start', startOfDay(date)).lt('scheduled_start', startOfDay(shiftDay(date, 1)))
       .order('scheduled_start'),
     sb.from('day_plans').select('declared_at, work_type, cluster_name, captured_address, captured_lat, captured_lng, remarks, areas(name), clusters(name)')
       .eq('employee_id', employeeId).eq('work_date', date).maybeSingle(),
-    sb.from('fake_location_attempts').select('created_at, real_distance_m, clients(name)').eq('employee_id', employeeId)
+    sb.from('fake_location_attempts').select('created_at, real_distance_m, purpose, detail, clients(name)').eq('employee_id', employeeId)
       .gte('created_at', startOfDay(date)).lt('created_at', startOfDay(shiftDay(date, 1))).order('created_at'),
     sb.from('leave_requests').select('type').eq('employee_id', employeeId).eq('status', 'approved').lte('from_date', date).gte('to_date', date).limit(1),
     sb.from('day_plans').select('work_date').eq('employee_id', employeeId).gte('work_date', shiftDay(date, -30)).lte('work_date', shiftDay(date, 30)),
@@ -258,6 +264,7 @@ export async function loadDayRecord(employeeId: string, date: string): Promise<D
     mocked: Boolean(a.geo_mocked) || a.geo_verdict === 'suspect',
     distance: a.geo_distance_m, radius: a.geo_radius_m ?? rules.radius, accuracy: a.geo_accuracy_m,
     lat: a.geo_lat, lng: a.geo_lng, capturedAt: a.geo_captured_at,
+    receivedAt: a.geo_received_at, timeSuspect: Boolean(a.geo_time_suspect),
     outOfRangeReason: a.out_of_range_reason,
     feedback: a.feedback, remarks: a.remarks, pop: a.pop, samples: a.inputs_given,
     pob: a.pob_amount == null ? null : Number(a.pob_amount), nextVisit: a.expected_next_visit, rcpaScore: a.rcpa_score,
@@ -277,8 +284,8 @@ export async function loadDayRecord(employeeId: string, date: string): Promise<D
       address: p.captured_address, remarks: p.remarks, lat: p.captured_lat, lng: p.captured_lng,
     } : null,
     visits,
-    blocked: ((must(fakes, 'blocked fake locations') ?? []) as unknown as { created_at: string; real_distance_m: number | null; clients: { name: string } | null }[])
-      .map(f => ({ at: f.created_at, client: f.clients?.name ?? null, realDistance: f.real_distance_m })),
+    blocked: ((must(fakes, 'blocked fake locations') ?? []) as unknown as { created_at: string; real_distance_m: number | null; purpose: string | null; detail: string | null; clients: { name: string } | null }[])
+      .map(f => ({ at: f.created_at, client: f.clients?.name ?? null, realDistance: f.real_distance_m, device: f.purpose === 'device' ? (f.detail ?? 'A fake GPS app') : null })),
     review: review.data ? {
       at: (review.data as { reviewed_through: string }).reviewed_through,
       by: (review.data as { reviewer_name: string | null }).reviewer_name ?? 'Someone',

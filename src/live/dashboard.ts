@@ -101,7 +101,7 @@ export async function loadLiveDashboard(orgName: string): Promise<DashboardModel
       .order('scheduled_start')
       .range(a, b) as never),
     sb.from('fake_location_attempts')
-      .select('employee_id, created_at, purpose, fake_distance_m, real_distance_m, real_seen_at, clients(name)')
+      .select('employee_id, created_at, purpose, detail, fake_distance_m, real_distance_m, real_seen_at, clients(name)')
       .gte('created_at', startOf(shift(today, -7)))
       .order('created_at', { ascending: false }),
     sb.from('fake_location_reviews').select('employee_id, reviewed_through'),
@@ -234,7 +234,7 @@ export async function loadLiveDashboard(orgName: string): Promise<DashboardModel
   // ── needs attention ──
   const attention: Attention[] = [];
   const fakeRows = (fakes.data ?? []) as unknown as {
-    employee_id: string; created_at: string; purpose: string | null; real_distance_m: number | null; clients: { name: string } | null;
+    employee_id: string; created_at: string; purpose: string | null; detail: string | null; real_distance_m: number | null; clients: { name: string } | null;
   }[];
   // A manager's review draws a line under a person: only what came after it warns.
   const reviewedThrough = new Map<string, number>();
@@ -248,6 +248,19 @@ export async function loadLiveDashboard(orgName: string): Promise<DashboardModel
   for (const [id, list] of fakeBy) {
     const last = list[0];
     const who = person(id)?.name ?? 'Someone';
+    // Found as the app opened (0118): the app, or root, rather than a position.
+    const device = list.find(f => f.purpose === 'device');
+    if (device && list.every(f => f.purpose === 'device')) {
+      attention.push({
+        id: `fake-${id}`,
+        severity: 'critical',
+        title: device.detail === 'Rooted phone' ? `${who} tried to open the app on a rooted phone` : `${who} has ${device.detail ?? 'a fake GPS app'} installed`,
+        reason: `Found ${relative(new Date(device.created_at), now)} as the app opened. The app ${device.detail === 'Rooted phone' ? 'did not open' : 'would not open until it was uninstalled'}.`,
+        action: 'Open their day',
+        to: `/field/${id}/${dayKey(new Date(device.created_at))}`,
+      });
+      continue;
+    }
     attention.push({
       id: `fake-${id}`,
       severity: 'critical',

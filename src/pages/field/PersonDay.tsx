@@ -30,6 +30,15 @@ const STATUS: Record<string, { word: string; tone: 'good' | 'warning' | 'critica
   upcoming: { word: 'Planned', tone: 'neutral' },
 };
 
+/** How much later a visit kept offline reached the server, in words; empty when it arrived as it happened (0117). */
+const late = (v: Visit) => {
+  if (!v.capturedAt || !v.receivedAt) return '';
+  const min = Math.round((Date.parse(v.receivedAt) - Date.parse(v.capturedAt)) / 60_000);
+  if (min < 30) return '';
+  if (min < 90) return `${min} minutes`;
+  const h = Math.round(min / 60);
+  return h < 36 ? `${h} hours` : `${Math.round(h / 24)} days`;
+};
 const metres = (m: number | null) => (m == null ? '' : m < 1000 ? `${Math.round(m)} m` : `${(m / 1000).toFixed(1)} km`);
 
 export function PersonDay() {
@@ -75,7 +84,9 @@ function DayView({ d, at, error, reload }: { d: DayRecord; at: Date | null; erro
   // A review draws a line: what happened at or before it is dealt with.
   const me = useMe();
   const after = (t: string) => !d.review || t > d.review.at;
-  const openBlocked = d.blocked.filter(b => after(b.at));
+  const openAll = d.blocked.filter(b => after(b.at));
+  const openBlocked = openAll.filter(b => !b.device);
+  const openDevice = openAll.filter(b => b.device);
   const openFake = d.visits.filter(v => v.mocked && after(v.at)).length;
   const mayReview = ['owner', 'admin', 'hr', 'management'].includes(me.role);
   const [asking, setAsking] = useState(false);
@@ -121,18 +132,19 @@ function DayView({ d, at, error, reload }: { d: DayRecord; at: Date | null; erro
         </p>
       </Arrive>
 
-      {(openFake > 0 || openBlocked.length > 0) && (
+      {(openFake > 0 || openAll.length > 0) && (
         <Arrive className="alert critical" index={1}>
           <Pill tone="critical">Fake location</Pill>
           <p>
             {openBlocked.length > 0 && <>The phone detected a fake location app {openBlocked.length === 1 ? 'once' : `${openBlocked.length} times`} and blocked the visit{openBlocked[0].client ? ` at ${openBlocked[0].client}` : ''}, at {timeOf(openBlocked[0].at)}.{openBlocked[0].realDistance != null ? ` The last genuine position was ${metres(openBlocked[0].realDistance)} from the client.` : ''} </>}
             {openFake > 0 && <>{count(openFake, 'visit was', 'visits were')} logged while the phone reported a simulated position. </>}
+            {openDevice.map(b => <span key={b.at}>{b.device === 'Rooted phone' ? `The app found the phone was rooted at ${timeOf(b.at)} and did not open.` : `${b.device} was found installed at ${timeOf(b.at)}; the app would not open until it was uninstalled.`} </span>)}
             Worth a conversation before a conclusion.
             {mayReview && <> <button type="button" className="link" onClick={() => setAsking(true)}>Mark as reviewed</button></>}
           </p>
         </Arrive>
       )}
-      {d.review && (fake > openFake || d.blocked.length > openBlocked.length) && (
+      {d.review && (fake > openFake || d.blocked.length > openAll.length) && (
         <Arrive className="alert" index={1}>
           <Pill>Reviewed</Pill>
           <p>
@@ -303,6 +315,8 @@ function VisitDetail({ v }: { v: Visit }) {
           <h3>Location evidence</h3>
           <dl className="facts">
             <dt>Captured</dt><dd>{v.capturedAt ? timeOf(v.capturedAt) : 'No position was captured'}</dd>
+            {late(v) && <><dt>Sent</dt><dd>{timeOf(v.receivedAt!)}, {late(v)} later. The phone had no connection and kept the visit.</dd></>}
+            {v.timeSuspect && <><dt>Phone clock</dt><dd>The time the phone gave was in the future or weeks old, so the time it arrived is shown instead.</dd></>}
             <dt>Distance from the client</dt><dd>{v.distance != null ? `${metres(v.distance)} from the registered location` : v.client?.lat == null ? 'The client has no registered location' : 'Not measured'}</dd>
             <dt>Visit radius</dt><dd>{v.radius ? `${Math.round(v.radius)} m, as set when the visit was logged` : 'Not recorded'}</dd>
             {v.accuracy != null && <><dt>GPS accuracy</dt><dd>within {Math.round(v.accuracy)} m</dd></>}

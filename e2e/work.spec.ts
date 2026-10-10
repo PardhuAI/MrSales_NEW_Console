@@ -170,6 +170,21 @@ test('company rules are read back before they are saved, and a bad radius is ref
   await expect(page.locator('.summary').first()).toContainText('₹400');
 });
 
+test('a company can require a connection to complete a visit', async ({ page }) => {
+  await as(page, 'owner', '/settings/rules');
+  const offline = page.getByRole('radiogroup', { name: 'With no connection at the client' });
+  await expect(offline.getByRole('radio', { name: 'Save and send later' })).toBeChecked();
+  await offline.getByRole('radio', { name: 'Needs a connection' }).click();
+  await expect(page.getByText(/more than 15 minutes after its location was taken is refused/)).toBeVisible();
+  await page.getByRole('button', { name: 'Review and save' }).click();
+  await expect(top(page)).toContainText('A visit needs a connection to be completed.');
+  await page.getByRole('button', { name: 'Save the rules' }).click();
+  await expect(notice(page)).toContainText('The rules are saved');
+  // Read back from the saved rules: nothing left to save, and the choice held.
+  await expect(page.getByText('Nothing changed.')).toBeVisible();
+  await expect(offline.getByRole('radio', { name: 'Needs a connection' })).toBeChecked();
+});
+
 test('HR rules keep the leave each type allows', async ({ page }) => {
   await as(page, 'owner', '/settings/hr');
   await page.getByRole('row', { name: /Casual/ }).getByRole('button', { name: 'Edit' }).click();
@@ -327,9 +342,10 @@ test('Pick a date opens our own month, moves by keyboard, picks, and closes with
 test('Leave shows who is away on a day, with the count on each day of the week', async ({ page }) => {
   await as(page, 'owner', '/team/leave');
   const strip = page.getByRole('radiogroup', { name: 'Who is away on' });
-  // The demo's approved leave sits in the last fortnight; step back a week until it is in view.
+  // The demo's approved leave sits within the last month (how recent depends on
+  // the day the demo is built); step back a week until some is in view.
   const away = strip.getByRole('radio', { name: /\d+ away/ }).first();
-  for (let i = 0; i < 3 && !(await away.count()); i++) await page.getByRole('button', { name: /^The week of/ }).first().click();
+  for (let i = 0; i < 6 && !(await away.count()); i++) await page.getByRole('button', { name: /^The week of/ }).first().click();
   await expect(away).toBeVisible();
   await away.click();
   await expect(page.locator('.away-list .row').first()).toContainText(/leave/i);

@@ -36,13 +36,13 @@ export function CompanyRules() {
 function RulesForm({ rules, at, error, reload }: { rules: Rules; at: Date | null; error: string; reload: () => void }) {
   const me = useMe();
   const may = ['owner', 'admin'].includes(me.role);
-  const [f, setF] = useState({ allowance: String(rules.allowance), billAbove: String(rules.billAbove), weekOff: String(rules.weekOff), policy: rules.policy, radius: String(rules.radius) });
+  const [f, setF] = useState({ allowance: String(rules.allowance), billAbove: String(rules.billAbove), weekOff: String(rules.weekOff), policy: rules.policy, radius: String(rules.radius), offline: rules.offlineVisits ? 'allowed' : 'online' });
   const [attempt, setAttempt] = useState(0);
   const [review, setReview] = useState(false);
   const [busy, setBusy] = useState(false);
   const [problem, setProblem] = useState('');
   const [notice, setNotice] = useState('');
-  useEffect(() => { setF({ allowance: String(rules.allowance), billAbove: String(rules.billAbove), weekOff: String(rules.weekOff), policy: rules.policy, radius: String(rules.radius) }); }, [rules]);
+  useEffect(() => { setF({ allowance: String(rules.allowance), billAbove: String(rules.billAbove), weekOff: String(rules.weekOff), policy: rules.policy, radius: String(rules.radius), offline: rules.offlineVisits ? 'allowed' : 'online' }); }, [rules]);
   const num = (v: string) => Number(v.replace(/[₹,\s]/g, ''));
   const errors = {
     allowance: !(num(f.allowance) >= 0) || f.allowance.trim() === '' ? 'Write the allowance in rupees; 0 if there is none.' : undefined,
@@ -50,13 +50,14 @@ function RulesForm({ rules, at, error, reload }: { rules: Rules; at: Date | null
     radius: !(num(f.radius) >= 10 && num(f.radius) <= 5000) ? 'Between 10 and 5000 metres.' : undefined,
   };
   const formRef = useFocusFirstError(errors, attempt);
-  const next: Rules = { allowance: num(f.allowance), billAbove: num(f.billAbove), weekOff: Number(f.weekOff), policy: f.policy, radius: num(f.radius), updatedAt: rules.updatedAt };
+  const next: Rules = { allowance: num(f.allowance), billAbove: num(f.billAbove), weekOff: Number(f.weekOff), policy: f.policy, radius: num(f.radius), offlineVisits: f.offline === 'allowed', updatedAt: rules.updatedAt };
   const changes = [
     next.allowance !== rules.allowance && `Daily allowance: ${rupees(rules.allowance)} to ${rupees(next.allowance)}.`,
     next.billAbove !== rules.billAbove && `A bill is needed above ${rupees(next.billAbove)}, not ${rupees(rules.billAbove)}.`,
     next.weekOff !== rules.weekOff && `The week off moves from ${WEEKDAYS[rules.weekOff]} to ${WEEKDAYS[next.weekOff]}.`,
     next.policy !== rules.policy && `Visit check: ${POLICY[rules.policy].word.toLowerCase()} to ${POLICY[next.policy].word.toLowerCase()}.`,
     next.radius !== rules.radius && `The visit radius: ${rules.radius} m to ${next.radius} m.`,
+    next.offlineVisits !== rules.offlineVisits && (next.offlineVisits ? 'Visits may be completed with no connection and sent later.' : 'A visit needs a connection to be completed.'),
   ].filter(Boolean) as string[];
   const save = async () => {
     setBusy(true);
@@ -102,6 +103,13 @@ function RulesForm({ rules, at, error, reload }: { rules: Rules; at: Date | null
               <p className="form-help">{POLICY[f.policy].about}</p>
             </div>
             {f.policy !== 'off' && <Field label="Radius around the client, in metres" help="Between 10 and 5000. 50 suits a city; a village spread out may need 200." error={attempt ? errors.radius : undefined}>{x => <input {...x} className="input" inputMode="numeric" value={f.radius} onChange={e => set('radius', e.target.value)} />}</Field>}
+            <div className="field-block">
+              <p className="form-label">With no connection at the client</p>
+              <Segmented label="With no connection at the client" value={f.offline} onChange={v => set('offline', v)} options={[{ value: 'allowed', label: 'Save and send later', disabled: !may }, { value: 'online', label: 'Needs a connection', disabled: !may }]} />
+              <p className="form-help">{f.offline === 'allowed'
+                ? 'The phone keeps the visit and sends it when the signal returns. It keeps the time it happened, and the visit shows how late it arrived.'
+                : 'A visit can only be completed where the phone has a connection. One that reaches the server more than 15 minutes after its location was taken is refused.'}</p>
+            </div>
           </fieldset>
           {may && (
             <div className="add-actions">

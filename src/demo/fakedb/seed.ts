@@ -81,7 +81,7 @@ export function seed(now = new Date()): Tables {
   T.organisations = [{ id: org_id, name: 'Cleocure Lifesciences', slug: 'cleocure', status: 'active', created_at: created, updated_at: created, status_changed_at: null }];
   add('org_settings', {
     daily_allowance: 350, week_off_weekday: 0, receipt_threshold: 500, geo_fence_policy: 'warn',
-    geo_fence_radius_m: 50, updated_at: created, setup_dismissed: [],
+    geo_fence_radius_m: 50, offline_visits: true, updated_at: created, setup_dismissed: [],
   });
   T.org_entitlements = [{ org_id, plan_code: 'growth', seat_limit: 25, disabled_modules: [], updated_at: created }];
 

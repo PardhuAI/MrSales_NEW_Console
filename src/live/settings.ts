@@ -39,19 +39,19 @@ async function invoke(fn: string, body: Record<string, unknown>) {
 
 // ── company rules ─────────────────────────────────────────────────────
 
-export type Rules = { allowance: number; weekOff: number; billAbove: number; policy: 'off' | 'warn' | 'block'; radius: number; updatedAt: string | null };
+export type Rules = { allowance: number; weekOff: number; billAbove: number; policy: 'off' | 'warn' | 'block'; radius: number; offlineVisits: boolean; updatedAt: string | null };
 
 export async function loadRules(): Promise<Rules> {
-  const { data, error } = await db().from('org_settings').select('daily_allowance, week_off_weekday, receipt_threshold, geo_fence_policy, geo_fence_radius_m, updated_at').maybeSingle();
+  const { data, error } = await db().from('org_settings').select('daily_allowance, week_off_weekday, receipt_threshold, geo_fence_policy, geo_fence_radius_m, offline_visits, updated_at').maybeSingle();
   if (error) throw new Error(`Could not read the company rules: ${error.message}`);
   return {
     allowance: Number(data?.daily_allowance ?? 350), weekOff: Number(data?.week_off_weekday ?? 0), billAbove: Number(data?.receipt_threshold ?? 500),
-    policy: (data?.geo_fence_policy ?? 'warn') as Rules['policy'], radius: Number(data?.geo_fence_radius_m ?? 50), updatedAt: (data?.updated_at as string | null) ?? null,
+    policy: (data?.geo_fence_policy ?? 'warn') as Rules['policy'], radius: Number(data?.geo_fence_radius_m ?? 50), offlineVisits: data?.offline_visits !== false, updatedAt: (data?.updated_at as string | null) ?? null,
   };
 }
 
 export const saveRules = (r: Rules) => call('update_org_settings', {
-  p_daily_allowance: r.allowance, p_week_off_weekday: r.weekOff, p_receipt_threshold: r.billAbove, p_geo_fence_policy: r.policy, p_geo_fence_radius_m: r.radius,
+  p_daily_allowance: r.allowance, p_week_off_weekday: r.weekOff, p_receipt_threshold: r.billAbove, p_geo_fence_policy: r.policy, p_geo_fence_radius_m: r.radius, p_offline_visits: r.offlineVisits,
 });
 
 // ── geography ─────────────────────────────────────────────────────────

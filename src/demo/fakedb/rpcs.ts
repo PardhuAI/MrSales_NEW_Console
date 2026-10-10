@@ -426,7 +426,7 @@ export function settingsRpcs(audit: (db: FakeDb, action: string, entity: string,
       const r = Number(a.p_geo_fence_radius_m);
       if (a.p_geo_fence_radius_m != null && (r < 10 || r > 5000)) fail('a geo-fence radius is between 10 and 5000 metres');
       const s = db.rows('org_settings')[0];
-      Object.assign(s, { daily_allowance: a.p_daily_allowance ?? 350, week_off_weekday: a.p_week_off_weekday ?? 0, receipt_threshold: a.p_receipt_threshold ?? 500, geo_fence_policy: a.p_geo_fence_policy ?? 'warn', geo_fence_radius_m: a.p_geo_fence_radius_m ?? 50, updated_at: now() });
+      Object.assign(s, { daily_allowance: a.p_daily_allowance ?? 350, week_off_weekday: a.p_week_off_weekday ?? 0, receipt_threshold: a.p_receipt_threshold ?? 500, geo_fence_policy: a.p_geo_fence_policy ?? 'warn', geo_fence_radius_m: a.p_geo_fence_radius_m ?? 50, offline_visits: a.p_offline_visits ?? s.offline_visits ?? true, updated_at: now() });
       return null;
     },
     save_leave_policy: (a, db) => {
