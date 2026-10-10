@@ -168,35 +168,35 @@ behaviour can be checked against it. The "Data" column names the function in
 > run against the live testbed, so the boxes stay unticked.
 
 ### Field activity (`/field`) · Old: `pages/Field.tsx` `FieldActivity`
-- [ ] Every field person for a date: planned, completed, missed, verification
-- [ ] Search by name, employee ID or HQ
-- [ ] Filters: date, region, territory, area, HQ, manager, GPS status
-- [ ] "Nobody matches these filters" state
+- [ ] Every field person for a date: planned, completed, missed, verification · ✅ *verified live 11 Oct*
+- [ ] Search by name, employee ID or HQ · ✅ *verified live 11 Oct*
+- [ ] Filters: date, region, territory, area, HQ, manager, GPS status · ✅ *verified live 11 Oct* for date, manager and location; region to HQ sit under More filters, not yet driven
+- [ ] "Nobody matches these filters" state · ✅ *verified live 11 Oct*
 
 ### A person's day (`/field/:employeeId/:date`) · Old: `pages/Field.tsx` `FieldDay`
-- [ ] Day plan: filed or not filed
-- [ ] Every call in order: client, purpose, planned or unplanned, verified, out of range, mocked location, missed
-- [ ] Map of visit locations, open full size
-- [ ] Location evidence per call: captured position, distance, fence, verdict
-- [ ] Call report: products, samples, promotional material, feedback, next visit
+- [ ] Day plan: filed or not filed · ✅ *verified live 11 Oct*
+- [ ] Every call in order: client, purpose, planned or unplanned, verified, out of range, mocked location, missed · ✅ *verified live 11 Oct* (the testbed's calls carry no positions, so verified and out-of-range marks are checked on demo data). **Fixed 11 Oct:** times read "12 : 53 pm"; the timeline uses ordinary figures
+- [ ] Map of visit locations, open full size · ⏳ *not yet live:* no testbed call carries a position, so the map says "No positions to plot" (that state is verified live)
+- [ ] Location evidence per call: captured position, distance, fence, verdict · ✅ *verified live 11 Oct*
+- [ ] Call report: products, samples, promotional material, feedback, next visit · ✅ *verified live 11 Oct*
 - [ ] Prescription audit per call: product, ours, theirs, competitor
-- [ ] Photos taken at the call (signed URLs) · Data: storage `createSignedUrls`
-- [ ] "No calls recorded", "No positions to plot", "No such employee" states
+- [ ] Photos taken at the call (signed URLs) · Data: storage `createSignedUrls` · ⏳ *not yet live:* no testbed call has a photo; needs one taken on the phone
+- [ ] "No calls recorded", "No positions to plot", "No such employee" states · ✅ *verified live 11 Oct* for no positions and no such person
 
 ### Day plans (`/dayplans`) · Old: `pages/Planning.tsx` `DayPlans` · Data: `pullDayPlans`
-- [ ] Declared, calls planned, completed, with an address
-- [ ] Per person per date; no day plan, Sunday or holiday, planned working day
+- [ ] Declared, calls planned, completed, with an address · ✅ *verified live 11 Oct*. The address column now shows only for days that carry one: the phone stopped recording where a day plan is filed (owner, October), and it read "Not captured" on every row
+- [ ] Per person per date; no day plan, Sunday or holiday, planned working day · ✅ *verified live 11 Oct*
 
 ### Tour plans (`/tours`) · Old: `pages/Planning.tsx` `TourPlans` · Data: `pullTourPlans`
-- [ ] Plans in scope, approved, waiting on you, not submittable
-- [ ] Months that cannot be submitted, and why
-- [ ] Tour plan detail: each day, work type, planned clients, status
+- [ ] Plans in scope, approved, waiting on you, not submittable · ✅ *verified live 11 Oct*
+- [ ] Months that cannot be submitted, and why · ✅ *verified live 11 Oct*. **Fixed 11 Oct:** "15 months cannot be sent" meant fifteen people; it says so
+- [ ] Tour plan detail: each day, work type, planned clients, status · ✅ *verified live 11 Oct*
 - [ ] "Working day, still unplanned", "Nothing planned" states
 
 ### Coverage (`/coverage`) · Old: `pages/Insight.tsx` `Coverage`
-- [ ] Areas in scope, quiet last week, untouched all period, calls plotted
-- [ ] Area by week grid
-- [ ] Occasions worth a call (client birthdays and anniversaries in the next month)
+- [ ] Areas in scope, quiet last week, untouched all period, calls plotted · ✅ *verified live 11 Oct*
+- [ ] Area by week grid · ✅ *verified live 11 Oct*
+- [ ] Occasions worth a call (client birthdays and anniversaries in the next month) · ✅ *verified live 11 Oct* (none on the testbed, said plainly)
 
 > **2026-10-04: the Clients section is built in the new design** (`src/pages/clients/`,
 > `src/live/clients.ts`): all clients with search and filters, add and edit (one form), listing
@@ -209,27 +209,27 @@ behaviour can be checked against it. The "Data" column names the function in
 > sends the position on record back unchanged. Not yet run against the live testbed.
 
 ### Clients (`/clients`) · Old: `pages/Clients.tsx`
-- [ ] Client list with search by name, filter by type and listing
-- [ ] Add a client (doctor, hospital, chemist, stockist), with specialty, area, owner · Data: `createClient`
-- [ ] Edit a client · Data: `updateClient`
-- [ ] Listed / unlisted switch · Data: `setClientListing`
-- [ ] Specialties list: add, delete · Data: `clientSpecialties`, `createClientSpecialty`, `deleteClientSpecialty`
-- [ ] Import clients from a spreadsheet · Data: `importClients`
-- [ ] Download the client sheet · Data: `clientSheet`
-- [ ] Client detail (`/clients/:id`): total visits, orders, category, location, recent visits, orders
+- [ ] Client list with search by name, filter by type and listing · ✅ *verified live 11 Oct*. **Fixed 11 Oct:** a client's visit count and last visit disagreed ("5 visits", last visit "Never"); the counters had drifted from the visits on the testbed and on the demo company (202 of 216 wrong). The demo's hourly refresh now keeps them true, and the testbed's were set from its visits
+- [ ] Add a client (doctor, hospital, chemist, stockist), with specialty, area, owner · Data: `createClient` · ✅ *verified live 11 Oct* (and an empty form is refused)
+- [ ] Edit a client · Data: `updateClient` · ✅ *verified live 11 Oct*
+- [ ] Listed / unlisted switch · Data: `setClientListing` · ✅ *verified live 11 Oct* through retiring a client
+- [ ] Specialties list: add, delete · Data: `clientSpecialties`, `createClientSpecialty`, `deleteClientSpecialty` · ✅ *verified live 11 Oct* that it opens; adding and deleting are checked on demo data
+- [ ] Import clients from a spreadsheet · Data: `importClients` · ⏳ *not yet live:* the dry run and import are checked on demo data
+- [ ] Download the client sheet · Data: `clientSheet` · ✅ *verified live 11 Oct*
+- [ ] Client detail (`/clients/:id`): total visits, orders, category, location, recent visits, orders · ✅ *verified live 11 Oct*
 
 ### Client data quality (`/clients/quality`) · Old: `pages/Clients.tsx` `DataQuality`
-- [ ] Probable duplicates
-- [ ] No registered location
-- [ ] No assigned employee
-- [ ] Not visited in 30 days
-- [ ] Unlisted but marked inactive
+- [ ] Probable duplicates · ✅ *verified live 11 Oct*
+- [ ] No registered location · ✅ *verified live 11 Oct*
+- [ ] No assigned employee · ✅ *verified live 11 Oct*
+- [ ] Not visited in 30 days · ✅ *verified live 11 Oct*
+- [ ] Unlisted but marked inactive · ✅ *verified live 11 Oct*
 - [ ] "Nothing to fix" state
 
 ### Complaints (`/complaints`) · Old: `pages/Support.tsx` `Complaints` · Data: `pullComplaints`, `decideComplaint`
-- [ ] List with status filter and counts
-- [ ] Decide or resolve a complaint
-- [ ] "Nobody owns these" (unassigned complaints)
+- [ ] List with status filter and counts · ✅ *verified live 11 Oct*
+- [ ] Decide or resolve a complaint · ✅ *verified live 11 Oct* for assigning; resolving is checked on demo data
+- [ ] "Nobody owns these" (unassigned complaints) · ✅ *verified live 11 Oct* ("5 with nobody working on them")
 
 ---
 

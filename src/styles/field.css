@@ -180,7 +180,9 @@
 .tl-time {
   color: var(--muted);
   font-size: var(--t-sm);
-  font-variant-numeric: tabular-nums;
+  /* Ordinary figures: Schibsted's tabular set gives the colon a digit's width,
+     which read as "12 : 53 pm". The times sit in their own column anyway. */
+  font-variant-numeric: normal;
 }
 
 .tl-body {

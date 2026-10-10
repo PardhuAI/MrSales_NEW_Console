@@ -59,6 +59,7 @@ function DayPlanTable({ m, goTo }: { m: DayPlansModel; goTo: (d: string) => void
       .sort((a, b) => Number(Boolean(a.plan) || a.onLeave) - Number(Boolean(b.plan) || b.onLeave) || (a.plan?.at ?? '').localeCompare(b.plan?.at ?? '') || a.name.localeCompare(b.name));
   }, [m, q, manager, state]);
   const { shown, more } = useShowMore(rows, 60);
+  const withAddress = shown.some(r => r.plan?.address);
 
   return (
     <Arrive>
@@ -88,7 +89,9 @@ function DayPlanTable({ m, goTo }: { m: DayPlansModel; goTo: (d: string) => void
                 <th scope="col">Person</th>
                 <th scope="col">Declared</th>
                 <th scope="col">Work</th>
-                <th scope="col" className="hide-narrow">Declared from</th>
+                {/* The phone stopped recording where a day plan was filed (owner,
+                    2026-10): the column shows only for days that still carry one. */}
+                {withAddress && <th scope="col" className="hide-narrow">Declared from</th>}
                 <th scope="col" className="num">Calls planned</th>
                 <th scope="col" className="num">Done</th>
               </tr>
@@ -106,7 +109,7 @@ function DayPlanTable({ m, goTo }: { m: DayPlansModel; goTo: (d: string) => void
                     <td>
                       {r.plan ? <>{workTypeLabel(r.plan.workType)}{r.plan.tourType && r.plan.tourType !== 'local' ? `, ${r.plan.tourType === 'outstation' ? 'outstation' : 'ex-station'}` : ''}<span className="cell-sub">{[r.plan.area, r.plan.cluster].filter(Boolean).join(' · ')}</span>{r.plan.remarks && <span className="cell-sub">“{r.plan.remarks}”</span>}</> : <span className="cell-quiet">None</span>}
                     </td>
-                    <td className="hide-narrow">{r.plan?.address ?? <span className="cell-quiet">Not captured</span>}</td>
+                    {withAddress && <td className="hide-narrow">{r.plan?.address ?? <span className="cell-quiet">Not recorded</span>}</td>}
                     <td className="num">{r.planned}</td>
                     <td className="num">{r.done}</td>
                   </tr>
@@ -176,7 +179,7 @@ function TourTable({ m, reload }: { m: TourModel; reload: () => void }) {
       <Summary>
         <strong>{m.label}</strong>, {count(m.workingDays.length, 'working day')}:{' '}
         {[by('pending') && `${by('pending')} waiting for a decision`, by('approved') && `${by('approved')} approved`, by('draft') && `${by('draft')} being planned`, by('none') && `${by('none')} not started`, by('rejected') && `${by('rejected')} sent back`].filter(Boolean).join(', ') || 'nobody has started'}.
-        {stuck.length > 0 && <> <span className="warn-text">{count(stuck.length, 'month')}</span> cannot be sent yet: the phone refuses a month until every working day is planned.</>}
+        {stuck.length > 0 && <> <span className="warn-text">{count(stuck.length, 'person', 'people')}</span> cannot send this month yet: the phone refuses a month until every working day is planned.</>}
       </Summary>
       <Toolbar><SearchBox value={q} onChange={setQ} placeholder="Name, employee code or HQ" label="Find a person" /></Toolbar>
       {rows.length === 0 ? (
