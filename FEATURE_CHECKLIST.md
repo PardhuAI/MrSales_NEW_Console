@@ -539,14 +539,14 @@ Shown in the old console as "not built yet" or missing altogether.
 > console marked "v1" is built from real records. Leave policies, salary structures and expense
 > rules per role have no table, so they wait on an owner decision and a backend change. Payslip
 > PDFs are attached when released, not generated.
-- [ ] Fake-location attempts list and warning (the phone app has it since 2026-10-03; the console does not)
-- [ ] Place names instead of coordinates on a person's day (the app has `PlaceNames`)
-- [ ] Saved joiner drafts cannot be reopened
+- [ ] Fake-location attempts list and warning (the phone app has it since 2026-10-03; the console does not) · built (Today, Attention, a person's day, and a reviewed warning leaves Attention); the testbed has no fake-location attempt, so it is checked on demo data
+- [ ] Place names instead of coordinates on a person's day (the app has `PlaceNames`) · still open: where a phone was last seen is named (`last_place`), a visit's own position is not; needs a place name stored with each visit
+- [ ] Saved joiner drafts cannot be reopened · ✅ *verified live 11 Oct*: a half-finished joiner is kept and reopened, and discarded
 - [x] Leave policies are not editable (built 2026-10-06)
 - [x] Salary structures are not built (built 2026-10-06)
 - [x] Expense rules are not editable (built 2026-10-06)
 - [x] Payslip files are not generated (built 2026-10-06)
-- [ ] Some reports are marked "v1" (adherence, product sales, attendance, leave, client, order)
+- [ ] Some reports are marked "v1" (adherence, product sales, attendance, leave, client, order) · ✅ *verified live 11 Oct*: all twelve reports open with live figures, none marked v1
 
 ---
 
@@ -570,11 +570,11 @@ an equivalent in the new console before the switch.
 > and passes: every granted page reads live data with no error, every other page says it is
 > not open to the role. Sessions are signed out and deleted after the run.
 - [x] `every-page.spec.ts`: every route opens for every role it is granted to (live, 10 October; five roles, owner covered on demo data only)
-- [ ] `roles.spec.ts`: the permission matrix
-- [ ] `employee.spec.ts`: add an employee end to end
-- [ ] `documents-and-coverage.spec.ts`: upload an HR document, coverage figures
-- [ ] `phone-login.spec.ts`: give a field person a phone login
-- [ ] `seam.spec.ts`: console and phone agree on the same records
+- [x] `roles.spec.ts`: the permission matrix · live 11 Oct for pages and menus, five roles (`e2e-live/every-page`, `shell`); what each role may *change* is checked on demo data
+- [x] `employee.spec.ts`: add an employee end to end · live 11 Oct (`e2e-live/people`: added, a document, marked as left)
+- [x] `documents-and-coverage.spec.ts`: upload an HR document, coverage figures · live 11 Oct (`e2e-live/people`, `field-clients`)
+- [ ] `phone-login.spec.ts`: give a field person a phone login · on demo data only: giving a login live means choosing a real password for a testbed person, which is the owner's to do
+- [ ] `seam.spec.ts`: console and phone agree on the same records · needs the phone's testbed login, whose password in `.env.testbed` no longer works (MY_TODO)
 
 ---
 
@@ -586,22 +586,22 @@ database first (`Mr_Sales_Console/supabase/migrations`, see "Left for the owner"
 `NEXT_WORK.md`), then a run against Testbed Pharma.
 
 ### Import people (Team, People, "Import from a sheet") · Data: `import_people` (0112)
-- [ ] Template download, CSV or Excel back · not live: 0112 not applied
-- [ ] Every problem by row and column, nothing written until all pass · not live: 0112 not applied
-- [ ] Adds new codes, updates existing ones, manager lines from the sheet, basic salary for owner and HR · not live: 0112 not applied
-- [ ] Refuses beyond the plan's seats, with the numbers · not live: 0112 not applied
+- [ ] Template download, CSV or Excel back · not live: 0112 not applied · ✅ *verified live 11 Oct* (0112 is applied)
+- [ ] Every problem by row and column, nothing written until all pass · not live: 0112 not applied · ✅ *verified live 11 Oct* (two bad rows named, nobody added)
+- [ ] Adds new codes, updates existing ones, manager lines from the sheet, basic salary for owner and HR · not live: 0112 not applied · 0112 is applied; adding from a sheet is checked on demo data, to keep the testbed's roster as it is
+- [ ] Refuses beyond the plan's seats, with the numbers · not live: 0112 not applied · 0112 is applied; checked on demo data
 - [ ] Sends the new people's logins one by one afterwards · uses `set_field_login` and `field-password-reset`, both live; not run live from here
 
 ### Your account (`/account`) · Data: Supabase Auth only, no migration
-- [ ] Who you are, and the name used in Messages (`set_my_chat_name`, live) · not signed in live from this session
+- [ ] Who you are, and the name used in Messages (`set_my_chat_name`, live) · not signed in live from this session · ✅ *verified live 11 Oct*
 - [ ] Change the password, checked against the current one · not signed in live from this session
 - [ ] Two-step sign-in with an authenticator app, on and off, and the code at sign-in · needs MFA (TOTP) switched on in the Supabase project; not run live
 - [ ] Sign out every other device · not run live
-- [ ] The last 20 changes made by this login · not run live
+- [ ] The last 20 changes made by this login · not run live · ✅ *verified live 11 Oct*
 - Dropped on purpose: whether each office login has two-step sign-in on, on Logins and access. Supabase gives a login only its own factors, so the console cannot know another login's without a server function; it is left out rather than guessed.
 
 ### Announcements (`/share/announcements`) · Data: `send_announcement`, `remind_announcement` (0113)
-- [ ] The sent list with who each went to and read by n of m · not live: 0113 not applied
-- [ ] Who has not read it, by name, and a reminder to them only · not live: 0113 not applied
-- [ ] Write to everyone, a team, a role or a territory, with a pin date and a phone preview; a manager to their own team only · not live: 0113 not applied
-- [ ] On the phone: a pinned announcement on Home, the list, read when opened · not built: needs the phone repository and Flutter (see `NEXT_WORK.md`)
+- [ ] The sent list with who each went to and read by n of m · not live: 0113 not applied · ✅ *verified live 11 Oct* (0113 is applied)
+- [ ] Who has not read it, by name, and a reminder to them only · not live: 0113 not applied · ✅ *verified live 11 Oct* for the names; the reminder is checked on demo data
+- [ ] Write to everyone, a team, a role or a territory, with a pin date and a phone preview; a manager to their own team only · not live: 0113 not applied · ✅ *verified live 11 Oct* for a team, with the phone preview
+- [ ] On the phone: a pinned announcement on Home, the list, read when opened · not built: needs the phone repository and Flutter (see `NEXT_WORK.md`) · built on the phone since (`my_announcements`, an announcement card on Home); to be checked on a phone
