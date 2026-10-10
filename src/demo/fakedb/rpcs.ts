@@ -418,7 +418,7 @@ export function settingsRpcs(audit: (db: FakeDb, action: string, entity: string,
   const month = (n: number) => { const d = new Date(); d.setMonth(d.getMonth() + n, 1); return d.toISOString().slice(0, 10); };
   const invoices = [-2, -1, 0].map((n, i) => ({
     id: crypto.randomUUID(), number: `MRS-2026-${String(41 + i).padStart(4, '0')}`, issue_date: month(n), due_date: month(n).slice(0, 8) + '15',
-    period_start: month(n), period_end: new Date(Date.parse(month(n + 1)) - 86_400_000).toISOString().slice(0, 10), plan_code: 'growth', seats: 25, amount: 12500, gst_percent: 18, total: 14750,
+    period_start: month(n), period_end: new Date(Date.parse(month(n + 1)) - 86_400_000).toISOString().slice(0, 10), plan_code: 'standard', seats: 25, amount: 12500, gst_percent: 18, total: 14750,
     amount_paid: n === 0 ? 0 : 14750, status: n === 0 ? 'issued' : 'paid',
   }));
   return {

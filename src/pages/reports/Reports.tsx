@@ -202,7 +202,14 @@ export function Downloads() {
     }
   };
   const open = (p: string) => { setProblem(''); openFile(() => exportUrl(p)).catch(e => setProblem(e instanceof Error ? e.message : String(e))); };
-  const recent = useMemo(() => jobs.data ?? [], [jobs.data]);
+  // A sheet is made in seconds; one still open after an hour was abandoned
+  // (the page closed mid-way). Those are counted, not listed: a row each
+  // filled the page with "Not finished" and hid the sheets that were made.
+  const { recent, abandoned } = useMemo(() => {
+    const all = jobs.data ?? [];
+    const gone = (j: (typeof all)[number]) => j.status !== 'ready' && j.status !== 'failed' && Date.now() - new Date(j.at).getTime() > 3_600_000;
+    return { recent: all.filter(j => !gone(j)).slice(0, 12), abandoned: all.filter(gone).length };
+  }, [jobs.data]);
   return (
     <div className="page-body">
       <Summary aside={<Freshness at={jobs.at} error={jobs.error} reload={() => void jobs.reload()} label="Read the downloads again" />}>
@@ -231,7 +238,7 @@ export function Downloads() {
           <h2 className="fig-title">Made before</h2>
           {jobs.status === 'error' && !jobs.data ? <LoadError what="The downloads" error={jobs.error} retry={() => void jobs.reload()} />
             : !jobs.data ? <Loading label="Reading the downloads" lines={1} />
-            : recent.length === 0 ? <p className="block-empty">No sheet has been downloaded yet. Each one you make is listed here, and can be opened again.</p> : (
+            : recent.length === 0 ? <p className="block-empty">No sheet has been downloaded yet. Each one you make is listed here, and can be opened again.{abandoned ? ` ${count(abandoned, 'download was', 'downloads were')} started and never finished.` : ''}</p> : (<>
               <ul className="rows dl-sheets">
                 {recent.map(j => (
                   <li key={j.id} className="row">
@@ -242,14 +249,13 @@ export function Downloads() {
                     <span className="row-actions">
                       {j.status === 'ready' && j.path ? <button type="button" className="link" onClick={() => open(j.path!)}>Open</button>
                         : j.status === 'failed' ? <Pill tone="critical">Failed</Pill>
-                        // A sheet is made in seconds; one still open after an hour never will be.
-                        : Date.now() - new Date(j.at).getTime() > 3_600_000 ? <Pill>Not finished</Pill>
                         : <Pill>Being made</Pill>}
                     </span>
                   </li>
                 ))}
               </ul>
-            )}
+              {abandoned > 0 && <p className="fig-note">{count(abandoned, 'download was', 'downloads were')} started and never finished, so {abandoned === 1 ? 'it is' : 'they are'} not listed.</p>}
+            </>)}
         </section>
       </Arrive>
       {notice && <Notice onDone={() => setNotice('')}>{notice}</Notice>}

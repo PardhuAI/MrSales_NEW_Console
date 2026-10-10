@@ -83,7 +83,7 @@ export function seed(now = new Date()): Tables {
     daily_allowance: 350, week_off_weekday: 0, receipt_threshold: 500, geo_fence_policy: 'warn',
     geo_fence_radius_m: 50, offline_visits: true, updated_at: created, setup_dismissed: [],
   });
-  T.org_entitlements = [{ org_id, plan_code: 'growth', seat_limit: 25, disabled_modules: [], updated_at: created }];
+  T.org_entitlements = [{ org_id, plan_code: 'standard', seat_limit: 25, disabled_modules: [], updated_at: created }];
 
   const year = ty;
   const holidays: [string, string][] = [

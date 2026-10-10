@@ -265,7 +265,7 @@ function SurveyBody({ s, may, onToggle }: { s: Survey; may: boolean; onToggle: (
         )}
       </section>
       <section className="block">
-        <div className="block-head"><h3 className="section-title">What clients said</h3><span className="block-meta">{count(s.answers.length, 'answer')}, newest first</span></div>
+        <div className="block-head"><h3 className="section-title">What clients said</h3><span className="block-meta">{count(s.answers.length, 'answer')} from {count(new Set(s.answers.map(a => a.client)).size, 'client')}, newest first</span></div>
         {s.answers.length === 0 ? <p className="block-empty">No answers yet. The field files them on the phone after a visit.</p> : <>
           {s.answers.length > 8 && <Toolbar><SearchBox value={q} onChange={setQ} placeholder="Client, person or words" label="Find an answer" /></Toolbar>}
           <ul className="rows">

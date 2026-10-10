@@ -409,18 +409,18 @@ behaviour can be checked against it. The "Data" column names the function in
 > run. Not yet run against the live testbed.
 
 ### Resources (`/resources`) · Old: `pages/Support.tsx` `Resources`
-- [ ] On the phones, superseded, archived, last published
-- [ ] Upload a resource (title, description, category, file type and size checks) · Data: `uploadResource`, `resourceFileProblem`
+- [ ] On the phones, superseded, archived, last published · ✅ *verified live 11 Oct*
+- [ ] Upload a resource (title, description, category, file type and size checks) · Data: `uploadResource`, `resourceFileProblem` · ✅ *verified live 11 Oct* (a text file is refused)
 - [ ] Open a file · Data: `resourceFileUrl`
-- [ ] Take it off every phone (archive) · Data: `archiveResource`
-- [ ] Delete for good · Data: `deleteResource`
+- [ ] Take it off every phone (archive) · Data: `archiveResource` · ✅ *verified live 11 Oct*
+- [ ] Delete for good · Data: `deleteResource` · ✅ *verified live 11 Oct*
 
 ### Surveys (`/surveys`) · Old: `pages/HrConfig.tsx` `Surveys` · Data: `surveyCampaigns`, `createSurvey`, `setSurveyActive`, `pullSurveys`
-- [ ] Create a campaign, open or close it
-- [ ] Responses: count, average score, clients covered, unscored, answers in the client's words
+- [ ] Create a campaign, open or close it · ✅ *verified live 11 Oct*
+- [ ] Responses: count, average score, clients covered, unscored, answers in the client's words · ✅ *verified live 11 Oct*. **Fixed 11 Oct:** clients covered was missing; the answers now say how many clients they came from. The average shows once an answer carries a rating; the testbed's have none
 
 ### Notifications sent (`/notifications`) · Old: `pages/Bridge.tsx` `Notifications` · Data: `pullNotifications`
-- [ ] Events, decisions, people reached; each notification on record
+- [ ] Events, decisions, people reached; each notification on record · ✅ *verified live 11 Oct*
 
 ---
 
@@ -438,19 +438,19 @@ behaviour can be checked against it. The "Data" column names the function in
 > testbed.
 
 ### Reports (`/reports`) · Old: `pages/Evidence.tsx` `ReportCenter`
-- [ ] One filter (employee, period), one table, one export path
-- [ ] DCR, Daily activity, Visit report, Call adherence
-- [ ] Sales, Target vs sales, Product sales
-- [ ] Attendance, Leave
-- [ ] Expense report
-- [ ] Client report, Order report
-- [ ] Management overview (planned, completed, missed, adherence, unverified, sales, achievement, expenses by person)
-- [ ] Export a report
+- [ ] One filter (employee, period), one table, one export path · ✅ *verified live 11 Oct*
+- [ ] DCR, Daily activity, Visit report, Call adherence · ✅ *verified live 11 Oct*
+- [ ] Sales, Target vs sales, Product sales · ✅ *verified live 11 Oct*
+- [ ] Attendance, Leave · ✅ *verified live 11 Oct*. **Fixed 11 Oct:** the leave sheet wrote "Not approved"; it writes "Rejected"
+- [ ] Expense report · ✅ *verified live 11 Oct*
+- [ ] Client report, Order report · ✅ *verified live 11 Oct*
+- [ ] Management overview (planned, completed, missed, adherence, unverified, sales, achievement, expenses by person) · ✅ *verified live 11 Oct*
+- [ ] Export a report · ✅ *verified live 11 Oct* (the sheet has a row for each row on screen)
 
 ### Exports (`/exports`) · Old: `pages/Evidence.tsx` `ExportCenter` · Data: `requestExport`, `completeExport`, `pullExportJobs`, `uploadExportCsv`, `signedUrlFor`
-- [ ] Choose whose data and the month
-- [ ] Sheets: DCR, Expenses, Tour plan, Client list, Sales, Orders, Attendance (in the office's own workbook shape)
-- [ ] Request, recent exports, download
+- [ ] Choose whose data and the month · ✅ *verified live 11 Oct*
+- [ ] Sheets: DCR, Expenses, Tour plan, Client list, Sales, Orders, Attendance (in the office's own workbook shape) · ✅ *verified live 11 Oct* for DCR; the rest share its path
+- [ ] Request, recent exports, download · ✅ *verified live 11 Oct*. **Fixed 11 Oct:** dozens of abandoned downloads were listed as "Not finished"; the twelve latest real ones are listed and the abandoned are counted in one line
 
 ---
 
@@ -476,7 +476,7 @@ behaviour can be checked against it. The "Data" column names the function in
 > the live testbed.
 
 ### Organisation tree (`/org`) · Old: `pages/Hierarchy.tsx` `OrgTree`
-- [ ] Everyone in scope as a tree; reporting is dated, so a change leaves a trail
+- [ ] Everyone in scope as a tree; reporting is dated, so a change leaves a trail · ✅ *verified live 11 Oct*
 
 ### Hierarchy (`/hierarchy`) · Old: `pages/Hierarchy.tsx` `Hierarchy` · Data: `reassignManager`
 - [ ] Area managers, largest team, managers with nobody, reporting to nobody
@@ -484,27 +484,27 @@ behaviour can be checked against it. The "Data" column names the function in
 - [ ] Move everyone from one manager at once
 
 ### Roles (`/roles`) · Old: `pages/Roles.tsx`
-- [ ] The company's own role names and which app each opens (field or manager)
-- [ ] Add, edit, activate or deactivate, delete a role · Data: `createDesignation`, `updateDesignation`, `setDesignationActive`, `deleteDesignation`
+- [ ] The company's own role names and which app each opens (field or manager) · ✅ *verified live 11 Oct*
+- [ ] Add, edit, activate or deactivate, delete a role · Data: `createDesignation`, `updateDesignation`, `setDesignationActive`, `deleteDesignation` · ✅ *verified live 11 Oct* (added, a duplicate refused, retired, deleted)
 
 ### Geography (`/geo`) · Old: `pages/Admin.tsx` `Geography`
-- [ ] The tree: regions, territories, areas, clusters
+- [ ] The tree: regions, territories, areas, clusters · ✅ *verified live 11 Oct*
 - [ ] Add a region, territory, area, cluster · Data: `createRegion`, `createTerritory`, `createArea`, `createCluster`
 - [ ] Delete a territory, area, cluster · Data: `deleteTerritory`, `deleteArea`, `deleteCluster`
-- [ ] Pick a territory to see who is assigned
+- [ ] Pick a territory to see who is assigned · ✅ *verified live 11 Oct*
 
 ### Users (`/users`, `/users/new`) · Old: `pages/Admin.tsx` `Users`, `pages/Logins.tsx`, `pages/Onboarding.tsx` `NewUser`
-- [ ] System users with login status; suspend or restore with a reason · Data: `pullSystemUsers`, `setLoginStatus`
+- [ ] System users with login status; suspend or restore with a reason · Data: `pullSystemUsers`, `setLoginStatus` · ✅ *verified live 11 Oct* that it is refused without a reason; switching a testbed login off is checked on demo data
 - [ ] Invite an office user: name, work email, role, linked employee, data scope, modules · Data: `inviteUser`
 - [ ] Phone logins for the roster: create, reset, email a password reset · Data: `setFieldLogin`, `emailFieldPasswordReset`
 - [ ] Who may manage logins is checked · Data: `canManageLogins`, `GRANTABLE_ROLES`
 
 ### Configuration (`/config`) · Old: `pages/Admin.tsx` `Configuration` · Data: `updateOrgSettings`
 - [ ] Settings grouped, with filters: all, not yet read by the app, fixed in V1
-- [ ] Organisation settings saved to the live project: daily allowance, week-off weekday, bill threshold, geo-fence policy (off, warn, strict), geo-fence radius
+- [ ] Organisation settings saved to the live project: daily allowance, week-off weekday, bill threshold, geo-fence policy (off, warn, strict), geo-fence radius · ✅ *verified live 11 Oct* up to the read-back (a bad radius refused); saving is checked on demo data, so the testbed's rules stay as other tests expect
 
 ### Audit log (`/audit`) · Old: `pages/Admin.tsx` `AuditLog` · Data: `pullAudit`
-- [ ] Append-only list, filter by actor; no edit, no delete, owner included
+- [ ] Append-only list, filter by actor; no edit, no delete, owner included · ✅ *verified live 11 Oct*
 
 ---
 
@@ -516,14 +516,14 @@ behaviour can be checked against it. The "Data" column names the function in
 > `my_invoices`. Checked on demo data; not yet run against the live testbed.
 
 ### Help (`/help`) · Old: `pages/MrSales.tsx` `HelpPage` · Data: `myPlatformTickets`, `myPlatformTicketThread`, `raisePlatformTicket`, `replyPlatformTicket`
-- [ ] Open, waiting for you, resolved, urgent answer time
+- [ ] Open, waiting for you, resolved, urgent answer time · ✅ *verified live 11 Oct*
 - [ ] Ticket list with status
-- [ ] Raise a ticket (subject, detail, urgency)
+- [ ] Raise a ticket (subject, detail, urgency) · ✅ *verified live 11 Oct* that the form opens; sending one is checked on demo data, so no test ticket lands in the ops support queue
 - [ ] Ticket thread, reply
 
 ### Plan and billing (`/billing`) · Old: `pages/MrSales.tsx` `BillingPage` · Data: `myPlan`, `myInvoices`
-- [ ] Plan, field seats used, to pay, overdue
-- [ ] Invoices with status (due, overdue, paid, cancelled)
+- [ ] Plan, field seats used, to pay, overdue · ✅ *verified live 11 Oct*. **Fixed 11 Oct:** it said "standard" (the plan's code; its name map was out of date) and that a seat is a person who can sign in on the phone, which is not how the server counts: a seat is a person on the roster, so marking someone as left frees one, not switching a login off
+- [ ] Invoices with status (due, overdue, paid, cancelled) · ✅ *verified live 11 Oct* (the testbed has none)
 
 ---
 

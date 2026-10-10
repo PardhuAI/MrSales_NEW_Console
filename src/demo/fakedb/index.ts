@@ -96,7 +96,7 @@ const audit = (db: FakeDb, action: string, entity: string, label: string, before
 
 const rpcs: Record<string, Rpc> = {
   my_org_access: (_a, db) => [{
-    org_name: 'Cleocure Lifesciences', status: 'active', disabled_modules: [], plan_code: 'growth', seat_limit: 25,
+    org_name: 'Cleocure Lifesciences', status: 'active', disabled_modules: [], plan_code: 'standard', seat_limit: 25,
     seats_used: db.rows('app_users').filter(u => u.role === 'field' && u.status === 'active').length,
   }],
   travel_exceptions: (a, db) => travelFor({ employees: db.rows('employees'), activities: db.rows('activities') }, String(a.p_since ?? '2000-01-01')),

@@ -161,7 +161,8 @@ function ThreadDrawer({ t, onClose, onReplied }: { t: Ticket | null; onClose: ()
 const INVOICE: Record<string, { word: string; tone: 'good'  | 'critical' | 'neutral' }> = {
   paid: { word: 'Paid', tone: 'good' }, issued: { word: 'To pay', tone: 'neutral' }, overdue: { word: 'Overdue', tone: 'critical' }, cancelled: { word: 'Cancelled', tone: 'neutral' },
 };
-const PLAN: Record<string, string> = { starter: 'Starter', growth: 'Growth', scale: 'Scale', enterprise: 'Enterprise', trial: 'Trial' };
+/** The plans Mr Sales sells (platform.plans), by code. Read by name, never by code: "standard" on screen was the code showing through. */
+const PLAN: Record<string, string> = { free: 'Free', standard: 'Mr Sales Standard', premium: 'Mr Sales Premium', enterprise: 'Mr Sales Enterprise' };
 
 /** Plan and billing: the plan, the field seats used, and every invoice. */
 export function BillingPage() {
@@ -177,7 +178,7 @@ export function BillingPage() {
   return (
     <div className="page-body">
       <Summary aside={<Freshness at={r.at} error={r.error} reload={() => void r.reload()} label="Read your plan again" />}>
-        {b.plan ? <>You are on the <strong>{PLAN[b.plan] ?? b.plan}</strong> plan.</> : 'No plan is recorded yet.'}
+        {b.plan ? <>You are on <strong>{PLAN[b.plan] ?? b.plan}</strong>.</> : 'No plan is recorded yet.'}
         {owed ? <> <strong className={overdue.length ? 'warn-text' : ''}>{rupees(owed)} to pay</strong>{overdue.length ? `, ${count(overdue.length, 'invoice')} overdue` : ''}.</> : ' Nothing to pay.'}
       </Summary>
       {me.pastDue && (
@@ -190,7 +191,7 @@ export function BillingPage() {
           <p className="fig-title">Field seats</p>
           <p className="bill-fig"><span className="hero-fig">{b.used}</span>{b.seats != null && <span className="cell-quiet"> of {b.seats} used</span>}</p>
           {b.seats != null && <span className="seat-meter" aria-hidden="true"><span style={{ transform: `scaleX(${Math.min(b.used / Math.max(b.seats, 1), 1)})` }} /></span>}
-          <p className="fig-note">{left == null ? 'A seat is a person who can sign in on the phone.' : left > 0 ? `${count(left, 'seat')} free. A seat is a person who can sign in on the phone; switching a login off frees one.` : 'Every seat is taken. Switch off a login that is no longer used, or ask for more seats under Help.'}</p>
+          <p className="fig-note">{left == null ? 'A seat is a person working here, on the roster.' : left > 0 ? `${count(left, 'seat')} free. A seat is a person working here, on the roster; marking someone as left frees one.` : 'Every seat is taken. Mark as left anyone who has gone, or ask for more seats under Help.'}</p>
         </section>
         <section>
           <div className="block-head"><h2 className="section-title">Invoices</h2><span className="block-meta">{count(b.invoices.length, 'invoice')}</span></div>
