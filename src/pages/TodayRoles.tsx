@@ -282,7 +282,7 @@ export function FinanceToday() {
       <Arrive as="section" className="block month" index={2}>
         <div className="block-head">
           <h2 className="section-title">{m.closing ? `${m.monthLabel} claims, being closed` : `${m.monthLabel} claims so far`}</h2>
-          <span className="block-meta">daily allowance {rupees(m.allowance)} · a bill is needed above {rupees(m.billAbove)}</span>
+          <span className="block-meta">{m.varies ? `company allowance ${rupees(m.allowance)}, some roles or people have their own` : `daily allowance ${rupees(m.allowance)}`} · a bill is needed above {rupees(m.billAbove)}</span>
         </div>
         <div className="month-figures">
           <div className="mf mf-lead">
@@ -318,10 +318,10 @@ export function FinanceToday() {
         <Arrive as="section" className="block" index={3}>
           <div className="block-head">
             <h2 className="section-title">Days above the allowance</h2>
-            <span className="block-meta">{m.monthLabel}, largest first</span>
+            <span className="block-meta">{m.monthLabel}, furthest over first</span>
           </div>
           {m.aboveAllowance.length === 0 ? (
-            <p className="block-empty">No day in {m.monthLabel} was claimed above the daily allowance of {rupees(m.allowance)}.</p>
+            <p className="block-empty">No day in {m.monthLabel} was claimed above {m.varies ? "anyone's daily allowance" : `the daily allowance of ${rupees(m.allowance)}`}.</p>
           ) : (
             <ul className="rows">
               {m.aboveAllowance.map(e => (
@@ -334,7 +334,7 @@ export function FinanceToday() {
                       {e.status === 'pending' ? ' · waiting' : e.status === 'rejected' ? ' · rejected' : ' · approved'}
                     </p>
                   </div>
-                  <span className="row-figure">{rupees(e.amount)}</span>
+                  <span className="row-figure">{rupees(e.amount)}<span className="cell-sub">{rupees(e.amount - e.allowance)} over {rupees(e.allowance)}</span></span>
                 </li>
               ))}
             </ul>

@@ -1,6 +1,7 @@
 import { db, readAll } from './client';
 import type { ApprovalsSource, Decision, Kind, Pending, Person } from '../data/approvals';
 import { loadPeople } from './people';
+import { expenseRulesFor } from './expenseRules';
 
 /**
  * Approvals against the live database. Every read is scoped by row-level
@@ -101,8 +102,9 @@ export const liveApprovals: ApprovalsSource = {
     for (const r of [settings, holidays, events]) if (r.error) throw new Error(r.error.message);
 
     const allowance = Number(settings.data?.daily_allowance ?? 0);
-    // A role's own daily allowance, where HR rules set one; the company's otherwise.
-    const allowanceOf = await roleAllowances(allowance);
+    // The person's own allowance, else their role's, else the company's.
+    const ruleOf = await expenseRulesFor({ allowance, billAbove: 0 });
+    const allowanceOf = (id: string) => ruleOf(id).allowance;
     const weekOff = settings.data?.week_off_weekday ?? 0;
     const holidaySet = new Set((holidays.data ?? []).map(h => h.holiday_date as string));
 
@@ -250,26 +252,4 @@ async function decisionsFrom(events: EventRow[], people: Map<string, Person>): P
     void people;
     return { id: key, kind: b.kind, personId: b.personId, summary, value, approved: b.approved, reason: b.reason, by: b.by, at: b.at };
   }).sort((a, b) => b.at.localeCompare(a.at));
-}
-
-/**
- * Each person's daily allowance: their role's expense rule (HR rules), else
- * the company's. The same order the database uses (expense_rule_for), so what
- * an approver sees as "over" is what the phone told the rep.
- */
-async function roleAllowances(company: number): Promise<(personId: string) => number> {
-  const sb = db();
-  const [people, rules] = await Promise.all([
-    sb.from('employees').select('id, designation_id'),
-    sb.from('expense_rules').select('designation_id, daily_allowance').not('designation_id', 'is', null),
-  ]);
-  // A project without the HR policy tables (0104) has only the company figure.
-  if (people.error || rules.error) return () => company;
-  const byRole = new Map((rules.data ?? []).map(r => [r.designation_id as string, Number(r.daily_allowance)]));
-  const roleOf = new Map((people.data ?? []).map(p => [p.id as string, p.designation_id as string | null]));
-  return id => {
-    const role = roleOf.get(id);
-    const own = role ? byRole.get(role) : undefined;
-    return own ?? company;
-  };
 }

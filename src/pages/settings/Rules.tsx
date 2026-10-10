@@ -77,7 +77,7 @@ function RulesForm({ rules, at, error, reload }: { rules: Rules; at: Date | null
   return (
     <div className="page-body">
       <Summary aside={<Freshness at={at} error={error} reload={reload} label="Read the rules again" />}>
-        The daily allowance is <strong>{rupees(rules.allowance)}</strong>, a bill is needed above <strong>{rupees(rules.billAbove)}</strong>, the week off is <strong>{WEEKDAYS[rules.weekOff]}</strong>, and visits are {rules.policy === 'off' ? 'not checked' : <>checked within <strong>{rules.radius} m</strong> of the client{rules.policy === 'block' ? ', strictly' : ''}</>}.
+        The company's daily allowance is <strong>{rupees(rules.allowance)}</strong>, a bill is needed above <strong>{rupees(rules.billAbove)}</strong>, the week off is <strong>{WEEKDAYS[rules.weekOff]}</strong>, and visits are {rules.policy === 'off' ? 'not checked' : <>checked within <strong>{rules.radius} m</strong> of the client{rules.policy === 'block' ? ', strictly' : ''}</>}.
       </Summary>
       {!may && <p className="form-note rules-readonly">Only an owner or admin changes these rules. They are shown here so everyone reads the same ones.</p>}
       <Arrive>
@@ -85,7 +85,7 @@ function RulesForm({ rules, at, error, reload }: { rules: Rules; at: Date | null
           <fieldset className="add-group" disabled={!may}>
             <legend className="section-title">Money</legend>
             <div className="form-row">
-              <Field label="Daily allowance" help="Paid for each day worked; the claim starts from it." error={attempt ? errors.allowance : undefined}>{x => <input {...x} className="input" inputMode="numeric" value={f.allowance} onChange={e => set('allowance', e.target.value)} />}</Field>
+              <Field label="Daily allowance" help="For each day worked, for anyone whose role or record has no figure of its own. Those are set in Pay setup." error={attempt ? errors.allowance : undefined}>{x => <input {...x} className="input" inputMode="numeric" value={f.allowance} onChange={e => set('allowance', e.target.value)} />}</Field>
               <Field label="A bill is needed above" help="A day claimed above this without a bill is flagged." error={attempt ? errors.billAbove : undefined}>{x => <input {...x} className="input" inputMode="numeric" value={f.billAbove} onChange={e => set('billAbove', e.target.value)} />}</Field>
             </div>
           </fieldset>

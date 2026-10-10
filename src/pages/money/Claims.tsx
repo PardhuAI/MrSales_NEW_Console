@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Paperclip } from '@phosphor-icons/react';
 import { invalidate, useResource } from '../../data/resource';
+import { RULE_FROM } from '../../live/expenseRules';
 import { approvalsStore } from '../../data/approvals';
 import { billUrl, decideClaim, loadClaims, type Claim, type ClaimDay, type ClaimStatus, type ClaimsModel } from '../../live/money';
 import { monthName } from '../../live/sales';
@@ -78,7 +79,7 @@ function ClaimsView({ m }: { m: ClaimsModel }) {
           <strong>{rupees(claimed)} claimed</strong> by {count(withClaim.filter(c => c.claimed).length, 'person', 'people')} for {label}.
           {waiting.length ? <> {count(waiting.length, 'claim waits', 'claims wait')} for a decision, {rupees(waiting.reduce((s, c) => s + c.waiting, 0))}.</> : ' Nothing waits for a decision.'}
           {noPlan ? <> <span className="warn-text">{count(noPlan, 'day was', 'days were')} claimed with no day plan.</span></> : ''}
-          {noBill ? <> <span className="warn-text">{count(noBill, 'day', 'days')} above {rupees(m.billAbove)} {noBill === 1 ? 'has' : 'have'} no bill.</span></> : ''}
+          {noBill ? <> <span className="warn-text">{count(noBill, 'day', 'days')} above {m.varies ? 'the bill limit' : rupees(m.billAbove)} {noBill === 1 ? 'has' : 'have'} no bill.</span></> : ''}
         </>}
       </Summary>
       <Toolbar>
@@ -122,7 +123,7 @@ function ClaimsView({ m }: { m: ClaimsModel }) {
           {more}
         </>
       )}
-      <p className="block-note">The daily allowance is {rupees(m.allowance)}{m.billAbove ? `, and a bill is expected for any day above ${rupees(m.billAbove)}` : ''}. Both are set in <Link className="link" to="/settings/rules">company rules</Link>.</p>
+      <p className="block-note">The company's daily allowance is {rupees(m.allowance)}{m.billAbove ? `, and a bill is expected for any day above ${rupees(m.billAbove)}` : ''}, set in <Link className="link" to="/settings/rules">company rules</Link>. A role or a person with their own figure is measured against that instead; those are set in <Link className="link" to="/settings/pay">pay setup</Link>.</p>
       <ClaimDrawer c={current} m={m} onClose={() => setOpen(null)} onDecided={msg => { setNotice(msg); invalidate('money:', 'home:'); void approvalsStore.load(); }} />
       {notice && <Notice onDone={() => setNotice('')}>{notice}</Notice>}
     </Arrive>
@@ -168,7 +169,7 @@ function ClaimDrawer({ c, m, onClose, onDecided }: { c: Claim | null; m: ClaimsM
 
   return (
     <Drawer open onClose={onClose} wide title={`${c.name}, ${label}`}
-      sub={`${rupees(c.days.reduce((s, d) => s + (d.expense?.amount ?? 0), 0))} over ${count(c.daysClaimed, 'day')}; ${count(c.daysWorked, 'day')} worked. ${CLAIM_STATUS[c.status].word}.`}
+      sub={`${rupees(c.days.reduce((s, d) => s + (d.expense?.amount ?? 0), 0))} over ${count(c.daysClaimed, 'day')}; ${count(c.daysWorked, 'day')} worked. ${CLAIM_STATUS[c.status].word}. Allowance ${rupees(c.allowance)} a day, ${RULE_FROM[c.ruleFrom]}.`}
       footer={pending.length && allowed('approvals') ? <>
         <button type="button" className="btn btn-secondary" onClick={() => setAsk(false)}>Reject</button>
         <button type="button" className="btn btn-primary" onClick={() => setAsk(true)}>Approve {count(pending.length, 'day')}, {rupees(pending.reduce((s, p) => s + p.amount, 0))}</button>
@@ -176,7 +177,7 @@ function ClaimDrawer({ c, m, onClose, onDecided }: { c: Claim | null; m: ClaimsM
       {(c.noPlan > 0 || c.noBill > 0) && (
         <ul className="consequences claim-flags">
           {c.noPlan > 0 && <li className="warn-text">{count(c.noPlan, 'day is', 'days are')} claimed with no day plan behind {c.noPlan === 1 ? 'it' : 'them'}.</li>}
-          {c.noBill > 0 && <li className="warn-text">{count(c.noBill, 'day is', 'days are')} above {rupees(m.billAbove)} with no bill.</li>}
+          {c.noBill > 0 && <li className="warn-text">{count(c.noBill, 'day is', 'days are')} above {rupees(c.billAbove)} with no bill.</li>}
         </ul>
       )}
       <div className="table-wrap">
@@ -187,7 +188,7 @@ function ClaimDrawer({ c, m, onClose, onDecided }: { c: Claim | null; m: ClaimsM
             {days.map(d => {
               const x = d.expense;
               const odd = x && d.kind !== 'worked';
-              const missing = x && m.billAbove && x.amount > m.billAbove && !x.bills.length;
+              const missing = x && c.billAbove && x.amount > c.billAbove && !x.bills.length;
               return (
                 <tr key={d.date}>
                   <th scope="row" className="claim-date"><span>{Number(d.date.slice(8))}</span> <span className="cell-quiet">{WEEKDAY[weekdayOf(d.date)]}</span></th>

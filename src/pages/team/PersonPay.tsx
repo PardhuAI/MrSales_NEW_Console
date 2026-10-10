@@ -229,7 +229,7 @@ function TravelDrawer({ open, p, rates, onClose, onDone }: { open: boolean; p: P
           </tbody>
         </table>
         {problem && <p className="form-error" role="alert">{problem}</p>}
-        <p className="block-note">These are kept on their record; the phone's daily allowance is flat and does not use them.</p>
+        <p className="block-note">These are kept on their record; the daily allowance does not use them.</p>
       </form>
     </Drawer>
   );

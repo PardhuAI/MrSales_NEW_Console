@@ -1,5 +1,6 @@
 import { db, readAll } from './client';
 import { loadEmployees } from './people';
+import { expenseRulesFor } from './expenseRules';
 import { IST_TODAY, shiftDay } from '../lib/days';
 
 /**
@@ -195,12 +196,15 @@ export type FinanceModel = {
   nextLabel: string;
   /** Drafts already started for the current month, when the view reads last month. */
   draftsNow: number;
+  /** The company's figures; a person may have their own (expenseRules.ts). */
   allowance: number;
   billAbove: number;
+  /** Whether anybody's allowance differs from the company's. */
+  varies: boolean;
   waiting: { claims: number; days: number; amount: number; oldestSent: string | null };
   month: { claimed: number; approved: number; pending: number; rejected: number; draft: number; people: number; allowancePart: number; abovePart: number };
   lastMonth: { label: string; approved: number; people: number };
-  aboveAllowance: { id: string; personId: string; name: string; date: string; amount: number; categories: string[]; note: string | null; status: string; bills: number }[];
+  aboveAllowance: { id: string; personId: string; name: string; date: string; amount: number; allowance: number; categories: string[]; note: string | null; status: string; bills: number }[];
   byPerson: { personId: string; name: string; days: number; amount: number; perDay: number }[];
   orders: { count: number; value: number };
   payroll: { label: string; released: number; netPaid: number } | null;
@@ -229,6 +233,10 @@ export async function loadFinance(): Promise<FinanceModel> {
   ]);
   const st = must(settings, 'company rules');
   const allowance = Number(st?.daily_allowance ?? 0);
+  const billAbove = Number(st?.receipt_threshold ?? 0);
+  // Each person's own allowance, else their role's, else the company's.
+  const ruleOf = await expenseRulesFor({ allowance, billAbove });
+  const allowanceOf = (id: string) => ruleOf(id).allowance;
   const nameOf = (id: string) => people.get(id)?.name ?? 'Someone no longer on the roster';
   // In a month's first week the claims being sent and decided are last month's,
   // so that is the month this view reads, and it says so.
@@ -242,7 +250,7 @@ export async function loadFinance(): Promise<FinanceModel> {
   // Claimed means sent: waiting, approved or rejected. The same word on Expense
   // claims counts the same rows, so the two screens give one figure.
   const sent = thisMonth.filter(e => e.status === 'pending' || e.status === 'approved' || e.status === 'rejected');
-  const da = (e: (typeof expenses)[number]) => ((e.categories ?? []).includes('dailyAllowance') ? Math.min(Number(e.amount), allowance) : 0);
+  const da = (e: (typeof expenses)[number]) => ((e.categories ?? []).includes('dailyAllowance') ? Math.min(Number(e.amount), allowanceOf(e.employee_id)) : 0);
   const per = new Map<string, { days: number; amount: number }>();
   for (const e of sent) {
     const p = per.get(e.employee_id) ?? { days: 0, amount: 0 };
@@ -261,7 +269,8 @@ export async function loadFinance(): Promise<FinanceModel> {
     nextLabel: label(y, m),
     draftsNow: sum(draftsNow),
     allowance,
-    billAbove: Number(st?.receipt_threshold ?? 0),
+    billAbove,
+    varies: [...people.keys()].some(id => allowanceOf(id) !== allowance),
     waiting: {
       claims: new Set(pending.map(e => `${e.employee_id}|${e.work_date.slice(0, 7)}`)).size,
       days: pending.length,
@@ -284,11 +293,11 @@ export async function loadFinance(): Promise<FinanceModel> {
       people: new Set(lastMonth.filter(e => e.status === 'approved').map(e => e.employee_id)).size,
     },
     aboveAllowance: expenses
-      .filter(e => (e.status === 'pending' || e.status === 'approved' || e.status === 'rejected') && e.work_date.startsWith(mk(fy, fm)) && allowance > 0 && Number(e.amount) > allowance)
-      .sort((a, b) => Number(b.amount) - Number(a.amount))
+      .filter(e => (e.status === 'pending' || e.status === 'approved' || e.status === 'rejected') && e.work_date.startsWith(mk(fy, fm)) && allowanceOf(e.employee_id) > 0 && Number(e.amount) > allowanceOf(e.employee_id))
+      .sort((a, b) => (Number(b.amount) - allowanceOf(b.employee_id)) - (Number(a.amount) - allowanceOf(a.employee_id)))
       .slice(0, 6)
       .map(e => ({
-        id: e.id, personId: e.employee_id, name: nameOf(e.employee_id), date: e.work_date, amount: Number(e.amount),
+        id: e.id, personId: e.employee_id, name: nameOf(e.employee_id), date: e.work_date, amount: Number(e.amount), allowance: allowanceOf(e.employee_id),
         categories: (e.categories ?? []).map(categoryLabel), note: e.description || e.remarks, status: e.status, bills: e.receipt_paths?.length ?? 0,
       })),
     byPerson: [...per.entries()].map(([id, p]) => ({ personId: id, name: nameOf(id), days: p.days, amount: p.amount, perDay: p.days ? p.amount / p.days : 0 }))

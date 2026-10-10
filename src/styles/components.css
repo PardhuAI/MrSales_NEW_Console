@@ -81,6 +81,12 @@
   white-space: nowrap;
 }
 
+/* What a figure is measured against, under it: "₹400 over ₹500". */
+.row-figure .cell-sub {
+  font-weight: var(--w-regular);
+  text-align: right;
+}
+
 .sub-title {
   margin-top: var(--s-6);
   padding-bottom: var(--s-2);

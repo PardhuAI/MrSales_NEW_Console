@@ -1,6 +1,7 @@
 import { db, readAll } from './client';
 import { loadEmployees } from './people';
 import { categoryLabel } from './approvals';
+import { expenseRulesFor, type RuleFrom } from './expenseRules';
 import { IST_TODAY, weekdayOf } from '../lib/days';
 
 /**
@@ -48,11 +49,16 @@ export type Claim = {
   noPlan: number;
   /** Days above the bill threshold with no bill attached. */
   noBill: number;
+  /** This person's daily allowance and bill threshold, and whose figure it is. */
+  allowance: number;
+  billAbove: number;
+  ruleFrom: RuleFrom;
   sentAt: string | null;
   trail: { action: string; by: string; reason: string | null; at: string }[];
 };
 
-export type ClaimsModel = { month: string; allowance: number; billAbove: number; claims: Claim[] };
+/** allowance and billAbove are the company's; a claim carries the person's own. */
+export type ClaimsModel = { month: string; allowance: number; billAbove: number; claims: Claim[]; varies: boolean };
 
 type ExpenseRow = {
   id: string; employee_id: string; work_date: string; amount: number; categories: string[] | null;
@@ -84,12 +90,14 @@ export async function loadClaims(month: string): Promise<ClaimsModel> {
   const allowance = Number(settings.data?.daily_allowance ?? 0);
   const billAbove = Number(settings.data?.receipt_threshold ?? 0);
   const weekOff = Number(settings.data?.week_off_weekday ?? 0);
+  const ruleOf = await expenseRulesFor({ allowance, billAbove });
   const holiday = new Map((holidays.data ?? []).map(h => [h.holiday_date as string, h.name as string]));
   const plan = new Map(plans.map(p => [`${p.employee_id}|${p.work_date}`, p]));
   const today = IST_TODAY();
 
   const people = [...employees.values()].filter(e => (e.status === 'active' && e.role === 'MR') || expenses.some(x => x.employee_id === e.id));
   const claims = people.map((e): Claim => {
+    const rule = ruleOf(e.id);
     const mine = new Map(expenses.filter(x => x.employee_id === e.id && x.status !== 'cancelled').map(x => [x.work_date, x]));
     const list: ClaimDay[] = days.filter(k => k <= today && (!e.joinedAt || k >= e.joinedAt)).map(k => {
       const p = plan.get(`${e.id}|${k}`);
@@ -118,12 +126,13 @@ export async function loadClaims(month: string): Promise<ClaimsModel> {
       claimed: sum(s => s !== 'draft'), approved: sum(s => s === 'approved'), waiting: sum(s => s === 'pending'),
       daysClaimed: xs.length, daysWorked: list.filter(d => d.kind === 'worked').length,
       noPlan: list.filter(d => d.expense && d.kind !== 'worked').length,
-      noBill: billAbove ? xs.filter(x => x.amount > billAbove && !x.bills.length).length : 0,
+      noBill: rule.billAbove ? xs.filter(x => x.amount > rule.billAbove && !x.bills.length).length : 0,
+      allowance: rule.allowance, billAbove: rule.billAbove, ruleFrom: rule.from,
       sentAt: sent[sent.length - 1] ?? null,
       trail: events.filter(v => xids.has(v.entity_id)).map(v => ({ action: v.action, by: v.actor_name ?? 'Someone', reason: v.reason, at: v.at })),
     };
   }).sort((a, b) => Number(b.status === 'pending') - Number(a.status === 'pending') || b.claimed - a.claimed || a.name.localeCompare(b.name));
-  return { month, allowance, billAbove, claims };
+  return { month, allowance, billAbove, claims, varies: claims.some(c => c.ruleFrom !== 'company') };
 }
 
 /** Approve or reject the days still waiting in one claim, in one call, so the person gets one message. */
