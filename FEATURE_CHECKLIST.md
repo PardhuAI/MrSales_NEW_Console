@@ -43,7 +43,7 @@ behaviour can be checked against it. The "Data" column names the function in
 
 ### Sign-in and accounts
 - [ ] Sign in with work email and password · Old: `app/SignIn.tsx` · Data: Supabase auth · ✅ *verified live 10 Oct* (five roles; a wrong password is refused in words)
-- [ ] Optional company code on the sign-in form · ❓ *owner decision:* the new form has no company code. In the old one it was for show only (it changed nothing at sign-in). Proposed: drop it
+- [x] ~~Optional company code on the sign-in form~~ · **dropped by the owner, 10 Oct:** office logins are work emails, unique across Mr Sales, and the old code changed nothing at sign-in
 - [ ] "Forgotten your password?" sends a reset email · Data: `auth.resetPasswordForEmail` · ✅ *verified live 10 Oct*: the form asks the server for the reset email for the address typed and says "Check your email" (the letter itself was not sent: the testbed address has no inbox)
 - [ ] Expired or used email link explains itself ("That email link has expired or was already used") · ✅ *verified live 10 Oct*
 - [ ] First sign-in from an invite: choose a password, confirm it, rules shown · Old: `app/Welcome.tsx` · ⏳ *not yet live:* needs a fresh invite to a real inbox; checked by hand at the next new-company test
@@ -102,7 +102,7 @@ behaviour can be checked against it. The "Data" column names the function in
 > database does not record it; the old figure was always zero) and the hard-coded "6 mobile
 > devices" (now read from `employees.last_device_id`). Admin now sees the owner's field view
 > instead of the IT view.
-- [ ] First-run setup checklist, in order, with progress and "Not now" per step · Data: `dismissedSetupSteps`, `dismissSetupStep`
+- [ ] First-run setup checklist, in order, with progress and "Not now" per step · Data: `dismissedSetupSteps`, `dismissSetupStep` · ⏳ *not yet live:* Testbed Pharma has finished or set aside every step, so the guide does not show; checked at the new-company test
   1. Name the roles in your company
   2. Give your office access
   3. Set up your geography
@@ -110,17 +110,17 @@ behaviour can be checked against it. The "Data" column names the function in
   5. Add your field people (named by the company's own role)
   6. Check everybody reports to somebody
   7. Give them phone logins
-- [ ] Owner / Admin / Management view:
-  - [ ] Field active today, planned calls today, calls completed, pending approvals
+- [ ] Owner / Admin / Management view: · ✅ *verified live 10 Oct* as admin
+  - [ ] Field active today, planned calls today, calls completed, pending approvals · ✅ *verified live 10 Oct*; the waiting count matches the bar
   - [ ] Next actions
   - [ ] Sales this month, target achievement, active clients, new clients added
-  - [ ] Field activity, last 21 days (chart) with a month range switch
-  - [ ] Target vs sales, manager-wise (chart)
-  - [ ] Top and low performers
-  - [ ] Needs attention: low call frequency, no field activity, GPS not reporting
-- [ ] HR view: headcount, present today, leave requests, documents expiring; leave awaiting a decision; documents expiring soon
-- [ ] Finance view: claims pending, approved this cycle, average per rep, daily allowance; claims by state; by category
-- [ ] IT view: system users, MFA enabled, mobile devices, audit entries; recent changes; data freshness
+  - [ ] Field activity, last 21 days (chart) with a month range switch · ✅ *verified live 10 Oct* (last 20 working days, October, September)
+  - [ ] Target vs sales, manager-wise (chart) · ✅ *verified live 10 Oct* as the By manager table. **Fixed 10 Oct:** its location column counted the last 30 days beside October's sales and read 12% against October's 0%; it counts this month now and is called "Checked at the client", like the month figure
+  - [ ] Top and low performers · ✅ *verified live 10 Oct* (Ahead and behind)
+  - [ ] Needs attention: low call frequency, no field activity, GPS not reporting · ✅ *verified live 10 Oct* (Needs you)
+- [ ] HR view: headcount, present today, leave requests, documents expiring; leave awaiting a decision; documents expiring soon · ✅ *verified live 10 Oct*. **Fixed 10 Oct:** the leave list showed all 36 requests; it shows the six oldest and "Decide all 36"
+- [ ] Finance view: claims pending, approved this cycle, average per rep, daily allowance; claims by state; by category · ✅ *verified live 10 Oct*
+- [ ] IT view: system users, MFA enabled, mobile devices, audit entries; recent changes; data freshness · ✅ *verified live 10 Oct*. **Fixed 10 Oct:** first-password logins read "a login" with no name; they are named by person now
 
 ### Attention (`/attention`) · Old: `pages/Attention.tsx` · Data: `pullAttention`
 
@@ -130,11 +130,11 @@ behaviour can be checked against it. The "Data" column names the function in
 > client master gaps) plus the decisions waiting from the approvals store. Checked on demo data
 > at 1440, 1024 and 390; not yet run against the live testbed, so boxes stay unticked. Action
 > links to a person's day go to Field, which is not rebuilt yet.
-- [ ] Ranked list of exceptions, critical first, each with a reason and an action link
+- [ ] Ranked list of exceptions, critical first, each with a reason and an action link · ✅ *verified live 10 Oct*
 - [ ] Phone reported a simulated (mocked) location during a visit → opens that day
 - [ ] Journeys that do not add up (too fast, identical position, clock ran backwards) · Data: RPC `travel_exceptions`
-- [ ] Decisions waiting
-- [ ] Clients that need fixing in the master (no location, no owner)
+- [ ] Decisions waiting · ✅ *verified live 10 Oct*. **Fixed 10 Oct:** it said "A claim is money someone is waiting for" when only leave waited
+- [ ] Clients that need fixing in the master (no location, no owner) · ✅ *verified live 10 Oct* (opens Clients)
 - [ ] "Nothing needs you" empty state
 
 ### Approvals (`/approvals`) · Old: `pages/Approvals.tsx`
@@ -147,12 +147,12 @@ behaviour can be checked against it. The "Data" column names the function in
 > unplanned days marked to look at, approve-all with a summary that names what is
 > flagged, common reject reasons, a Decided history, and one call per kind
 > (`decide_expenses`, `decide_orders`) so each person gets one message.
-- [ ] One queue for expenses, leave, tour plans and orders, filter by kind
-- [ ] Figures: waiting, value, older than 5 days, decided this session
+- [ ] One queue for expenses, leave, tour plans and orders, filter by kind · ✅ *verified live 10 Oct* (leave is all that waits on the testbed today)
+- [ ] Figures: waiting, value, older than 5 days, decided this session · ✅ *verified live 10 Oct*. **Fixed 10 Oct:** "36 requests … 36 requests waiting over 5 days" reads "all waiting over 5 days"
 - [ ] Each row: employee, request, summary, value, submitted, overdue flag
 - [ ] Open the underlying record
-- [ ] Approve
-- [ ] Reject with a required reason
+- [ ] Approve · ✅ *verified live 10 Oct* (leave)
+- [ ] Reject with a required reason · ✅ *verified live 10 Oct* (refused without one; the reason shows under Decided)
 - [ ] Data: `decideExpense`, `decideLeave`, `decideTour`, `decideOrder`; reads `pullExpenses`, `pullLeave`, `pullTourPlans`, `pullOrders`, `pullNotifications`
 - [ ] "Nothing is waiting" empty state
 

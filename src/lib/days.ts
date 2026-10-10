@@ -49,8 +49,11 @@ export const longDay = (k: string) => {
   const d = dateOfDay(k);
   return `${d.toLocaleDateString('en-IN', { weekday: 'long' })}, ${d.toLocaleDateString('en-IN', { day: 'numeric', month: 'long' })}`;
 };
+const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+/** "Sep": current browsers write September as "Sept" in en-IN and every other month in three letters. */
+export const monShort = (d: Date) => MON[d.getMonth()];
 /** "3 Oct" */
-export const shortDay = (k: string) => dateOfDay(k).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+export const shortDay = (k: string) => { const d = dateOfDay(k); return `${d.getDate()} ${monShort(d)}`; };
 /** "3 October" */
 export const dayMonth = (k: string) => dateOfDay(k).toLocaleDateString('en-IN', { day: 'numeric', month: 'long' });
 /** "October 2026" */

@@ -70,7 +70,8 @@ export function Attention() {
         title: `${count(waiting, 'request')} waiting for a decision`,
         reason: `${q.map(x => count(x.count, NOUN[x.kind][0], NOUN[x.kind][1])).join(', ')}.`
           + (oldest > 5 ? ` The oldest has waited ${count(oldest, 'day')}.` : '')
-          + ' A claim is money someone in the field is waiting for.',
+          // Said only when a claim is among them: on a queue of leave it read as filler.
+          + (q.some(x => x.kind === 'expense' && x.count > 0) ? ' A claim is money someone in the field is waiting for.' : ''),
         action: 'Decide',
         to: '/approvals',
       });

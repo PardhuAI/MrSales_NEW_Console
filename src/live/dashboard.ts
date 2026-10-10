@@ -3,6 +3,7 @@ import { loadEmployees, type Employee } from './people';
 import type {
   Attention, CallMark, CallState, DashboardModel, DayFigures, DayState, Ranked, RibbonGroup,
 } from '../data/dashboard';
+import { monShort, shortDay } from '../lib/days';
 
 /**
  * The Dashboard from the live database, for whoever is signed in. Row-level
@@ -40,7 +41,7 @@ const weekdayOf = (k: string) => {
 const startOf = (k: string) => `${k}T00:00:00+05:30`;
 const monthKey = (y: number, m: number) => `${y}-${String(m).padStart(2, '0')}`;
 const monthLabel = (y: number, m: number, long = true) =>
-  new Date(y, m - 1, 1).toLocaleDateString('en-IN', { month: long ? 'long' : 'short' });
+  long ? new Date(y, m - 1, 1).toLocaleDateString('en-IN', { month: 'long' }) : monShort(new Date(y, m - 1, 1));
 
 const FIELD_DAY_START = 9;
 const FIELD_DAY_END = 19;
@@ -297,7 +298,7 @@ export async function loadLiveDashboard(orgName: string): Promise<DashboardModel
       title: list.length === 1
         ? `A journey of ${worst.employee_name || person(id)?.name}'s does not add up`
         : `${list.length} journeys of ${worst.employee_name || person(id)?.name}'s do not add up`,
-      reason: `${dateOf(dayKey(new Date(worst.happened_at))).toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'short' })}: ${what}. A flight or a bad GPS fix can explain it; the day shows both visits.`,
+      reason: `${dateOf(dayKey(new Date(worst.happened_at))).toLocaleDateString('en-IN', { weekday: 'long' })}, ${shortDay(dayKey(new Date(worst.happened_at)))}: ${what}. A flight or a bad GPS fix can explain it; the day shows both visits.`,
       action: 'See both visits', to: `/field/${id}/${dayKey(new Date(worst.happened_at))}`,
     });
   }
@@ -423,7 +424,7 @@ export async function loadLiveDashboard(orgName: string): Promise<DashboardModel
     const list = byDay.get(k) ?? [];
     trend.unshift({
       date: k,
-      label: dateOf(k).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }),
+      label: shortDay(k),
       done: list.filter(c => c.status === 'done').length,
       missed: list.filter(c => c.status === 'missed').length,
     });
@@ -437,7 +438,7 @@ export async function loadLiveDashboard(orgName: string): Promise<DashboardModel
       const list = byDay.get(k) ?? [];
       out.push({
         date: k,
-        label: dateOf(k).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }),
+        label: shortDay(k),
         done: list.filter(c => c.status === 'done').length,
         missed: list.filter(c => c.status === 'missed').length,
       });
@@ -465,7 +466,9 @@ export async function loadLiveDashboard(orgName: string): Promise<DashboardModel
       const team = field.filter(e => e.managerId === m.id);
       const ids = new Set(team.map(e => e.id));
       const week = calls.filter(c => ids.has(c.employee) && c.day >= weekStart && c.day <= today);
-      const recent = calls.filter(c => ids.has(c.employee) && c.status === 'done' && c.day >= shift(today, -30));
+      // This month, like the sales beside it and the month's own figure above:
+      // a 30-day window read 12% against October's 0% for the same team.
+      const recent = calls.filter(c => ids.has(c.employee) && c.status === 'done' && c.day >= monthStart);
       const checkedRecent = recent.filter(c => c.verdict);
       return {
         id: m.id,

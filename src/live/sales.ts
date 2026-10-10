@@ -1,7 +1,7 @@
 import { db, readAll } from './client';
 import { loadEmployees } from './people';
 import { loadGeo } from './geo';
-import { IST_TODAY, daysBetween } from '../lib/days';
+import { IST_TODAY, daysBetween, monShort } from '../lib/days';
 import type { SheetReport } from '../lib/sheetReport';
 
 /**
@@ -26,7 +26,10 @@ const call = async (fn: string, args: Record<string, unknown>) => {
   return data;
 };
 export const monthKey = (y: number, m: number) => `${y}-${String(m).padStart(2, '0')}`;
-export const monthName = (k: string, long = true) => new Date(Number(k.slice(0, 4)), Number(k.slice(5, 7)) - 1, 1).toLocaleDateString('en-IN', { month: long ? 'long' : 'short' });
+export const monthName = (k: string, long = true) => {
+  const d = new Date(Number(k.slice(0, 4)), Number(k.slice(5, 7)) - 1, 1);
+  return long ? d.toLocaleDateString('en-IN', { month: 'long' }) : monShort(d);
+};
 export const monthsBack = (n: number) => {
   const [y, m] = IST_TODAY().split('-').map(Number);
   return Array.from({ length: n }, (_, i) => {

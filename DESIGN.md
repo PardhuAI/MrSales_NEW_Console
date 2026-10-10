@@ -187,3 +187,7 @@ Dated. These amend everything above; where they differ, this section wins.
   only your own conversations, never the field's with each other. An office login
   writes as itself under a name it chooses once (migration 0101), so it takes no
   seat and never appears in attendance or the field counts.
+- **2026-10-10.** No company code on the console's sign-in. Office logins are work emails,
+  unique across Mr Sales, so the company is known from the login; the old console's
+  optional code changed nothing at sign-in. The phone app keeps its company code, which
+  it needs because employee IDs repeat between companies.

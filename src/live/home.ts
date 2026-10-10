@@ -310,7 +310,7 @@ export async function loadFinance(): Promise<FinanceModel> {
 // ── IT ────────────────────────────────────────────────────────────────
 
 export type ItModel = {
-  logins: { office: number; phone: number; suspended: number; firstPassword: { email: string; role: string }[] };
+  logins: { office: number; phone: number; suspended: number; firstPassword: { key: string; who: string; detail: string; role: string }[] };
   noLogin: { id: string; name: string; hq: string }[];
   phones: { registered: number; field: number; quiet: { id: string; name: string; lastSeen: string | null }[] };
   lastFromPhone: string | null;
@@ -337,7 +337,17 @@ export async function loadIt(): Promise<ItModel> {
       office: u.filter(x => x.role !== 'field' && x.status === 'active').length,
       phone: u.filter(x => x.role === 'field' && x.status === 'active').length,
       suspended: u.filter(x => x.status === 'suspended').length,
-      firstPassword: u.filter(x => x.must_change_password && x.status === 'active').map(x => ({ email: x.email ?? 'a login', role: x.role })),
+      // Named by the person where the login belongs to one; a bare "a login"
+      // told IT nothing it could act on.
+      firstPassword: u.filter(x => x.must_change_password && x.status === 'active').map((x, i) => {
+        const person = x.employee_id ? people.get(x.employee_id) : undefined;
+        return {
+          key: x.employee_id ?? x.email ?? `login-${i}`,
+          who: person?.name ?? x.email ?? 'A login with no person or email',
+          detail: [person?.code, person && x.email ? x.email : null].filter(Boolean).join(' · '),
+          role: x.role,
+        };
+      }),
     },
     noLogin: field.filter(p => !withLogin.has(p.id)).map(p => ({ id: p.id, name: p.name, hq: p.hq })),
     phones: {

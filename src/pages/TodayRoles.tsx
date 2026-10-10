@@ -10,6 +10,9 @@ import { ago, dayMonth, dayOf, daysBetween, longDay, shortDay } from '../lib/day
 import { Arrive, CountUp } from '../components/motion';
 import { Empty, Freshness, LoadError, Loading } from '../components/States';
 
+/** The oldest few leave requests; the rest are one link away, on Approvals. Thirty-six rows made HR's Today a list. */
+const LEAVE_SHOWN = 6;
+
 /**
  * Today for the people who do not run the field day to day. Each answers its
  * own question in one sentence first, then lists what needs a decision, then
@@ -158,14 +161,16 @@ export function HrToday() {
           <div className="block-head">
             <h2 className="section-title">Leave waiting for a decision</h2>
             {m.leaveWaiting.length > 0 && allowed('approvals') && (
-              <Link className="link" to="/approvals?kind=leave">Decide <ArrowRight size={13} aria-hidden="true" /></Link>
+              <Link className="link" to="/approvals?kind=leave">
+                {m.leaveWaiting.length > LEAVE_SHOWN ? `Decide all ${m.leaveWaiting.length}` : 'Decide'} <ArrowRight size={13} aria-hidden="true" />
+              </Link>
             )}
           </div>
           {m.leaveWaiting.length === 0 ? (
             <p className="block-empty">Nothing is waiting. Leave applied for on the phone appears here as soon as it is sent.</p>
           ) : (
             <ul className="rows">
-              {m.leaveWaiting.map(l => (
+              {m.leaveWaiting.slice(0, LEAVE_SHOWN).map(l => (
                 <li key={l.id} className="row">
                   <div className="row-main">
                     <p className="row-title">{l.name}</p>
@@ -447,8 +452,8 @@ export function ItToday() {
           ) : (
             <ul className="rows">
               {m.logins.firstPassword.map(l => (
-                <li key={l.email} className="row">
-                  <div className="row-main"><p className="row-title">{l.email}</p><p className="row-sub">{l.role === 'field' ? 'Phone login' : `${l.role[0].toUpperCase()}${l.role.slice(1)} login`}</p></div>
+                <li key={l.key} className="row">
+                  <div className="row-main"><p className="row-title">{l.who}</p><p className="row-sub">{[l.role === 'field' ? 'Phone login' : `${l.role[0].toUpperCase()}${l.role.slice(1)} login`, l.detail].filter(Boolean).join(' · ')}</p></div>
                 </li>
               ))}
             </ul>

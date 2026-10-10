@@ -22,6 +22,7 @@ import {
 import { count, rupees } from '../lib/format';
 import { EASE } from '../components/motion';
 import { ConfirmDialog, RejectDialog } from '../components/DecisionDialogs';
+import { monShort } from '../lib/days';
 
 /**
  * Waiting for you: everything sent for a decision, grouped by the person who
@@ -45,7 +46,7 @@ type Group = {
   looks: number;
 };
 
-const dayLabel = (iso: string) => new Date(iso).toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' });
+const dayLabel = (iso: string) => { const d = new Date(iso); return `${d.toLocaleDateString('en-IN', { weekday: 'short' })}, ${d.getDate()} ${monShort(d)}`; };
 const monthOf = (iso: string) => new Date(iso).toLocaleDateString('en-IN', { month: 'long' });
 const sentAgo = (d: number) => (d === 0 ? 'sent today' : d === 1 ? 'sent yesterday' : `sent ${d} days ago`);
 
@@ -133,7 +134,7 @@ export function Approvals() {
             <strong>{count(requests, 'request')}</strong> from {count(groups.length, 'person', 'people')}
             {totalValue > 0 && <> · {rupees(totalValue)}</>}
             {looks > 0 && <> · <span className="ap-look-word">{count(looks, 'item')} to look at closely</span></>}
-            {overdue > 0 && <> · <span className="ap-overdue-word">{count(overdue, 'request')} waiting over 5 days</span></>}
+            {overdue > 0 && <> · <span className="ap-overdue-word">{overdue === requests ? (requests === 1 ? 'waiting over 5 days' : 'all waiting over 5 days') : `${count(overdue, 'request')} waiting over 5 days`}</span></>}
           </>
         )}
       </p>

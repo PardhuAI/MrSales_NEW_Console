@@ -1,7 +1,7 @@
 import { db, readAll } from './client';
 import { loadEmployees, type Employee } from './people';
 import { loadGeo, type Geo } from './geo';
-import { IST_TODAY, dayOf, daysBetween, hoursOf, shiftDay, startOfDay, weekdayOf } from '../lib/days';
+import { IST_TODAY, dayOf, daysBetween, hoursOf, shiftDay, shortDay, startOfDay, weekdayOf } from '../lib/days';
 
 /**
  * The Field section, read from the same tables the old console reads
@@ -460,7 +460,7 @@ export async function loadCoverage(weeks = 6): Promise<CoverageModel> {
   const all = Array.from({ length: weeks }, (_, i) => {
     const end = shiftDay(today, -i * 7);
     const start = shiftDay(end, -6);
-    return { start, end, label: new Date(`${start}T12:00:00`).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) };
+    return { start, end, label: shortDay(start) };
   }).reverse().filter(w => w.start >= earliestDay);
   const clientArea = new Map(clients.map(c => [c.id, c.area_id]));
   const territory = new Map(geo.territories.map(t => [t.id, t.name]));

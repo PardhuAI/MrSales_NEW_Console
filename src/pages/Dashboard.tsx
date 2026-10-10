@@ -201,7 +201,7 @@ function DashboardView({ m, updatedAt, refreshError }: { m: DashboardModel; upda
                     <tr>
                       <th scope="col">Manager</th>
                       <th scope="col" className="num">Calls this week</th>
-                      <th scope="col" className="num">Location checked</th>
+                      <th scope="col" className="num">Checked at the client</th>
                       {seesSales && <th scope="col" className="num">Sold in {m.salesMonth}</th>}
                       {seesSales && <th scope="col" className="num">Of target</th>}
                     </tr>
