@@ -42,23 +42,23 @@ behaviour can be checked against it. The "Data" column names the function in
 ## 0. Across the whole console
 
 ### Sign-in and accounts
-- [ ] Sign in with work email and password · Old: `app/SignIn.tsx` · Data: Supabase auth
-- [ ] Optional company code on the sign-in form
-- [ ] "Forgotten your password?" sends a reset email · Data: `auth.resetPasswordForEmail`
-- [ ] Expired or used email link explains itself ("That email link has expired or was already used")
-- [ ] First sign-in from an invite: choose a password, confirm it, rules shown · Old: `app/Welcome.tsx`
-- [ ] A field (phone) login trying the console is told to use the app · Data: `FieldLoginOnConsole`
-- [ ] An organisation that is suspended or blocked is told so · Data: `OrgAccessBlocked`
-- [ ] Sign out
-- [ ] Shows who is signed in, their role and the organisation name
+- [ ] Sign in with work email and password · Old: `app/SignIn.tsx` · Data: Supabase auth · ✅ *verified live 10 Oct* (five roles; a wrong password is refused in words)
+- [ ] Optional company code on the sign-in form · ❓ *owner decision:* the new form has no company code. In the old one it was for show only (it changed nothing at sign-in). Proposed: drop it
+- [ ] "Forgotten your password?" sends a reset email · Data: `auth.resetPasswordForEmail` · ✅ *verified live 10 Oct*: the form asks the server for the reset email for the address typed and says "Check your email" (the letter itself was not sent: the testbed address has no inbox)
+- [ ] Expired or used email link explains itself ("That email link has expired or was already used") · ✅ *verified live 10 Oct*
+- [ ] First sign-in from an invite: choose a password, confirm it, rules shown · Old: `app/Welcome.tsx` · ⏳ *not yet live:* needs a fresh invite to a real inbox; checked by hand at the next new-company test
+- [ ] A field (phone) login trying the console is told to use the app · Data: `FieldLoginOnConsole` · ⏳ *blocked:* the testbed's field password in `.env.testbed` no longer signs in (MY_TODO)
+- [ ] An organisation that is suspended or blocked is told so · Data: `OrgAccessBlocked` · ⏳ *not yet live:* suspending Testbed Pharma would lock out every other test; checked at the new-company test
+- [ ] Sign out · ✅ *verified live 10 Oct* (and a reload stays signed out). Note: signing out ends that login on every device
+- [ ] Shows who is signed in, their role and the organisation name · ✅ *verified live 10 Oct* (all five roles)
 
 ### Roles, permissions and scope
-- [ ] Six office roles: Owner, Admin, HR, IT, Finance, Management · Old: `data/store.ts` `GRANTS`
-- [ ] Menu shows only the modules the role may open (hidden, never disabled)
-- [ ] A page opened without permission explains which permission is missing (not a blank page)
-- [ ] Scope: Management sees its team only; the rest see the company
+- [ ] Six office roles: Owner, Admin, HR, IT, Finance, Management · Old: `data/store.ts` `GRANTS` · ✅ *verified live 10 Oct* for five; the testbed has no owner login, so Owner is checked on demo data only
+- [ ] Menu shows only the modules the role may open (hidden, never disabled) · ✅ *verified live 10 Oct* (five roles)
+- [ ] A page opened without permission explains which permission is missing (not a blank page) · ✅ *verified live 10 Oct* (every page, five roles)
+- [ ] Scope: Management sees its team only; the rest see the company · ✅ *verified live 10 Oct* (management's People list is smaller than admin's)
 - [x] Salary visible only to Owner, HR and Finance (`canSeeSalary`), enforced in the database since 0106
-- [ ] Modules switched off in the organisation's plan are hidden (`disabledModules`)
+- [ ] Modules switched off in the organisation's plan are hidden (`disabledModules`) · ⏳ *not yet live:* Testbed Pharma's plan has every module on; checked on demo data
 - [ ] Role access matrix kept exactly:
   - Owner: everything
   - Admin: everything except payroll and salary
@@ -68,17 +68,17 @@ behaviour can be checked against it. The "Data" column names the function in
   - Management (team scope): dashboard, attention, field, clients, sales, orders, targets, people, resources, surveys, complaints, tours, RCPA, coverage, stock, stockists, tasks, notifications, reports, exports, expenses, help
 
 ### Shell
-- [ ] Global search across employees (name, code), clients (name), orders (number), with ⌘K / Ctrl K to focus · Old: `app/Shell.tsx` `GlobalBar`
-- [ ] "Nothing matches" result state
-- [ ] Pending approvals count in the top bar, linking to Approvals
-- [ ] Badge with the pending count on the Approvals menu item
-- [ ] Live data freshness ("refreshed 2 min ago") and a Refresh button, with a visible failure message
-- [ ] Light, dark and follow-the-system theme
-- [ ] Mobile menu (open, close, focus kept inside)
-- [ ] Menu remembers which sections were left open
+- [ ] Global search across employees (name, code), clients (name), orders (number), with ⌘K / Ctrl K to focus · Old: `app/Shell.tsx` `GlobalBar` · ✅ *verified live 10 Oct* for people by name and Ctrl K; clients and orders not yet
+- [ ] "Nothing matches" result state · ✅ *verified live 10 Oct*
+- [ ] Pending approvals count in the top bar, linking to Approvals · ✅ *verified live 10 Oct* (36 waiting on the testbed)
+- [ ] Badge with the pending count on the Approvals menu item · ✅ *verified live 10 Oct* (matches the bar)
+- [ ] Live data freshness ("refreshed 2 min ago") and a Refresh button, with a visible failure message · ✅ *verified live 10 Oct* on Today, including a refresh with no connection
+- [ ] Light, dark and follow-the-system theme · ✅ *verified live 10 Oct*
+- [ ] Mobile menu (open, close, focus kept inside) · ✅ *verified live 10 Oct*. **Fixed 10 Oct:** Tab used to walk out of the open menu into the page behind it
+- [ ] Menu remembers which sections were left open · superseded: every section is always visible (owner, 5 Oct)
 - [ ] Opening a page opens its menu section
-- [ ] Crash reporting (Sentry) · Old: `app/crashReporting.ts`
-- [ ] Pages load on demand (code split) with a page error boundary · Old: `app/lazyPage.tsx`, `PageError.tsx`
+- [ ] Crash reporting (Sentry) · Old: `app/crashReporting.ts` · ⏳ off until `VITE_SENTRY_DSN` is set, as in the old console
+- [ ] Pages load on demand (code split) with a page error boundary · Old: `app/lazyPage.tsx`, `PageError.tsx` · ✅ *verified live 10 Oct* for loading on demand; the error boundary is checked on demo data
 - [ ] Every list has loading, empty, error and permission-denied states
 
 ### Demo mode

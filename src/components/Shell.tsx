@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import * as Menu from '@radix-ui/react-dropdown-menu';
 import { Check, List, MagnifyingGlass, Plus, X } from '@phosphor-icons/react';
@@ -35,6 +35,7 @@ export function Shell({ children }: { children: ReactNode }) {
   const menuBtn = useRef<HTMLButtonElement>(null);
   const closeBtn = useRef<HTMLButtonElement>(null);
   const nav = useRef<HTMLElement>(null);
+  const mainCol = useRef<HTMLDivElement>(null);
   const opened = useRef(false);
 
   // ⌘K / Ctrl K opens search from anywhere; so does "/" outside a field.
@@ -57,6 +58,32 @@ export function Shell({ children }: { children: ReactNode }) {
     setPreview(null);
   }, [loc.pathname]);
 
+  // On a narrow screen the closed menu is off screen; inert keeps it out of reach.
+  // The open menu covers the page, so the page is inert instead: Tab stays in
+  // the menu rather than walking into what is behind it. This runs before the
+  // focus effect below, so the menu button is reachable again when it is focused.
+  useEffect(() => {
+    const narrow = window.matchMedia('(max-width: 960px)');
+    const apply = () => {
+      nav.current?.toggleAttribute('inert', narrow.matches && !menu);
+      mainCol.current?.toggleAttribute('inert', narrow.matches && menu);
+    };
+    apply();
+    narrow.addEventListener('change', apply);
+    return () => narrow.removeEventListener('change', apply);
+  }, [menu]);
+
+  // While the phone menu is open, Tab goes round inside it, as in a dialog.
+  const keepFocusIn = (e: ReactKeyboardEvent<HTMLElement>) => {
+    if (!menu || e.key !== 'Tab') return;
+    const items = [...(nav.current?.querySelectorAll<HTMLElement>('a[href], button:not([disabled])') ?? [])]
+      .filter(el => el.offsetParent !== null);
+    if (!items.length) return;
+    const first = items[0], last = items[items.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  };
+
   // Focus goes into the phone menu when it opens and back when it closes.
   useEffect(() => {
     if (menu) {
@@ -65,15 +92,6 @@ export function Shell({ children }: { children: ReactNode }) {
     } else if (opened.current) {
       menuBtn.current?.focus();
     }
-  }, [menu]);
-
-  // On a narrow screen the closed menu is off screen; inert keeps it out of reach.
-  useEffect(() => {
-    const narrow = window.matchMedia('(max-width: 960px)');
-    const apply = () => nav.current?.toggleAttribute('inert', narrow.matches && !menu);
-    apply();
-    narrow.addEventListener('change', apply);
-    return () => narrow.removeEventListener('change', apply);
   }, [menu]);
 
   // The preview opens after a short rest on a section, so passing over the menu
@@ -94,7 +112,7 @@ export function Shell({ children }: { children: ReactNode }) {
     <div className={`shell${menu ? ' menu-open' : ''}`}>
       <a className="skip" href="#main">Skip to content</a>
 
-      <nav ref={nav} className="nav" id="console-menu" aria-label="Console" onMouseLeave={hidePreview}>
+      <nav ref={nav} className="nav" id="console-menu" aria-label="Console" onMouseLeave={hidePreview} onKeyDown={keepFocusIn}>
         <div className="nav-head">
           <Link className="brand" to="/">
             <img src="/logo.svg" alt="" width={26} height={26} />
@@ -147,7 +165,7 @@ export function Shell({ children }: { children: ReactNode }) {
 
       <button className="scrim" type="button" aria-label="Close menu" tabIndex={-1} onClick={() => setMenu(false)} />
 
-      <div className="main">
+      <div className="main" ref={mainCol}>
         <header className="bar">
           <button
             ref={menuBtn}
