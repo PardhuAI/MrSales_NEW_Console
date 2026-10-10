@@ -31,3 +31,19 @@ for (const theme of ['light', 'dark'] as const) {
     expect(found, found.join('\n')).toEqual([]);
   });
 }
+
+// Hover is a colour too, and axe only measures it when something is hovered:
+// the light accent's hover once put white button text at 4.3:1.
+for (const theme of ['light', 'dark'] as const) {
+  test(`a hovered button and link keep their contrast in ${theme}`, async ({ page }) => {
+    await page.addInitScript(t => { try { localStorage.setItem('mrsales.theme', t); } catch { /* light */ } }, theme);
+    await as(page, 'owner');
+    await page.waitForTimeout(700);
+    for (const target of [page.locator('main .btn-primary').first(), page.locator('main a:not(.btn)').first()]) {
+      await target.hover();
+      await page.waitForTimeout(400);
+      const r = await new AxeBuilder({ page }).withRules(['color-contrast']).include('main').analyze();
+      expect(r.violations.flatMap(v => v.nodes.map(n => n.target.join(' ')))).toEqual([]);
+    }
+  });
+}

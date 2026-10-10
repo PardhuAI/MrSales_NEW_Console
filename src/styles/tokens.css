@@ -77,7 +77,7 @@
   --hairline: #e3e3e8;
   --track: #e8e8ed;
   --accent: #0066cc;
-  --accent-hover: #0077ed;
+  --accent-hover: #0058b0; /* darker on hover: #0077ed put white at 4.3:1, under AA */
   --accent-soft: #e8f1fb;
   --on-accent: #ffffff;
   --good: #1d7a3a;
