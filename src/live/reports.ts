@@ -235,7 +235,7 @@ export async function runReport(key: ReportKey, scope: Scope): Promise<Report> {
       const rows = (await readAll<{ id: string; employee_id: string; type: string; from_date: string; to_date: string; days: number; status: string; reason: string | null }>((a, b) =>
         sb.from('leave_requests').select('id, employee_id, type, from_date, to_date, days, status, reason').lte('from_date', end).gte('to_date', first).order('from_date').range(a, b)))
         .filter(l => ids.has(l.employee_id))
-        .map(l => ({ _id: l.id, person: employees.get(l.employee_id)?.name ?? '', type: leaveLabel(l.type), from: l.from_date, to: l.to_date, days: l.days, status: ({ pending: 'Waiting', approved: 'Approved', rejected: 'Not approved', cancelled: 'Withdrawn' } as Record<string, string>)[l.status] ?? l.status, reason: l.reason ?? '' }));
+        .map(l => ({ _id: l.id, person: employees.get(l.employee_id)?.name ?? '', type: leaveLabel(l.type), from: l.from_date, to: l.to_date, days: l.days, status: ({ pending: 'Waiting', approved: 'Approved', rejected: 'Rejected', cancelled: 'Withdrawn' } as Record<string, string>)[l.status] ?? l.status, reason: l.reason ?? '' }));
       return { columns: [{ key: 'person', header: 'Person' }, { key: 'type', header: 'Leave' }, { key: 'from', header: 'From', kind: 'day' }, { key: 'to', header: 'To', kind: 'day' }, { key: 'days', header: 'Days', kind: 'num' }, { key: 'status', header: 'Status' }, { key: 'reason', header: 'Reason' }], rows };
     }
     case 'expenses': {

@@ -102,12 +102,12 @@ test('a staffed territory names who is posted there', async ({ page }) => {
   await expect(top(page)).toContainText('is in use');
 });
 
-test('a leave request is declined only with a reason', async ({ page }) => {
+test('a leave request is rejected only with a reason', async ({ page }) => {
   await as(page, 'owner', '/team/leave');
-  await page.getByRole('button', { name: 'Decline' }).first().click();
-  await page.getByRole('button', { name: 'Decline the leave' }).click();
+  await page.getByRole('button', { name: 'Reject', exact: true }).first().click();
+  await page.getByRole('button', { name: 'Reject the leave' }).click();
   await expect(top(page)).toBeVisible();
-  await page.getByLabel('Why it is declined').fill('The team is short that week.');
-  await page.getByRole('button', { name: 'Decline the leave' }).click();
-  await expect(notice(page)).toContainText('not approved');
+  await page.getByLabel('Why it is rejected').fill('The team is short that week.');
+  await page.getByRole('button', { name: 'Reject the leave' }).click();
+  await expect(notice(page)).toContainText('rejected');
 });

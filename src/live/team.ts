@@ -316,8 +316,8 @@ export async function loadManagers(): Promise<{ managers: ManagerRow[]; unmanage
   const yearStart = (() => { const d = new Date(y, m - 12, 1); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`; })();
   const [employees, acts, sales, targets, leave, expenses, clients] = await Promise.all([
     loadEmployees(),
-    readAll<{ employee_id: string; status: string; geo_verdict: string | null; scheduled_start: string; actual_start: string | null }>((a, b) =>
-      sb.from('activities').select('employee_id, status, geo_verdict, scheduled_start, actual_start').gte('scheduled_start', startOfDay(shiftDay(today, -30))).lt('scheduled_start', startOfDay(shiftDay(today, 1))).range(a, b)),
+    readAll<{ employee_id: string; status: string; geo_verdict: string | null; geo_mocked: boolean | null; scheduled_start: string; actual_start: string | null }>((a, b) =>
+      sb.from('activities').select('employee_id, status, geo_verdict, geo_mocked, scheduled_start, actual_start').gte('scheduled_start', startOfDay(shiftDay(today, -30))).lt('scheduled_start', startOfDay(shiftDay(today, 1))).range(a, b)),
     readAll<{ employee_id: string | null; sale_date: string; amount: number }>((a, b) => sb.from('sales_records').select('employee_id, sale_date, amount').gte('sale_date', `${yearStart}-01`).range(a, b)),
     readAll<{ employee_id: string; period_year: number; period_month: number; amount: number }>((a, b) => sb.from('targets').select('employee_id, period_year, period_month, amount').gte('period_year', Number(yearStart.slice(0, 4))).range(a, b)),
     sb.from('leave_requests').select('employee_id, days, from_date').eq('status', 'approved').gte('from_date', `${mk}-01`),
@@ -351,8 +351,11 @@ export async function loadManagers(): Promise<{ managers: ManagerRow[]; unmanage
       }).sort((a, b) => a.name.localeCompare(b.name)),
       doneWeek: week.filter(a => a.status === 'completed').length,
       plannedWeek: week.filter(a => a.status !== 'planned' || dayOf(a.scheduled_start) < today).length,
-      verified: done30.filter(a => a.geo_verdict === 'verified').length,
-      checked: done30.filter(a => a.geo_verdict === 'verified' || a.geo_verdict === 'outOfRange').length,
+      // At the client, as on Today and in the report sheet: verified and not
+      // faked, out of every completed call. Dividing by checkable calls only
+      // read 86% for a team whose calls mostly could not be checked.
+      verified: done30.filter(a => a.geo_verdict === 'verified' && !a.geo_mocked).length,
+      checked: done30.length,
       sales: sold(ids, mk), target: tgt(ids, mk),
       leaveDays: lv.filter(l => ids.has(l.employee_id)).reduce((s, l) => s + l.days, 0),
       claimed: expenses.filter(e => ids.has(e.employee_id)).reduce((s, e) => s + Number(e.amount), 0),

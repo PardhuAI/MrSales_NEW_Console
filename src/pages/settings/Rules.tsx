@@ -303,7 +303,7 @@ export function Ownership() {
   return (
     <div className="page-body">
       <Summary>One rule, field by field: if changing it changes what someone can see, what they are paid, or who signs off on them, the office owns it.</Summary>
-      <p className="form-note own-note"><strong>When this was last checked, the phone had no profile screen</strong>, so nobody could change their own details there and the first six below go stale. Until it has one, the office changes them on the person's record.</p>
+      <p className="form-note own-note"><strong>On the phone, a person edits their own mobile number and blood group</strong> (Menu, Profile, Edit). The other details of theirs below are changed by the office on the person's record until the phone offers them too.</p>
       <Arrive className="own-groups">
         {OWNERSHIP.map(g => (
           <section key={g.group}>

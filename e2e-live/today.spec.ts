@@ -57,7 +57,7 @@ test.describe('admin: the field view', () => {
       // Nothing checked this month for the company, so no team can show more.
       const cells = await page.locator('table', { has: page.getByRole('columnheader', { name: 'Checked at the client' }) })
         .locator('tbody tr td:nth-child(3)').allInnerTexts();
-      for (const c of cells) expect(c.trim()).toMatch(/^(0%|None checked)$/);
+      for (const c of cells) expect(c.trim()).toMatch(/^(0%|No calls)$/);
     }
   });
 });

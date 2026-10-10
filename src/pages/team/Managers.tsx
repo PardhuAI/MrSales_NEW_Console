@@ -47,7 +47,7 @@ export function Managers() {
                     <th scope="row"><Link className="cell-link" to={`/team/managers/${m.id}`}>{m.name}</Link><span className="cell-sub">{[m.territory || m.hq, m.manager && `reports to ${m.manager}`].filter(Boolean).join(' · ')}</span></th>
                     <td className="num">{m.team.length || <span className="cell-quiet">Nobody</span>}</td>
                     <td className="num">{m.doneWeek}<span className="cell-sub-inline"> of {m.plannedWeek}</span></td>
-                    <td className="num hide-narrow">{m.checked ? percent(m.verified, m.checked) : <span className="cell-quiet">None checked</span>}</td>
+                    <td className="num hide-narrow">{m.checked ? percent(m.verified, m.checked) : <span className="cell-quiet">No calls</span>}</td>
                     <td className="num">{rupeesShort(m.sales)}</td>
                     <td className="num">{m.target ? <ShareBar part={m.sales} whole={m.target} label={percent(m.sales, m.target)} /> : <span className="cell-quiet">No target</span>}</td>
                   </tr>

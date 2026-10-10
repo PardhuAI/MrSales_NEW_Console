@@ -304,47 +304,47 @@ behaviour can be checked against it. The "Data" column names the function in
 > a team) were run in the browser. Not yet run against the live testbed.
 
 ### Employees (`/people`) · Old: `pages/People.tsx` `People`
-- [ ] Employee list with search by name or ID
-- [ ] Filters: role, manager, joined, territory, band, level
-- [ ] Change manager from the row · Data: `reassignManager`
-- [ ] Replace an employee (hand their clients to someone else) · Data: `handOverClients`
-- [ ] Deactivate an employee, with a reason ("Mark as left") · Data: `setEmployeeStatus`
+- [ ] Employee list with search by name or ID · ✅ *verified live 11 Oct* (and the count matches the rows)
+- [ ] Filters: role, manager, joined, territory, band, level · ✅ *verified live 11 Oct* for manager and role; the rest are under More filters
+- [ ] Change manager from the row · Data: `reassignManager` · ✅ *verified live 11 Oct* that it is offered on the record; the move itself is checked on demo data
+- [ ] Replace an employee (hand their clients to someone else) · Data: `handOverClients` · ✅ *verified live 11 Oct* that it is offered; handing over is checked on demo data
+- [ ] Deactivate an employee, with a reason ("Mark as left") · Data: `setEmployeeStatus` · ✅ *verified live 11 Oct* (refused without a reason)
 
 ### Employee record (`/people/:id`) · Old: `pages/People.tsx` `Employee360`
-- [ ] Sections: Overview; Field (field activity, clients, attendance); Commercial (sales, targets, orders); HR and finance (leave, expenses, documents); Administration (audit)
-- [ ] Overview for a month: achieved, still to sell, calls completed, claimed
-- [ ] Days: working, in the field, leave, non-field
-- [ ] Calls: planned, completed, missed; who was seen (clients, hospitals)
-- [ ] Orders and order value; primary and secondary sales; sales against target over 12 months
+- [ ] Sections: Overview; Field (field activity, clients, attendance); Commercial (sales, targets, orders); HR and finance (leave, expenses, documents); Administration (audit) · ✅ *verified live 11 Oct* (every section opens without an error)
+- [ ] Overview for a month: achieved, still to sell, calls completed, claimed · ✅ *verified live 11 Oct*
+- [ ] Days: working, in the field, leave, non-field · ✅ *verified live 11 Oct*
+- [ ] Calls: planned, completed, missed; who was seen (clients, hospitals) · ✅ *verified live 11 Oct* (calls by kind add up to the calls done)
+- [ ] Orders and order value; primary and secondary sales; sales against target over 12 months · ✅ *verified live 11 Oct*
 - [ ] Recent calls
 - [ ] Edit the employee · Data: `updateEmployee`
-- [ ] Documents: list, open, upload (with category and expiry date), remove · Data: `pullDocuments`, `uploadEmployeeDocument`, `removeEmployeeDocument`, `signedUrlFor`
+- [ ] Documents: list, open, upload (with category and expiry date), remove · Data: `pullDocuments`, `uploadEmployeeDocument`, `removeEmployeeDocument`, `signedUrlFor` · ✅ *verified live 11 Oct* (uploaded with an expiry, then removed)
 - [ ] Salary panel (only for roles that may see salary)
 - [ ] Audit of changes to this person
 
 ### Add an employee (`/people/new`) · Old: `pages/Onboarding.tsx` `NewEmployee` · Data: `createEmployee`, `inviteFieldEmployee`
 - [ ] Seven steps: Identity, Posting, Reporting, Leave, Salary, Expenses, Documents
-- [ ] Identity: name, employee code, role (the company's own), joining date, department, blood group, email (required, logins arrive by email), mobile, alternate mobile, address
-- [ ] Posting: region, territory, headquarters, areas, home cluster
-- [ ] Reporting: reporting manager, dotted line
+- [ ] Identity: name, employee code, role (the company's own), joining date, department, blood group, email (required, logins arrive by email), mobile, alternate mobile, address · ✅ *verified live 11 Oct* (a .mrsales.local email is refused for a real person)
+- [ ] Posting: region, territory, headquarters, areas, home cluster · ✅ *verified live 11 Oct*
+- [ ] Reporting: reporting manager, dotted line · ✅ *verified live 11 Oct*
 - [ ] Expenses: daily allowance, bill required above, monthly ceiling
 - [ ] Monthly pay preview: gross, net
 - [ ] "Set up your geography first" when there is none
 - [ ] Half-finished joiners (drafts) list
 
 ### Manager-wise view (`/people/managers`, `/people/managers/:id`) · Old: `pages/ManagerView.tsx`
-- [ ] Managers, people managed, largest team, unmanaged
-- [ ] Expand a manager to see the team
+- [ ] Managers, people managed, largest team, unmanaged · ✅ *verified live 11 Oct*. **Fixed 11 Oct:** "At the client" read 86% for a team whose calls mostly could not be checked; it now counts as Today and the report sheet do, verified and not faked out of every completed call
+- [ ] Expand a manager to see the team · ✅ *verified live 11 Oct*
 - [ ] Manager page: total calls, clients added, listed, unlisted, field work days, leaves, expenses, target, sales, target vs sales, team
 - [ ] Monthly sales trend; top performers and weakest in the team; the team figure by figure
 
 ### Attendance (`/attendance`) · Old: `pages/PeopleOps.tsx` `Attendance` · Data: `pullAttendance`
-- [ ] Present today, on approved leave, company holidays, week off
-- [ ] Month grid per person (every day, the reason each day is what it is)
+- [ ] Present today, on approved leave, company holidays, week off · ✅ *verified live 11 Oct*
+- [ ] Month grid per person (every day, the reason each day is what it is) · ✅ *verified live 11 Oct*
 
 ### Leave (`/leave`) · Old: `pages/PeopleOps.tsx` `Leave` · Data: `pullLeave`, `decideLeave`, `applyForLeave`
-- [ ] Requests from the phone, with status
-- [ ] Leave policies
+- [ ] Requests from the phone, with status · ✅ *verified live 11 Oct*. **Fixed 11 Oct:** it said Decline and Not approved where Approvals and the phone say Reject and Rejected; one word now, still only with a reason
+- [ ] Leave policies · ✅ *verified live 11 Oct*
 
 > **2026-10-04: Expenses and pay is built in the new design** (`src/pages/money/`,
 > `src/live/money.ts`). Expense claims: each person's month day by day against their day plans,
@@ -360,7 +360,7 @@ behaviour can be checked against it. The "Data" column names the function in
 > run in the browser. Not yet run against the live testbed.
 
 ### Expenses (`/expenses`) · Old: `pages/PeopleOps.tsx` `Expenses` · Data: `pullExpenses`, `decideExpense`
-- [ ] Month claims: claims, total claimed, awaiting decision, daily allowance
+- [ ] Month claims: claims, total claimed, awaiting decision, daily allowance · ✅ *verified live 11 Oct*
 - [ ] Claim detail: every day, worked, no intimation, receipts, status
 
 ### Payroll (`/payroll`) · Old: `pages/Bridge.tsx` `Payroll` · Data: `pullPayslips`, `releasePayslip`
@@ -382,18 +382,18 @@ behaviour can be checked against it. The "Data" column names the function in
 - [x] Company details and logo printed on payslips (`/settings/company`)
 
 ### Assigned tasks (`/tasks`) · Old: `pages/Bridge.tsx` `AssignedTasks` · Data: `pullTasks`, `assignTask`
-- [ ] Open, not started, past their date, completed
-- [ ] Assign a task: one job, one person, a due date
+- [ ] Open, not started, past their date, completed · ✅ *verified live 11 Oct*. **Fixed 11 Oct:** an empty list said "Nothing here"; it says which list is empty
+- [ ] Assign a task: one job, one person, a due date · ✅ *verified live 11 Oct* that the form opens; assigning is checked on demo data, so no stray task reaches a testbed phone
 
 ### Field ownership (`/ownership`) · Old: `pages/Bridge.tsx` `FieldOwnershipPage`
-- [ ] Who owns which field (data ownership rules)
+- [ ] Who owns which field (data ownership rules) · ✅ *verified live 11 Oct*. **Fixed 11 Oct:** it said the phone had no profile screen; the phone lets a person edit their own mobile and blood group
 
 ### HR configuration (`/hr`) · Old: `pages/HrConfig.tsx` `HrConfiguration`
 - [ ] Tabs: Roles, Leave, Salary, Holidays, Expenses
 - [ ] Roles: mobile roles, depth of the tree, web roles, nobody above them
 - [ ] Leave types
 - [x] Standard salary structure: basic, gross, deductions, net (now components and a structure per role, in Pay and expenses)
-- [ ] Holidays: fixed, optional, falling on a Sunday; add or edit a holiday · Data: `pullHolidays`, `upsertHoliday`
+- [ ] Holidays: fixed, optional, falling on a Sunday; add or edit a holiday · Data: `pullHolidays`, `upsertHoliday` · ✅ *verified live 11 Oct* that the list and the form open; declaring one is checked on demo data
 - [x] Expense rules (per role in Pay and expenses; per person on their record)
 
 ---

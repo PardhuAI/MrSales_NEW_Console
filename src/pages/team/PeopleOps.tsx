@@ -110,7 +110,7 @@ function AttendanceGrid({ m }: { m: AttendanceModel }) {
 
 // ── leave ─────────────────────────────────────────────────────────────
 
-const LEAVE_STATUS: Record<string, { word: string; tone: 'good'  | 'neutral' }> = { approved: { word: 'Approved', tone: 'good' }, pending: { word: 'Waiting for a decision', tone: 'neutral' }, rejected: { word: 'Not approved', tone: 'neutral' }, cancelled: { word: 'Withdrawn', tone: 'neutral' } };
+const LEAVE_STATUS: Record<string, { word: string; tone: 'good'  | 'neutral' }> = { approved: { word: 'Approved', tone: 'good' }, pending: { word: 'Waiting for a decision', tone: 'neutral' }, rejected: { word: 'Rejected', tone: 'neutral' }, cancelled: { word: 'Withdrawn', tone: 'neutral' } };
 
 /** Leave: every request from the phone, with its decision, and who is away soon. */
 export function Leave() {
@@ -150,7 +150,7 @@ function LeaveView({ list, at, error, reload }: { list: LeaveRow[]; at: Date | n
     setProblem('');
     try {
       await decideLeave(ask.l.id, ask.approve, reason);
-      setNotice(`${ask.l.person}'s leave is ${ask.approve ? 'approved' : 'not approved'}; they get a message.`);
+      setNotice(`${ask.l.person}'s leave is ${ask.approve ? 'approved' : 'rejected'}; they get a message.`);
       setAsk(null);
       invalidate('team:', 'home:');
       void approvalsStore.load();
@@ -171,7 +171,7 @@ function LeaveView({ list, at, error, reload }: { list: LeaveRow[]; at: Date | n
       <WhoIsAway list={list} />
       <Toolbar>
         <SearchBox value={q} onChange={setQ} placeholder="Find a person" label="Find a person" />
-        <Segmented label="Status" value={status} onChange={setStatus} options={[{ value: 'all', label: 'All', count: list.length }, { value: 'pending', label: 'Waiting', count: by('pending') }, { value: 'approved', label: 'Approved', count: by('approved') }, { value: 'rejected', label: 'Not approved', count: by('rejected') }]} />
+        <Segmented label="Status" value={status} onChange={setStatus} options={[{ value: 'all', label: 'All', count: list.length }, { value: 'pending', label: 'Waiting', count: by('pending') }, { value: 'approved', label: 'Approved', count: by('approved') }, { value: 'rejected', label: 'Rejected', count: by('rejected') }]} />
       </Toolbar>
       {list.length === 0 ? <Empty title="No leave applied for">People apply for leave on the phone; their requests appear here with the decision.</Empty> : rows.length === 0 ? <div className="list-empty"><Empty title="Nothing matches">Try another status or name.</Empty></div> : (
         <Arrive>
@@ -186,7 +186,7 @@ function LeaveView({ list, at, error, reload }: { list: LeaveRow[]; at: Date | n
                     <td className="fold-phone">{dayRange(l.from, l.to)}<span className="cell-sub">applied {ago(l.appliedAt)}</span></td>
                     <td className="num hide-narrow">{l.days}</td>
                     <td><Pill tone={(LEAVE_STATUS[l.status] ?? { tone: 'neutral' }).tone}>{(LEAVE_STATUS[l.status] ?? { word: l.status }).word}</Pill>{l.decidedBy && <span className="cell-sub">by {l.decidedBy}{l.decisionReason ? `: “${l.decisionReason}”` : ''}</span>}</td>
-                    {allowed('approvals') && <td className="row-action">{l.status === 'pending' && <span className="row-actions"><button type="button" className="link" onClick={() => setAsk({ l, approve: false })}>Decline</button><button type="button" className="link strong-link" onClick={() => setAsk({ l, approve: true })}>Approve</button></span>}</td>}
+                    {allowed('approvals') && <td className="row-action">{l.status === 'pending' && <span className="row-actions"><button type="button" className="link" onClick={() => setAsk({ l, approve: false })}>Reject</button><button type="button" className="link strong-link" onClick={() => setAsk({ l, approve: true })}>Approve</button></span>}</td>}
                   </tr>
                 ))}
               </tbody>
@@ -196,8 +196,8 @@ function LeaveView({ list, at, error, reload }: { list: LeaveRow[]; at: Date | n
         </Arrive>
       )}
       <LeaveBalances year={year} r={balances} />
-      <Confirm open={Boolean(ask)} title={ask ? `${ask.approve ? 'Approve' : 'Decline'} ${ask.l.person}'s leave?` : ''} confirmLabel={ask?.approve ? 'Approve the leave' : 'Decline the leave'} busy={busy} error={problem}
-        reason={ask && !ask.approve ? { label: 'Why it is declined', required: true, placeholder: 'For example: please pick other dates; the team is short that week.' } : undefined}
+      <Confirm open={Boolean(ask)} title={ask ? `${ask.approve ? 'Approve' : 'Reject'} ${ask.l.person}'s leave?` : ''} confirmLabel={ask?.approve ? 'Approve the leave' : 'Reject the leave'} busy={busy} error={problem}
+        reason={ask && !ask.approve ? { label: 'Why it is rejected', required: true, placeholder: 'For example: please pick other dates; the team is short that week.' } : undefined}
         onCancel={() => setAsk(null)} onConfirm={reason => void decide(reason)}>
         {ask && `${leaveLabel(ask.l.type)}, ${count(ask.l.days, 'day')}: ${dayRange(ask.l.from, ask.l.to)}.${ask.approve ? after(ask.l) : ''} ${ask.l.person} gets a message${ask.approve ? '.' : ' with your reason.'}`}
       </Confirm>
@@ -405,7 +405,7 @@ function TasksView({ data, at, error, reload }: { data: Awaited<ReturnType<typeo
         <SearchBox value={q} onChange={setQ} placeholder="Task, person or client" label="Find a task" />
         <Segmented label="Show" value={status} onChange={setStatus} options={[{ value: 'open', label: 'Open', count: open.length }, { value: 'late', label: 'Past their date', count: late.length }, { value: 'done', label: 'Done', count: done.length }, { value: 'all', label: 'All' }]} />
       </Toolbar>
-      {data.tasks.length === 0 ? <Empty title="No tasks yet">Hand someone a piece of work with a date; it reaches their phone and they tick it off there.</Empty> : rows.length === 0 ? <div className="list-empty"><Empty title="Nothing here">No task matches.</Empty></div> : (
+      {data.tasks.length === 0 ? <Empty title="No tasks yet">Hand someone a piece of work with a date; it reaches their phone and they tick it off there.</Empty> : rows.length === 0 ? <div className="list-empty"><Empty title={q ? 'No task matches' : ({ open: 'No open tasks', late: 'Nothing is past its date', done: 'No task is done yet', all: 'No tasks' } as const)[status]}>{q ? 'Try another word, or another list.' : status === 'open' ? `All ${count(done.length, 'task')} given out ${done.length === 1 ? 'is' : 'are'} done.` : 'The other lists hold the rest.'}</Empty></div> : (
         <Arrive>
           <ul className="rows task-list">
             {rows.map(t => {

@@ -214,7 +214,7 @@ function DashboardView({ m, updatedAt, refreshError }: { m: DashboardModel; upda
                           <span className="cell-sub">{r.territory ? `${r.territory} · ` : ''}{count(r.team, 'person', 'people')}</span>
                         </th>
                         <td className="num">{r.doneWeek}<span className="cell-sub-inline"> of {r.plannedWeek}</span></td>
-                        <td className="num">{r.verifiedShare === null ? <span className="cell-quiet">None checked</span> : `${Math.round(r.verifiedShare * 100)}%`}</td>
+                        <td className="num">{r.verifiedShare === null ? <span className="cell-quiet">No calls</span> : `${Math.round(r.verifiedShare * 100)}%`}</td>
                         {seesSales && <td className="num">{r.sales ? rupeesShort(r.sales) : <span className="cell-quiet">None</span>}</td>}
                         {seesSales && (
                           <td className="num">
@@ -365,7 +365,7 @@ function Month({ m, sales, field }: { m: DashboardModel; sales: boolean; field: 
               <span className="mf-label">calls done</span>
             </div>
             <div className="mf">
-              <span className="mf-value">{mo.verifiedShare === null ? 'None checked' : `${Math.round(mo.verifiedShare * 100)}%`}</span>
+              <span className="mf-value">{mo.verifiedShare === null ? 'No calls' : `${Math.round(mo.verifiedShare * 100)}%`}</span>
               <span className="mf-label">checked at the client</span>
             </div>
             <div className="mf">

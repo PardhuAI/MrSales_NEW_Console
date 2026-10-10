@@ -406,7 +406,6 @@ export async function loadLiveDashboard(orgName: string): Promise<DashboardModel
 
   const monthCalls = calls.filter(c => c.day >= monthStart);
   const monthDone = monthCalls.filter(c => c.status === 'done');
-  const withCheck = monthDone.filter(c => c.verdict);
   let workingDaysLeft = 0;
   for (let k = shift(today, 1); k.startsWith(monthKey(ty, tm)); k = shift(k, 1)) if (isWorking(k)) workingDaysLeft++;
 
@@ -469,7 +468,9 @@ export async function loadLiveDashboard(orgName: string): Promise<DashboardModel
       // This month, like the sales beside it and the month's own figure above:
       // a 30-day window read 12% against October's 0% for the same team.
       const recent = calls.filter(c => ids.has(c.employee) && c.status === 'done' && c.day >= monthStart);
-      const checkedRecent = recent.filter(c => c.verdict);
+      // One rule for "at the client" on every screen and in the report sheet:
+      // verified and not faked, out of every completed call (reports.ts).
+      const atClient = recent.filter(c => c.verdict === 'verified' && !c.mocked).length;
       return {
         id: m.id,
         name: m.name,
@@ -477,7 +478,7 @@ export async function loadLiveDashboard(orgName: string): Promise<DashboardModel
         team: team.length,
         doneWeek: week.filter(c => c.status === 'done').length,
         plannedWeek: week.filter(c => c.day < today || c.status !== 'planned' || c.at <= nowH).length,
-        verifiedShare: checkedRecent.length ? checkedRecent.filter(c => c.verdict === 'verified').length / checkedRecent.length : null,
+        verifiedShare: recent.length ? atClient / recent.length : null,
         sales: salesIn(sy, sm, ids),
         target: targetIn(sy, sm, ids),
       };
@@ -538,7 +539,7 @@ export async function loadLiveDashboard(orgName: string): Promise<DashboardModel
       target: monthTarget,
       previous: prevSales || prevTarget ? { label: monthLabel(py, pm), sales: prevSales, target: prevTarget } : null,
       callsDone: monthDone.length,
-      verifiedShare: withCheck.length ? withCheck.filter(c => c.verdict === 'verified').length / withCheck.length : null,
+      verifiedShare: monthDone.length ? monthDone.filter(c => c.verdict === 'verified' && !c.mocked).length / monthDone.length : null,
       clientsVisited: new Set(monthDone.map(c => c.clientId).filter(Boolean)).size,
       clientsTotal: clientsTotal.count ?? 0,
       newClients: clientsNew.count ?? 0,
