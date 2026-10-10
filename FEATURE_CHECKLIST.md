@@ -248,39 +248,39 @@ behaviour can be checked against it. The "Data" column names the function in
 > company at 1440 and 390. Not yet run against the live testbed.
 
 ### Sales (`/sales`) · Old: `pages/Commerce.tsx` `Sales` · Data: `pullSales`, `pullTargets`
-- [ ] Primary sales, secondary sales, target, achievement
-- [ ] Twelve months against target (chart)
-- [ ] By employee, click to drill in
+- [ ] Primary sales, secondary sales, target, achievement · ✅ *verified live 11 Oct*
+- [ ] Twelve months against target (chart) · ✅ *verified live 11 Oct*
+- [ ] By employee, click to drill in · ✅ *verified live 11 Oct*
 
 ### Orders (`/orders`) · Old: `pages/Commerce.tsx` `Orders` · Data: `pullOrders`
-- [ ] Order list with filters: approval status, fulfilment, stockist
-- [ ] Order lines, tax and totals
+- [ ] Order list with filters: approval status, fulfilment, stockist · ✅ *verified live 11 Oct*
+- [ ] Order lines, tax and totals · ✅ *verified live 11 Oct*
 
 ### Targets (`/targets`) · Old: `pages/Commerce.tsx` `Targets` · Data: `assignTarget`
-- [ ] Employee by month achievement grid
-- [ ] Assign the same target to every field rep for one product and one month
+- [ ] Employee by month achievement grid · ✅ *verified live 11 Oct*
+- [ ] Assign the same target to every field rep for one product and one month · ✅ *verified live 11 Oct* that the form offers one person or everyone; saving a target is checked on demo data, to keep the testbed's targets as they are
 
 ### Products (`/products`) · Old: `pages/Commerce.tsx` `Products`
-- [ ] Product master: code, name, pack, prices
-- [ ] Add a product (pack size fixed after creation) · Data: `createProduct`
-- [ ] Edit a product · Data: `updateProduct`
-- [ ] Activate or retire · Data: `setProductStatus`
-- [ ] Import products · Data: `importProducts`; download sheet · Data: `productSheet`
+- [ ] Product master: code, name, pack, prices · ✅ *verified live 11 Oct*
+- [ ] Add a product (pack size fixed after creation) · Data: `createProduct` · ✅ *verified live 11 Oct* (the pack is read-only once added)
+- [ ] Edit a product · Data: `updateProduct` · ✅ *verified live 11 Oct*
+- [ ] Activate or retire · Data: `setProductStatus` · ✅ *verified live 11 Oct* (retired)
+- [ ] Import products · Data: `importProducts`; download sheet · Data: `productSheet` · ⏳ *not yet live:* checked on demo data
 
 ### Stockists (`/stockists`) · Old: `pages/Commerce.tsx` `Stockists`
-- [ ] Figures: on the phone, off the list, orders with no stockist
-- [ ] Filter by status and territory
-- [ ] Add a stockist (code fixed after creation): name, contact, phone, email, GSTIN, city, state, address · Data: `createStockist`
-- [ ] Edit, and take on or off the list · Data: `updateStockist`, `setStockistStatus`
+- [ ] Figures: on the phone, off the list, orders with no stockist · ✅ *verified live 11 Oct*
+- [ ] Filter by status and territory · ✅ *verified live 11 Oct* for status
+- [ ] Add a stockist (code fixed after creation): name, contact, phone, email, GSTIN, city, state, address · Data: `createStockist` · ✅ *verified live 11 Oct*
+- [ ] Edit, and take on or off the list · Data: `updateStockist`, `setStockistStatus` · ✅ *verified live 11 Oct* (taken off, after it asks)
 
 ### Prescription audit (`/rcpa`) · Old: `pages/Insight.tsx` `Rcpa`
 - [ ] Our share, products behind, readings, calls carrying an audit
 - [ ] Share by product; units against us by competitor
-- [ ] "No audits recorded", "No competitor named" states
+- [ ] "No audits recorded", "No competitor named" states · ✅ *verified live 11 Oct* for no audits; the testbed has none, so the share figures are checked on demo data
 
 ### Stock (`/stock`) · Old: `pages/HrConfig.tsx` `Stock` · Data: `pullStock`, `pullStockBatches`, `recordStock`
-- [ ] Batches, units in the market, value at risk, stock value
-- [ ] Stock in: record a batch arriving; a negative figure writes stock off
+- [ ] Batches, units in the market, value at risk, stock value · ✅ *verified live 11 Oct*
+- [ ] Stock in: record a batch arriving; a negative figure writes stock off · ✅ *verified live 11 Oct* (recorded, then written off in full)
 
 ---
 
